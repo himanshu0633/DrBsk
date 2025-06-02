@@ -5,71 +5,81 @@ import "./Fever.css";
 import { Link } from "react-router-dom";
 import Footer from "../../components/Footer/Footer";
 import axiosInstance from "../../components/AxiosInstance";
-import { useDispatch } from 'react-redux';
-// import { addToCart } from '../../store/CartSlice';
+import { useDispatch, useSelector } from "react-redux";
+import { addData } from "../../store/Action";
 import API_URL from "../../config";
+import { toast } from "react-toastify";
 
 const Fever = () => {
   const [products, setProducts] = useState([]);
+  const [allProducts, setAllProducts] = useState([]);
+  const [addedToCart, setAddedToCart] = useState({});
+
   const [filters, setFilters] = useState({
     minPrice: 0,
     maxPrice: 5000,
     minDiscount: 0,
-    maxDiscount: 5000
+    maxDiscount: 5000,
   });
-  const [sortOption, setSortOption] = useState('none');
+  const [sortOption, setSortOption] = useState("none");
   const [mobileFiltersOpen, setMobileFiltersOpen] = useState(false);
   const [loading, setLoading] = useState(false);
 
-  const [allProducts, setAllProducts] = useState([]);
+  const dispatch = useDispatch();
+  // const cartItems = useSelector((state) => state.cart.items || []);
+  const cartItems = useSelector((state) => state.cart?.items || []);
+
+
   useEffect(() => {
     fetchData();
   }, []);
-  // const [products, setProducts] = useState([]);
 
   const fetchData = async () => {
     setLoading(true);
     try {
       const response = await axiosInstance.get(`/user/allproducts`);
-      const fetchedProducts = response.data.map(p => ({
-        ...p,
-        price: parseFloat(p.consumer_price),
-        originalPrice: parseFloat(p.retail_price),
-        discount: parseFloat(p.retail_price) - parseFloat(p.consumer_price)
-      }));
+      const fetchedProducts = response.data.map((p) => {
+        const retail = parseFloat(p.retail_price) || 0;
+        const consumer = parseFloat(p.consumer_price) || 0;
+        const discount = Math.max(0, retail - consumer);
 
-      console.log("Fetched products:", fetchedProducts); // ✅ Log fetched data
+        return {
+          ...p,
+          price: consumer,
+          originalPrice: retail,
+          discount,
+        };
+      });
+
       setAllProducts(fetchedProducts);
-      setProducts(fetchedProducts); // Set initial display
-      // console.log("Filtered products:", products);
+      setProducts(fetchedProducts);
     } catch (error) {
       console.error("Error fetching data:", error);
     }
     setLoading(false);
   };
 
-
-  // Apply filters and sorting
   useEffect(() => {
-    let filtered = allProducts.filter(product => {
+    let filtered = allProducts.filter((product) => {
       const price = parseFloat(product.price) || 0;
       const discount = parseFloat(product.discount) || 0;
 
-      return price >= filters.minPrice &&
+      return (
+        price >= filters.minPrice &&
         price <= filters.maxPrice &&
         discount >= filters.minDiscount &&
-        discount <= filters.maxDiscount;
+        discount <= filters.maxDiscount
+      );
     });
 
-
     switch (sortOption) {
-      case 'price-low':
+      case "price-low":
         filtered.sort((a, b) => a.price - b.price);
         break;
-      case 'price-high':
+      case "price-high":
         filtered.sort((a, b) => b.price - a.price);
         break;
-      case 'discount-high':
+      case "discount-high":
         filtered.sort((a, b) => b.discount - a.discount);
         break;
       default:
@@ -79,68 +89,76 @@ const Fever = () => {
     setProducts(filtered);
   }, [filters, sortOption, allProducts]);
 
-  // useEffect(() => {
-  //   console.log("Filtered products (after update):", products);
-  // }, [products]);
-
-
-
-  // Handle filter changes
   const handleFilterChange = (e) => {
     const { name, value } = e.target;
-    setFilters(prev => ({
+    setFilters((prev) => ({
       ...prev,
-      [name]: parseInt(value)
+      [name]: parseInt(value),
     }));
   };
 
-  // Handle sort change
   const handleSortChange = (e) => {
     setSortOption(e.target.value);
   };
 
-  // Reset all filters
   const resetFilters = () => {
     setFilters({
       minPrice: 0,
       maxPrice: 5000,
       minDiscount: 0,
-      maxDiscount: 5000
+      maxDiscount: 5000,
     });
-    setSortOption('none');
+    setSortOption("none");
   };
 
-  // Toggle mobile filters
   const toggleMobileFilters = () => {
     setMobileFiltersOpen(!mobileFiltersOpen);
   };
 
-  // const dispatch = useDispatch();
+  const handleAddToCart = (product) => {
+    dispatch(addData({ ...product, quantity: 1 }));
+    toast.success("Item added to cart!");
+  };
 
-  // const handleAddToCart = (product) => {
-  //   dispatch(addToCart(product)); // Dispatch the action
-  // };
+  const increaseQuantity = (productId) => {
+    const product = products.find((p) => p._id === productId);
+    const item = cartItems.find((item) => item._id === productId);
+    dispatch(addData({ ...product, quantity: (item?.quantity || 0) + 1 }));
+  };
 
+  const decreaseQuantity = (productId) => {
+    const item = cartItems.find((item) => item._id === productId);
+    if (item && item.quantity > 1) {
+      dispatch(addData({ ...item, quantity: item.quantity - 1 }));
+    } else {
+      // Optional: remove item if quantity hits 0
+      dispatch(addData({ ...item, quantity: 0 }));
+    }
+  };
 
+  const getQuantity = (id) => {
+    const item = cartItems.find((i) => i._id === id);
+    return item ? item.quantity : 0;
+  };
 
   return (
     <>
       <Header />
       <Navbar />
       <div className="fever-container">
-        {/* Mobile Filter Button */}
         <button className="mobile-filter-btn" onClick={toggleMobileFilters}>
-          {mobileFiltersOpen ? 'Hide Filters' : 'Show Filters'}
-          <span className="filter-icon">{mobileFiltersOpen ? '✕' : '☰'}</span>
+          {mobileFiltersOpen ? "Hide Filters" : "Show Filters"}
+          <span className="filter-icon">{mobileFiltersOpen ? "✕" : "☰"}</span>
         </button>
 
         <div className="fever-content">
-          {/* Sidebar Filter */}
-          <div className={`sidebar ${mobileFiltersOpen ? 'mobile-open' : ''}`}>
+          <div className={`sidebar ${mobileFiltersOpen ? "mobile-open" : ""}`}>
             <div className="filter-card">
               <div className="filter-header">
                 <h3>Filters</h3>
-                <button className="reset-btn" onClick={resetFilters}>Reset All</button>
+                <button className="reset-btn" onClick={resetFilters}>
+                  Reset All
+                </button>
               </div>
 
               <div className="filter-section">
@@ -214,11 +232,7 @@ const Fever = () => {
 
               <div className="sort-container">
                 <label>Sort By:</label>
-                <select
-                  value={sortOption}
-                  onChange={handleSortChange}
-                  aria-label="Sort products"
-                >
+                <select value={sortOption} onChange={handleSortChange}>
                   <option value="none">Recommended</option>
                   <option value="price-low">Price: Low to High</option>
                   <option value="price-high">Price: High to Low</option>
@@ -229,54 +243,54 @@ const Fever = () => {
 
             <div className="products-container">
               {products.length > 0 ? (
-                products.map(product => (
-                  <div key={product._id} className="product-card">
-                    <Link to={`/ProductPage/${product._id}`} className="product-card-link">
-                      <div className="product-badge">
+                products.map((product) => {
+                  const quantity = getQuantity(product._id);
+                  return (
+                    <div key={product._id} className="product-card">
+                      <Link to={`/ProductPage/${product._id}`} className="product-card-link">
                         {product.discount > 0 && (
-                          <span className="discount-badge">Save ₹{product.discount}</span>
+                          <div className="product-badge">
+                            <span className="discount-badge">Save ₹{product.discount}</span>
+                          </div>
+                        )}
+                        <div className="product-image">
+                          <img
+                            src={`${API_URL}${product.media[0]?.url}`}
+                            alt={product.name}
+                            loading="lazy"
+                          />
+                        </div>
+                        <div className="product-details">
+                          <h3 className="product-title">{product.name}</h3>
+                          <p className="product-quantity">{product.quantity}</p>
+                          <div className="product-price">
+                            <span>₹{product.consumer_price}</span>
+                            {product.retail_price > product.consumer_price && (
+                              <span className="original-price">₹{product.retail_price}</span>
+                            )}
+                          </div>
+                        </div>
+                      </Link>
+
+                      <div className="product-actions">
+                        {quantity > 0 ? (
+                          <div className="quantity-controller">
+                            <button onClick={() => decreaseQuantity(product._id)}>-</button>
+                            <span>{quantity}</span>
+                            <button onClick={() => increaseQuantity(product._id)}>+</button>
+                          </div>
+                        ) : (
+                          <button
+                            onClick={() => handleAddToCart(product)}
+                            className="add-to-cart-btn"
+                          >
+                            🛒 Add to Cart
+                          </button>
                         )}
                       </div>
-                      <div className="product-image">
-                        <img
-                          src={`${API_URL}${product.media[0]?.url}`}
-                          alt={product.name}
-                          loading="lazy"
-                        />
-
-                      </div>
-                      <div className="product-details">
-                        <h3 className="product-title">{product.name}</h3>
-                        <p className="product-quantity">{product.quantity}</p>
-                        <div className="product-price">
-                          {product.consumer_price ? (
-                            <>
-                              <span>₹{parseFloat(product.consumer_price).toFixed(2)}</span>
-                              {product.retail_price &&
-                                parseFloat(product.retail_price) > parseFloat(product.consumer_price) && (
-                                  <span className="original-price">
-                                    ₹{parseFloat(product.retail_price).toFixed(2)}
-                                  </span>
-                                )}
-                            </>
-                          ) : (
-                            <span className="price-unavailable">Price unavailable</span>
-                          )}
-                        </div>
-                      </div>
-                    </Link>
-
-                    <div className="product-actions">
-                      <button
-                        // onClick={() => handleAddToCart(product)}
-                        className="add-to-cart-btn"
-                      >
-                        <span className="cart-icon">🛒</span> Add to Cart
-                      </button>
                     </div>
-                  </div>
-                ))
-
+                  );
+                })
               ) : (
                 <div className="no-products">
                   <h3>No products match your filters</h3>
@@ -295,6 +309,3 @@ const Fever = () => {
 };
 
 export default Fever;
-
-
-

@@ -34,6 +34,7 @@ import BannerCrud from "./Pages/BannerCrud/BannerCrud";
 import User from "./Pages/User/User";
 import Adminlogin from "./Pages/Admin/login";
 import AddToCart from "./components/AddToCart";
+import OrderSuccessModal from "./components/success";
 import { useEffect } from "react";
 import { toast } from "react-toastify";
 
@@ -61,6 +62,7 @@ function App() {
   return (
     <Routes>
       <Route path="/" element={<Dashboard />} />
+      <Route path="/success" element={<OrderSuccessModal />} />
       <Route path="/fever" element={<Fever />} />
       <Route path="/ProductPage/:id" element={<ProductPage/>} />
       <Route path="/FranchiseBanner" element={<FranchiseBanner />} />
