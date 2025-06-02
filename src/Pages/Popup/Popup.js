@@ -182,10 +182,6 @@ const handleChange = (e) => {
     else return (bytes / 1048576).toFixed(2) + ' MB';
   };
 
-  // useEffect(() => {
-  //   fetchSubCategories();
-  // }, [])
-
   const fetchSubCategories = async (category) => {
   try {
     const response = await axiosInstance.get(`/user/allSubcategories?category=${encodeURIComponent(category)}`);

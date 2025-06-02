@@ -1,0 +1,19 @@
+.pharmaAdminContainer {
+    display: flex;
+    /* gap: 40px; */
+    height: 100vh;
+}
+
+.pharmaSidebar {
+    width: 260px;
+    background-color: red;
+
+}
+
+.pharmaAdminContent {
+    /* background: #000; */
+    width: calc(100% - 260px);
+}
+.pharmaAdminContent{
+    padding: 20px;
+}
