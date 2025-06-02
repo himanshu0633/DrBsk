@@ -1,0 +1,196 @@
+/* Personal.css */
+.personal-wrapper {
+  width: 100%;
+  max-width: 100vw;
+  overflow: hidden;
+  padding: 2rem 0;
+  background: #fff;
+  position: relative;
+}
+
+.personal-title {
+  text-align: center;
+  margin-bottom: 1.5rem;
+  font-size: 1.75rem;
+  color: #333;
+  padding: 0 1rem;
+}
+
+.personal-scroll-container {
+  width: 100%;
+  overflow: hidden;
+  position: relative;
+}
+
+.personal-scroll-content {
+  display: flex;
+  gap: 1.25rem;
+  animation: personal-scroll 30s linear infinite;
+  will-change: transform;
+  width: max-content;
+}
+
+.personal-wrapper:hover .personal-scroll-content {
+  animation-play-state: paused;
+}
+
+.personal-card {
+  flex: 0 0 auto;
+  min-width: 9rem;
+  text-align: center;
+  transition: transform 0.3s ease;
+  cursor: pointer;
+}
+
+.personal-card:hover {
+  transform: translateY(-0.5rem);
+}
+
+.personal-image-wrapper {
+  padding: 1.25rem;
+  border-radius: 0.75rem;
+  box-shadow: 0 0.25rem 0.5rem rgba(0, 0, 0, 0.08);
+  margin: 0 auto;
+  width: fit-content;
+  transition: transform 0.3s ease;
+}
+
+.personal-card:hover .personal-image-wrapper {
+  transform: scale(1.05);
+}
+
+.personal-image {
+  height: 5rem;
+  width: auto;
+  object-fit: contain;
+  aspect-ratio: 1/1;
+}
+
+.personal-item-title {
+  margin-top: 0.75rem;
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: #444;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  padding: 0 0.5rem;
+}
+
+@keyframes personal-scroll {
+  0% {
+    transform: translateX(0);
+  }
+  100% {
+    transform: translateX(-50%);
+  }
+}
+
+/* Responsive Breakpoints */
+@media (max-width: 1200px) {
+  .personal-card {
+    min-width: 8.5rem;
+  }
+  
+  .personal-image {
+    height: 4.5rem;
+  }
+}
+
+@media (max-width: 992px) {
+  .personal-title {
+    font-size: 1.5rem;
+  }
+  
+  .personal-card {
+    min-width: 8rem;
+  }
+  
+  .personal-scroll-content {
+    gap: 1rem;
+  }
+  
+  .personal-image {
+    height: 4rem;
+  }
+  
+  .personal-item-title {
+    font-size: 0.9rem;
+  }
+}
+
+@media (max-width: 768px) {
+  .personal-wrapper {
+    padding: 1.5rem 0;
+  }
+  
+  .personal-title {
+    font-size: 1.3rem;
+    margin-bottom: 1.25rem;
+  }
+  
+  .personal-scroll-content {
+    animation-duration: 25s;
+    gap: 0.75rem;
+  }
+  
+  .personal-card {
+    min-width: 7rem;
+  }
+  
+  .personal-image-wrapper {
+    padding: 1rem;
+  }
+  
+  .personal-image {
+    height: 3.5rem;
+  }
+  
+  .personal-item-title {
+    font-size: 0.85rem;
+  }
+}
+
+@media (max-width: 576px) {
+  .personal-title {
+    font-size: 1.2rem;
+    margin-bottom: 1rem;
+  }
+  
+  .personal-scroll-content {
+    animation-duration: 20s;
+    gap: 0.5rem;
+  }
+  
+  .personal-card {
+    min-width: 6rem;
+  }
+  
+  .personal-image-wrapper {
+    padding: 0.75rem;
+    border-radius: 0.5rem;
+  }
+  
+  .personal-image {
+    height: 3rem;
+  }
+  
+  .personal-item-title {
+    font-size: 0.8rem;
+    margin-top: 0.5rem;
+  }
+}
+
+@media (max-width: 400px) {
+  .personal-card {
+    min-width: 5.5rem;
+  }
+  
+  .personal-image {
+    height: 80px;
+  }
+  
+  .personal-item-title {
+    font-size: 0.75rem;
+  }
+}

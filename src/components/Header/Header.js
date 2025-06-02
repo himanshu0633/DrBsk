@@ -1,0 +1,281 @@
+import React, { useState, useEffect, useRef } from 'react';
+import './Header.css';
+import '../../App.css'
+import logo from '../../logo/logo1.jpg';
+
+const Header = () => {
+  const [showDropdown, setShowDropdown] = useState(false);
+  const [selectedLanguage, setSelectedLanguage] = useState('English');
+  const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
+  const dropdownRef = useRef(null);
+
+  useEffect(() => {
+    const handleResize = () => {
+      setIsMobile(window.innerWidth < 768);
+    };
+
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
+
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
+        setShowDropdown(false);
+      }
+    };
+
+    if (showDropdown) {
+      document.addEventListener('mousedown', handleClickOutside);
+    }
+
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, [showDropdown]);
+
+  const toggleDropdown = () => {
+    setShowDropdown(!showDropdown);
+  };
+
+
+
+  const handleLogout = (e) => {
+    e.preventDefault();
+    console.log('Logging out...');
+    const userData = sessionStorage.clear('userData');
+    window.location.href = '/login';
+
+  };
+
+  return (
+    <div className='container-manual'>
+      <header className="header-container">
+        {/* <div className="header ">
+          Left Section
+          <div className="left-section">
+            <a className='logo_size' href="/">
+              <img src={logo} alt="Logo" className="logo" />
+            </a>
+
+            {!isMobile && (
+              <div className="location-box order_buttons ">
+                <span className="location-icon">📍</span>
+                <span className="pincode">560068</span>
+                <span className="location-name">Bommanahalli (Bengaluru)</span>
+                <span className="dropdown-icon">▼</span>
+              </div>
+            )}
+          </div>
+          Right Section
+          <div className="right-section">
+            <a href="/Prescription" className="no-decoration">
+              {!isMobile && (
+                <div className="upload-box">
+                  <span className="upload-icon">📄</span>
+                  <span>Upload Prescription</span>
+                </div>
+              )}
+            </a>
+            <a href="/Cart" className="no-decoration">
+              {!isMobile && <div className="cart-icon">🛒 Cart</div>}
+            </a>
+            {!isMobile && (
+              <a href="/Notifications" className="no-decoration">
+                <div className="bell-icon">🔔</div>
+              </a>
+            )}
+            <div className="signin-dropdown-wrapper" ref={dropdownRef}>
+              <div className="signin-btn" onClick={toggleDropdown}>
+                <div className="signin-icon">👤</div>
+                {!isMobile && <span>Sign In</span>}
+              </div>
+              {showDropdown && (
+                <div className="dropdown-menu">
+                  <a className="dropdown-item" href="/EditProfile">
+                    <span className="dropdown-icon">👤</span> My Profile
+                  </a>
+                  <a className="dropdown-item" href="/orders">
+                    <span className="dropdown-icon">📦</span> My Orders
+                  </a>
+                  <a className="dropdown-item" href="/patients">
+                    <span className="dropdown-icon">👩‍⚕️</span> Patients
+                  </a>
+                  <a className="dropdown-item" href="/notifications">
+                    <span className="dropdown-icon">🔔</span> Notifications
+                  </a>
+                  <a className="dropdown-item" href="/consultations">
+                    <span className="dropdown-icon">💬</span> Consultations
+                  </a>
+                  <a href="#" className="dropdown-item" onClick={handleLogout}>
+                    <span className="dropdown-icon">🚪</span> Logout
+                  </a>
+                </div>
+              )}
+            </div>
+          </div>
+        </div> */}
+
+        <div className=" ">
+          <div className='header1'>
+            <a className='logo_size' href="/">
+              <img src={logo} alt="Logo" className="logo" />
+            </a>
+            <div className='headerLocationHideLgScreen flexProp'>
+              <div className="location-box order_4 ">
+                <span className="location-icon">📍</span>
+                <span className="pincode">560068</span>
+                <span className="location-name">Bommanahalli (Bengaluru)</span>
+                <span className="dropdown-icon">▼</span>
+              </div>
+              <a href="/Prescription" className="no-decoration order_5">
+                <div className="upload-box">
+                  <span className="upload-icon">📄</span>
+                  <span className="location-name">Upload Prescription</span>
+                </div>
+              </a>
+            </div>
+            <div className='navbarIconFlex '>
+              <a href="/Cart" className="no-decoration">
+                <div className="cart-icon">🛒 Cart</div>
+              </a>
+              <a href="/Notifications" className="no-decoration">
+                <div className="bell-icon">🔔</div>
+              </a>
+              <div className="signin-dropdown-wrapper" ref={dropdownRef}>
+                <div className="signin-btn" onClick={toggleDropdown}>
+                  <div className="signin-icon">👤</div>
+                  <span>Sign In</span>
+                </div>
+                {showDropdown && (
+                  <div className="dropdown-menu">
+                    <a className="dropdown-item" href="/EditProfile">
+                      <span className="dropdown-icon">👤</span> My Profile
+                    </a>
+                    <a className="dropdown-item" href="/orders">
+                      <span className="dropdown-icon">📦</span> My Orders
+                    </a>
+                    <a className="dropdown-item" href="/patients">
+                      <span className="dropdown-icon">👩‍⚕️</span> Patients
+                    </a>
+                    <a className="dropdown-item" href="/notifications">
+                      <span className="dropdown-icon">🔔</span> Notifications
+                    </a>
+                    <a className="dropdown-item" href="/consultations">
+                      <span className="dropdown-icon">💬</span> Consultations
+                    </a>
+                    <a href="#" className="dropdown-item" onClick={handleLogout}>
+                      <span className="dropdown-icon">🚪</span> Logout
+                    </a>
+                  </div>
+                )}
+              </div>
+            </div>
+          </div>
+          <div className='headerLocationShowSmlScreen flexProp'>
+            <div className="location-box order_4 ">
+              <span className="location-icon">📍</span>
+              <span className="pincode">560068</span>
+              <span className="location-name">Bommanahalli (Bengaluru)</span>
+              <span className="dropdown-icon">▼</span>
+            </div>
+            <a href="/Prescription" className="no-decoration order_5">
+              <div className="upload-box">
+                <span className="upload-icon">📄</span>
+                <span className="location-name">Upload Prescription</span>
+              </div>
+            </a>
+          </div>
+        </div>
+
+
+
+        {/* Mobile only elements */}
+        {/* {isMobile && (
+          <div className="mobile-bottom-bar">
+            <a href="/" className="mobile-icon">
+              <span>📍</span>
+              <span className="mobile-label">Location</span>
+            </a>
+            <a href="/Prescription" className="mobile-icon">
+              <span>📄</span>
+              <span className="mobile-label">Upload</span>
+            </a>
+            <a href="/Cart" className="mobile-icon">
+              <span>🛒</span>
+              <span className="mobile-label">Cart</span>
+            </a>
+            <a href="/Notifications" className="mobile-icon">
+              <span>🔔</span>
+              <span className="mobile-label">Alerts</span>
+            </a>
+          </div>
+        )} */}
+      </header>
+    </div>
+  );
+};
+
+export default Header;
+
+
+// <div className="header  ">
+//         <a className='logo_size' href="/">
+//           <img src={logo} alt="Logo" className="logo" />
+//         </a>
+
+//         <div className='w_200 flexProp flex_wrap'>
+//           <div className="location-box order_4 ">
+//             <span className="location-icon">📍</span>
+//             <span className="pincode">560068</span>
+//             <span className="location-name">Bommanahalli (Bengaluru)</span>
+//             <span className="dropdown-icon">▼</span>
+//           </div>
+
+//           <a href="/Prescription" className="no-decoration order_5">
+//             <div className="upload-box">
+//               <span className="upload-icon">📄</span>
+//               <span className="location-name">Upload Prescription</span>
+//             </div>
+//           </a>
+
+//           <div className='navbarIconFlex '>
+//             <a href="/Cart" className="no-decoration">
+//               <div className="cart-icon">🛒 Cart</div>
+//             </a>
+
+//             <a href="/Notifications" className="no-decoration">
+//               <div className="bell-icon">🔔</div>
+//             </a>
+
+//             <div className="signin-dropdown-wrapper" ref={dropdownRef}>
+//               <div className="signin-btn" onClick={toggleDropdown}>
+//                 <div className="signin-icon">👤</div>
+//                 <span>Sign In</span>
+//               </div>
+//               {showDropdown && (
+//                 <div className="dropdown-menu">
+//                   <a className="dropdown-item" href="/EditProfile">
+//                     <span className="dropdown-icon">👤</span> My Profile
+//                   </a>
+//                   <a className="dropdown-item" href="/orders">
+//                     <span className="dropdown-icon">📦</span> My Orders
+//                   </a>
+//                   <a className="dropdown-item" href="/patients">
+//                     <span className="dropdown-icon">👩‍⚕️</span> Patients
+//                   </a>
+//                   <a className="dropdown-item" href="/notifications">
+//                     <span className="dropdown-icon">🔔</span> Notifications
+//                   </a>
+//                   <a className="dropdown-item" href="/consultations">
+//                     <span className="dropdown-icon">💬</span> Consultations
+//                   </a>
+//                   <a href="#" className="dropdown-item" onClick={handleLogout}>
+//                     <span className="dropdown-icon">🚪</span> Logout
+//                   </a>
+//                 </div>
+//               )}
+//             </div>
+//           </div>
+//         </div>
+//       </div>
