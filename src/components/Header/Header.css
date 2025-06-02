@@ -19,6 +19,58 @@
   margin-bottom: 0px !important;
 }
 
+.position_relative {
+  position: relative;
+}
+
+.pincodeUi {
+  position: absolute;
+  top: 50px;
+  left: 50%;
+  transform: translateX(-50%);
+  background-color: white;
+  width: 100%;
+  border: 1px solid #ddd;
+  padding: 15px;
+}
+
+.pincodeInput {
+  width: 100%;
+  padding: 10px;
+  border: 1px solid #ddd;
+  border-radius: 5px;
+  outline: none;
+  font-size: 14px;
+}
+
+.pincodeLabel {
+  font-size: 15px;
+  color: black;
+  text-align: start !important;
+}
+
+.chooseLocationHead {
+  font-size: 18px;
+  color: black;
+  margin-bottom: 10px;
+  text-align: start !important;
+}
+
+.borderlocation {
+  border: 1px solid #ddd;
+  margin: 10px 0px;
+  background-color: #ddd;
+}
+
+.submitBtnForm {
+  padding: 7px 15px;
+  margin-top: 10px;
+  background-color: #ffa500;
+  outline: none;
+  border: none;
+  border-radius: 5px;
+  color: white;
+}
 
 /* .left-section,
 .right-section {
@@ -306,12 +358,13 @@
   .headerLocationShowSmlScreen {
     display: flex !important;
     padding: 20px 10px;
- 
+
   }
 
   .headerLocationHideLgScreen {
     display: none;
   }
+
   .header1 {
     padding: 0px 15px;
   }
