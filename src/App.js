@@ -84,7 +84,7 @@ function App() {
       <Route path="/Prescription" element={<Prescription />} />
       <Route path="/Phone" element={<Phone />} />
       {/* {Admin Panel Routes} */}
-      <Route path="/admin/AddProduct" element={<AddProduct />} />
+      {/* <Route path="/admin/AddProduct" element={<AddProduct />} />
       <Route path="/admin/Board" element={<Board />} />
       <Route path="/admin/Category" element={<Category />} />
       <Route path="/admin/Settings" element={<Settings />} />
@@ -93,7 +93,7 @@ function App() {
       <Route path="/admin/Popup" element={<Popup />} />
       <Route path="/admin/SubCategory" element={<SubCategory />} />
       <Route path="/admin/BannerCrud" element={<BannerCrud />} />
-      <Route path="/admin/User" element={<User />} />
+      <Route path="/admin/User" element={<User />} /> */}
       {/* <Route index element={<Dashboard />} />    */}
       {/* Future pages can be added here */}
       {/* </Route> */}
