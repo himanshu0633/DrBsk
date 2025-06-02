@@ -1,35 +1,15 @@
-import React, { useState } from 'react'
+import React, { useEffect, useState } from 'react'
+import axiosInstance from '../../../components/AxiosInstance';
+import API_URL from '../../../config';
 
 const PharmaCategory = () => {
     const [showModal, setShowModal] = useState(false);
+    const [isSubmitted, setIsSubmitted] = useState(false);
+    const [categoryList, setCategoryList] = useState([]);
     const [newCategory, setNewCategory] = useState({
         name: '',
         image: null,
     });
-
-    const users = [
-        {
-            name: 'Herbal Shampoo',
-            description: 'Natural herbal shampoo for hair fall control.',
-            category_id: 'C101',
-            image: 'https://via.placeholder.com/80',
-            deleted_at: null,
-        },
-        {
-            name: 'Neem Face Wash',
-            description: 'Anti-acne face wash with neem extracts.',
-            category_id: 'C102',
-            image: 'https://via.placeholder.com/80',
-            deleted_at: '2024-12-01',
-        },
-        {
-            name: 'Aloe Vera Gel',
-            description: 'Soothing gel for skin hydration.',
-            category_id: 'C103',
-            image: 'https://via.placeholder.com/80',
-            deleted_at: null,
-        },
-    ];
 
     const handleInputChange = (e) => {
         const { name, value, files } = e.target;
@@ -44,6 +24,47 @@ const PharmaCategory = () => {
         console.log('Submitting category:', newCategory);
         setShowModal(false);
     };
+    const handleCreateCategory = async (e) => {
+        e.preventDefault();
+
+        const formData = new FormData();
+        formData.append('name', newCategory.name);
+        formData.append('image', newCategory.image);
+
+        try {
+            const response = await axiosInstance.post(
+                '/user/createCategory',
+                formData
+            );
+
+            console.log("API Response:", response.data);
+            setShowModal(false);
+            fetchData(); // refresh the list
+        } catch (error) {
+            console.error("Error submitting category:", error);
+            setShowModal(false);
+            alert("There was an error submitting the category. Please try again.");
+        }
+    };
+
+
+    useEffect(() => {
+        fetchData();
+    }, [])
+
+    const fetchData = async () => {
+        try {
+            const response = await axiosInstance.get('/user/allcategories');
+            console.log("Fetched categories:", response.data);
+            setCategoryList(response.data);
+            setShowModal(false)
+        } catch (error) {
+            console.error("Error fetching categories:", error);
+        }
+    };
+
+ 
+
     return (
         <div>
             <div className="admin-page">
@@ -66,19 +87,20 @@ const PharmaCategory = () => {
                         </tr>
                     </thead>
                     <tbody>
-                        {users.map((user, index) => (
+                        {categoryList.map((user, index) => (
                             <tr key={index}>
                                 <td>{user.name}</td>
                                 <td>{user.description}</td>
                                 <td>{user.category_id}</td>
                                 <td>
                                     <img
-                                        src={user.image}
+                                        src={`${API_URL}/${user.image}`}
                                         alt={user.name}
                                         width="60"
                                         height="60"
                                         style={{ borderRadius: '6px' }}
                                     />
+
                                 </td>
                                 <td>
                                     {user.deleted_at ? (
@@ -118,7 +140,7 @@ const PharmaCategory = () => {
                                     required
                                 />
                                 <div className="modal-actions">
-                                    <button type="submit" className="btn-save">Save</button>
+                                    <button onClick={handleCreateCategory} type="submit" className="btn-save">Save</button>
                                     <button type="button" className="btn-cancel" onClick={() => setShowModal(false)}>Cancel</button>
                                 </div>
                             </form>
