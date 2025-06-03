@@ -3,7 +3,7 @@ import './Slider.css';
 import axiosInstance from '../AxiosInstance';
 import API_URL from '../../config';
 
-const Slider = () => {
+const Slider2 = () => {
   const [loaded, setLoaded] = useState(false);
   const [banners, setBanners] = useState([]);
 
@@ -15,7 +15,7 @@ const Slider = () => {
 
       const mainBanners = bannerData.filter(
         (banner) =>
-          banner.type === "carousel1" &&
+          banner.type === "carousel2" &&
           Array.isArray(banner.slider_image) &&
           banner.slider_image.length > 0
       );
@@ -70,4 +70,4 @@ const Slider = () => {
   );
 };
 
-export default Slider;
+export default Slider2;

@@ -12,6 +12,7 @@ import ProductCarousel from "../../components/ProductCarousel/ProductCarousel";
 import Footer from "../../components/Footer/Footer";
 import Slider from "../../components/Slider/Slider";
 import MobileMenu from "../../components/MobileMenu";
+import Slider2 from "../../components/Slider/Slider2";
 // import "./App.css";
 
 function Dashboard() {
@@ -28,10 +29,10 @@ function Dashboard() {
       <Categories />
       {/* <CarouselBanner /> */}
       <PromoSection />
-      <Slider />
+      <Slider2 />
       <Personal />
       {/* <CarouselBanner /> */}
-      <ProductCarousel title="New Arrivals" backgroundColor="#fae2c8" />
+      {/* <ProductCarousel title="New Arrivals" backgroundColor="#fae2c8" /> */}
       {/* <ProductCarousel title="Personal Care" backgroundColor="#f5bac6" />
       <ProductCarousel title="In the spotlight" backgroundColor="#dfdefb" /> */}
       <div className="banner22"></div>

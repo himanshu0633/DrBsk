@@ -109,11 +109,39 @@ const AddToCart = () => {
     currency: "INR",
     name: "My Shop",
     description: "Order Payment",
-    handler: function (response) {
-      toast.success("Payment successful!");
+  handler: async function (response) {
+  try {
+    toast.success("Payment successful!");
+
+    const userData = JSON.parse(sessionStorage.getItem('userData'));
+    const orderPayload = {
+      userId: userData?._id,
+      items: cartItems.map(item => ({
+        productId: item._id,
+        name: item.name,
+        quantity: item.quantity || 1,
+        price: parseFloat(item.consumer_price || item.price || 0),
+      })),
+      address: formData.selectedAddress,
+      phone: formData.phone || "9999999999",
+      totalAmount: totalPrice,
+      paymentId: response.razorpay_payment_id,
+    };
+
+    const res = await axiosInstance.post('/api/createOrder', orderPayload);
+
+    if (res.status === 201) {
       dispatch(clearProducts());
       navigate("/success");
-    },
+    } else {
+      toast.error("Failed to place order.");
+    }
+  } catch (error) {
+    console.error("Order creation error:", error);
+    toast.error("Something went wrong while placing the order.");
+  }
+},
+
     prefill: {
       name: "Test User",
       email: "test@example.com",

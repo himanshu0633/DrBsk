@@ -1,58 +1,81 @@
-import React, { useEffect, useRef, useState } from 'react';
-import './Banner.css';
-import b1 from '../../logo/b1.webp'; // Import your first banner image
-import b2 from '../../logo/b2.webp'; // Import your second banner image
+import React, { useEffect, useRef, useState } from "react";
+import "./Banner.css";
+import axiosInstance from "../AxiosInstance";
+import API_URL from "../../config";
 
 const Banner = () => {
-  // Banner images array
-  const originalImages = [b1, b2];
-  // Create a cloned set for seamless looping
-  const images = [originalImages[originalImages.length - 1], ...originalImages, originalImages[0]];
-  
+  const [banners, setBanners] = useState([]);
   const [currentIndex, setCurrentIndex] = useState(1); // Start at first original image
   const [transitionEnabled, setTransitionEnabled] = useState(true);
   const intervalRef = useRef(null);
 
-  // Auto slide functionality
+  const fetchData = async () => {
+    try {
+      const response = await axiosInstance.get("/user/allBanners");
+      const bannerData = response.data;
+
+      // Filter only type === 'main' and ensure image exists
+      const mainBanners = bannerData.filter(
+        (banner) =>
+          banner.type === "main" &&
+          Array.isArray(banner.slider_image) &&
+          banner.slider_image.length > 0
+      );
+
+      if (mainBanners.length > 0) {
+        setBanners([
+          mainBanners[mainBanners.length - 1], // clone last
+          ...mainBanners,
+          mainBanners[0], // clone first
+        ]);
+      }
+    } catch (error) {
+      console.error("Error fetching banners:", error);
+    }
+  };
+
+  useEffect(() => {
+    fetchData();
+  }, []);
+
   const startAutoSlide = () => {
     intervalRef.current = setInterval(() => {
-      setCurrentIndex(prev => prev + 1);
+      setCurrentIndex((prev) => prev + 1);
     }, 3000);
   };
 
-  // Initialize auto slide
   useEffect(() => {
     startAutoSlide();
     return () => {
-      if (intervalRef.current) {
-        clearInterval(intervalRef.current);
-      }
+      clearInterval(intervalRef.current);
     };
   }, []);
 
-  // Handle seamless looping
   useEffect(() => {
-    // When we reach the last cloned item, instantly reset to the first original
-    if (currentIndex === images.length - 1) {
+    if (banners.length === 0) return;
+
+    if (currentIndex === banners.length - 1) {
       const timer = setTimeout(() => {
         setTransitionEnabled(false);
         setCurrentIndex(1);
-      }, 500); // Should match transition duration
-      return () => clearTimeout(timer);
-    }
-    // When we reach the first cloned item, instantly reset to the last original
-    else if (currentIndex === 0) {
-      const timer = setTimeout(() => {
-        setTransitionEnabled(false);
-        setCurrentIndex(images.length - 2);
       }, 500);
       return () => clearTimeout(timer);
-    }
-    // Enable transitions for normal slides
-    else if (!transitionEnabled) {
+    } else if (currentIndex === 0) {
+      const timer = setTimeout(() => {
+        setTransitionEnabled(false);
+        setCurrentIndex(banners.length - 2);
+      }, 500);
+      return () => clearTimeout(timer);
+    } else if (!transitionEnabled) {
       setTimeout(() => setTransitionEnabled(true), 50);
     }
-  }, [currentIndex, images.length, transitionEnabled]);
+  }, [currentIndex, banners.length, transitionEnabled]);
+
+  if (banners.length === 0) {
+    return <div className="banner-carousel-loading">Loading banners...</div>;
+  }
+
+  const originalBanners = banners.slice(1, banners.length - 1);
 
   return (
     <div className="banner-carousel-fullwidth">
@@ -61,28 +84,36 @@ const Banner = () => {
           className="banner-carousel-track"
           style={{
             transform: `translateX(-${currentIndex * 100}%)`,
-            transition: transitionEnabled ? 'transform 0.5s ease-in-out' : 'none'
+            transition: transitionEnabled
+              ? "transform 0.5s ease-in-out"
+              : "none",
           }}
         >
-          {images.map((img, index) => (
-            <div className="banner-carousel-slide" key={`banner-slide-${index}`}>
-              <img 
-                src={img} 
-                alt={`Banner ${index}`} 
-                className="banner-carousel-image" 
+          {banners.map((banner, index) => (
+            <div
+              className="banner-carousel-slide"
+              key={`banner-slide-${index}`}
+            >
+              <img
+                src={`${API_URL}/${banner.slider_image[0]}`}
+                alt={`Banner ${index}`}
+                className="banner-carousel-image"
                 loading="lazy"
               />
             </div>
           ))}
         </div>
       </div>
-      
-      {/* Navigation dots */}
+
       <div className="banner-carousel-indicators">
-        {originalImages.map((_, index) => (
+        {originalBanners.map((_, index) => (
           <button
             key={`banner-indicator-${index}`}
-            className={`banner-carousel-dot ${index === (currentIndex - 1) % originalImages.length ? 'banner-carousel-dot-active' : ''}`}
+            className={`banner-carousel-dot ${
+              index === (currentIndex - 1) % originalBanners.length
+                ? "banner-carousel-dot-active"
+                : ""
+            }`}
             onClick={() => {
               setCurrentIndex(index + 1);
             }}
