@@ -44,6 +44,7 @@ import AddNewProduct from "./Pages/pharma-admin/component/AddNewProduct";
 import PharmaBanner from "./Pages/pharma-admin/component/PharmaBanner";
 import PharmaUser from "./Pages/pharma-admin/component/PharmaUser";
 import PharmaSetting from "./Pages/pharma-admin/component/PharmaSetting";
+import PharmaSubCategory from "./Pages/pharma-admin/component/PharmaSubCategory";
 
 
 
@@ -102,6 +103,7 @@ function App() {
       <Route path="/pharma-admin" element={<PharmaAdmin />}>
         <Route path="dashboard" element={<PharmaDashboard />} />
         <Route path="category" element={<PharmaCategory />} />
+        <Route path="subCategory" element={<PharmaSubCategory />} />
         <Route path="products" element={<PharmaProducts />} />
         <Route path="addNewProduct" element={<AddNewProduct />} />
         <Route path="banner" element={<PharmaBanner />} />

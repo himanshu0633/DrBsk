@@ -11,9 +11,19 @@
 }
 
 .pharmaAdminContent {
-    /* background: #000; */
     width: calc(100% - 260px);
 }
-.pharmaAdminContent{
+
+.pharmaAdminContent {
     padding: 20px;
+}
+
+.selectCss {
+    width: 100%;
+    border: 1px solid #ccc;
+    box-sizing: border-box;
+    margin-bottom: 10px;
+}
+select,input:focus{
+    outline: none;
 }
