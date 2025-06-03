@@ -39,6 +39,10 @@ const PharmaSidebar = () => {
                             <Package className="nav-icon" size={20} />
                             <span className="nav-text">Products</span>
                         </NavLink>
+                        <NavLink to="/pharma-admin/orders" className="admin-nav-link" onClick={() => setIsOpen(false)}>
+                            <Package className="nav-icon" size={20} />
+                            <span className="nav-text">Orders</span>
+                        </NavLink>
                         <NavLink to="/pharma-admin/banner" className="admin-nav-link" onClick={() => setIsOpen(false)}>
                             <Image className="nav-icon" size={20} />
                             <span className="nav-text">Banner</span>

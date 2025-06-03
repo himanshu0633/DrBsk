@@ -11,8 +11,8 @@ const PharmaBanner = () => {
     const bannerList = [
         { id: 1, title: "main" },
         { id: 2, title: "carousel" },
-        { id: 3, title: "1st carousel" },
-        { id: 4, title: "2nd carousel" }
+        { id: 3, title: "carousel 1" },
+        { id: 4, title: "carousel 2" }
     ];
 
     const handleInputChange = (e) => {
@@ -81,7 +81,7 @@ const PharmaBanner = () => {
                 <div className="modal-overlay">
                     <div className="modal">
                         <h3>Add New Banner</h3>
-                        <form onSubmit={handleBannerSubmit}>
+                        <form >
                             <select
                                 name="category_id"
                                 value={formData.category_id || ''}
@@ -106,7 +106,7 @@ const PharmaBanner = () => {
                             />
 
                             <div className="modal-actions">
-                                <button type="submit" className="btn-save">Save</button>
+                                <button type="submit" className="btn-save" onSubmit={handleBannerSubmit}>Save</button>
                                 <button
                                     type="button"
                                     className="btn-cancel"

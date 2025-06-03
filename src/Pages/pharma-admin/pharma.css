@@ -7,7 +7,6 @@
 .pharmaSidebar {
     width: 260px;
     background-color: red;
-
 }
 
 .pharmaAdminContent {
@@ -42,8 +41,19 @@ input:focus {
     justify-content: space-between;
     align-items: center;
     padding: 10px;
+    flex-wrap: wrap;
+    gap: 10px;
 }
-.bannerImg{
+
+.clrOrange {
+    color: rgb(233, 156, 13);
+}
+
+.clrGreen {
+    color: green;
+}
+
+.bannerImg {
     width: 100%;
     height: 150px;
     object-fit: cover;
