@@ -154,13 +154,14 @@ const handleAddToCart = () => {
                   <span>Bestseller</span>
                 </div>
               </div>
-              <div className="image-thumbnails">
-                {[1, 2, 3, 4].map((item) => (
-                  <div key={item} className="thumbnail">
-                    <img src={`${API_URL}${product.media[0]?.url}`} />
-                  </div>
-                ))}
-              </div>
+             <div className="image-thumbnails">
+  {product.media.map((mediaItem, index) => (
+    <div key={index} className="thumbnail">
+      <img src={`${API_URL}${mediaItem.url}`} alt={`Thumbnail ${index + 1}`} />
+    </div>
+  ))}
+</div>
+
             </div>
 
             {/* Product Info Section */}
@@ -226,7 +227,7 @@ const handleAddToCart = () => {
                   <CalendarDays className="detail-icon" size={16} />
                   <div>
                     <strong>Expires on or after:</strong>
-                    <span>31/12/2025</span>
+                    <span>{product?.expires_on || "..." }</span>
                   </div>
                 </div>
 
@@ -238,13 +239,13 @@ const handleAddToCart = () => {
                   </div>
                 </div>
 
-                <div className="product-detail">
+                {/* <div className="product-detail">
                   <User className="detail-icon" size={16} />
                   <div>
                     <strong>Consumption:</strong>
                     <span>Oral</span>
                   </div>
-                </div>
+                </div> */}
               </div>
 
               <div className="price-section">
@@ -341,12 +342,12 @@ const handleAddToCart = () => {
             >
               Description
             </button>
-            <button
+            {/* <button
               className={`tab-btn ${activeTab === 'ingredients' ? 'active' : ''}`}
               onClick={() => setActiveTab('ingredients')}
             >
               Ingredients
-            </button>
+            </button> */}
             <button
               className={`tab-btn ${activeTab === 'directions' ? 'active' : ''}`}
               onClick={() => setActiveTab('directions')}
@@ -365,7 +366,7 @@ const handleAddToCart = () => {
             {activeTab === 'description' && (
               <div className="description-content">
                 <h3>Product Description</h3>
-                <p>Cough Drops (Coolsa) - JAR is designed to provide soothing relief for coughs and sore throats. The formulation includes menthol for a cooling effect and eucalyptus oil for additional respiratory benefits. Our drops are sugar-free and suitable for diabetics.</p>
+                <p>{product?.description}</p>
 
                 <div className="feature-grid">
                   <div className="feature-item">
@@ -408,11 +409,11 @@ const handleAddToCart = () => {
 
                 <h3>Benefits</h3>
                 <ul className="benefits-list">
-                  <li>Provides fast relief from cough and throat irritation</li>
-                  <li>Cooling menthol effect that soothes the throat</li>
+                  <li>{product?.benefits}</li>
+                  {/* <li>Cooling menthol effect that soothes the throat</li>
                   <li>Helps clear nasal passages for easier breathing</li>
                   <li>Long-lasting effect with each drop</li>
-                  <li>No artificial colors or preservatives</li>
+                  <li>No artificial colors or preservatives</li> */}
                 </ul>
               </div>
             )}
@@ -455,18 +456,18 @@ const handleAddToCart = () => {
                     <div className="step-number">1</div>
                     <div className="step-content">
                       <h4>Dosage</h4>
-                      <p>Adults and children 6 years and older: Allow 1 drop to dissolve slowly in the mouth. May be repeated every 2 hours as needed.</p>
+                      <p>{product?.dosage}.</p>
                     </div>
                   </div>
-                  <div className="usage-step">
+                  {/* <div className="usage-step">
                     <div className="step-number">2</div>
                     <div className="step-content">
                       <h4>Frequency</h4>
                       <p>Do not exceed 10 drops in 24 hours. For children under 12 years, consult a doctor before use.</p>
                     </div>
-                  </div>
+                  </div> */}
                   <div className="usage-step">
-                    <div className="step-number">3</div>
+                    <div className="step-number">2</div>
                     <div className="step-content">
                       <h4>Method</h4>
                       <p>Allow drop to dissolve slowly in the mouth. Do not chew or swallow whole. For best results, avoid eating or drinking for 15 minutes after use.</p>
@@ -477,7 +478,7 @@ const handleAddToCart = () => {
                 <div className="precautions">
                   <h3>Precautions</h3>
                   <ul>
-                    <li>Stop use and ask a doctor if cough persists for more than 7 days or is accompanied by fever</li>
+                    <li>Stop use and ask a doctor if illness persists for more than 7 days or is accompanied by fever</li>
                     <li>Keep out of reach of children. In case of accidental overdose, seek professional help immediately</li>
                     <li>Store at room temperature away from moisture and heat</li>
                     <li>Do not use if seal is broken or missing</li>
