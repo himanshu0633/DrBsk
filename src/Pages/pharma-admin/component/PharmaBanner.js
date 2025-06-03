@@ -40,7 +40,7 @@ const PharmaBanner = () => {
         try {
             const response = await axiosInstance.post('/user/createBanner', data);
             console.log("API Response:", response.data);
-            alert("Banner uploaded successfully!");
+            // alert("Banner uploaded successfully!");
             setFormData({ image: '', category_id: '' });
             setShowModal(false);
         } catch (error) {

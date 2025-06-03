@@ -47,6 +47,7 @@ import PharmaUser from "./Pages/pharma-admin/component/PharmaUser";
 import PharmaSetting from "./Pages/pharma-admin/component/PharmaSetting";
 import PharmaSubCategory from "./Pages/pharma-admin/component/PharmaSubCategory";
 import PharmaOrder from "./Pages/pharma-admin/component/PharmaOrder";
+import MyChart from "./Pages/pharma-admin/component/Mychart";
 
 
 
@@ -113,6 +114,7 @@ function App() {
         <Route path="banner" element={<PharmaBanner />} />
         <Route path="user" element={<PharmaUser />} />
         <Route path="settings" element={<PharmaSetting />} />
+        <Route path="chart" element={<MyChart />} />
       </Route>
 
 
