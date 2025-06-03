@@ -391,3 +391,11 @@
   justify-content: space-between;
   align-items: center;
 }
+
+.adminLayout{
+  display: flex;
+}
+
+/* .adminSidebarLayout{
+width: 260px;
+} */

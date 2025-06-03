@@ -8,6 +8,10 @@ const Header = () => {
   const [selectedLanguage, setSelectedLanguage] = useState('English');
   const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
   const dropdownRef = useRef(null);
+  const [showInput, setShowInput] = useState(false);
+  const [pincode, setPincode] = useState('');
+  const [locationName, setLocationName] = useState('Bommanahalli (Bengaluru)');
+  const [currentPincode, setCurrentPincode] = useState('560068');
 
   useEffect(() => {
     const handleResize = () => {
@@ -38,8 +42,6 @@ const Header = () => {
     setShowDropdown(!showDropdown);
   };
 
-
-
   const handleLogout = (e) => {
     e.preventDefault();
     console.log('Logging out...');
@@ -47,6 +49,43 @@ const Header = () => {
     window.location.href = '/login';
 
   };
+
+  const handleDivClick = () => {
+    setShowInput(true);
+  };
+
+  const handleInputChange = (e) => {
+    setPincode(e.target.value);
+  };
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+
+    try {
+      const res = await fetch(`https://nominatim.openstreetmap.org/search?postalcode=${pincode}&country=India&format=json`);
+      const data = await res.json();
+
+      if (data.length > 0) {
+        const location = data[0].address;
+        const placeName =
+          location.suburb || location.city || location.town || location.village || location.state || "Unknown location";
+
+        setLocationName(`${placeName}`);
+        setCurrentPincode(pincode);
+      } else {
+        setLocationName("Location not found");
+        setCurrentPincode(pincode);
+      }
+    } catch (error) {
+      console.error("Error fetching location:", error);
+      setLocationName("Error fetching location");
+      setCurrentPincode(pincode);
+    }
+
+    setShowInput(false);
+    setPincode('');
+  };
+
 
   return (
     <div className='container-manual'>
@@ -121,13 +160,32 @@ const Header = () => {
             <a className='logo_size' href="/">
               <img src={logo} alt="Logo" className="logo" />
             </a>
-            <div className='headerLocationHideLgScreen flexProp'>
-              <div className="location-box order_4 ">
-                <span className="location-icon">📍</span>
-                <span className="pincode">560068</span>
-                <span className="location-name">Bommanahalli (Bengaluru)</span>
-                <span className="dropdown-icon">▼</span>
+            <div className='headerLocationHideLgScreen flexProp' >
+              <div className='position_relative'>
+                <div className="location-box order_4 " onClick={handleDivClick}>
+                  <span className="location-icon">📍</span>
+                  <span className="pincode">{currentPincode}</span>
+                  <span className="location-name">{locationName}</span>
+                  <span className="dropdown-icon">▼</span>
+                </div>
+                {showInput && (
+                  <form onSubmit={handleSubmit} className='pincodeUi' >
+
+                    <h2 className='chooseLocationHead'>Choose Location</h2>
+                    <div className='borderlocation'></div>
+                    <h2 className='pincodeLabel'>Enter Pincode:</h2>
+                    <input
+                      type="text"
+                      placeholder="Enter pincode"
+                      value={pincode}
+                      onChange={handleInputChange}
+                      className='pincodeInput'
+                    />
+                    <button type="submit" className='submitBtnForm'>Submit</button>
+                  </form>
+                )}
               </div>
+
               <a href="/Prescription" className="no-decoration order_5">
                 <div className="upload-box">
                   <span className="upload-icon">📄</span>

@@ -5,10 +5,12 @@ import '../Admin/Admin.css';
 
 const AdminLayout = () => {
   return (
-    <div className="admin-container">
-      <Admin />
-      <div className="admin-content">
-        <Outlet />
+    <div className='adminLayout'>
+      <div className="adminSidebarLayout">
+        <Admin />
+        <div className="adminContentLayout">
+          <Outlet />
+        </div>
       </div>
     </div>
   );

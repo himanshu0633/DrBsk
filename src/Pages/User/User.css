@@ -6,12 +6,11 @@
 }
 
 .user-content {
-  flex: 1;
   padding: 20px;
-  margin-left: -1200px!important; 
-  margin-right: 120px!important;/* Matches sidebar width */
-  background-color: #f8f9fa;
-  margin-top: 80px;
+  /* margin-left: -1200px!important; 
+  margin-right: 120px!important; */
+  background-color: #fff;
+  /* margin-top: 80px; */
 }
 
 /* Header Styles */
