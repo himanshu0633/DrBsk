@@ -1,95 +1,138 @@
-import React, { useState } from 'react'
+
+import React, { useEffect, useState } from 'react';
+import axiosInstance from '../../../components/AxiosInstance';
+import API_URL from '../../../config';
 
 const PharmaBanner = () => {
-    const [banners, setBanners] = useState([
-        {
-            id: 1,
-            title: 'Summer Sale',
-            image: 'https://via.placeholder.com/150',
-        },
-        {
-            id: 2,
-            title: 'New Arrivals',
-            image: 'https://via.placeholder.com/150',
-        },
-    ]);
+    const [formData, setFormData] = useState({ image: '', category_id: '' });
+    const [showModal, setShowModal] = useState(false);
+    const [banners, setBanners] = useState([]);
 
-    const [formData, setFormData] = useState({ title: '', image: '' });
-    const [editingId, setEditingId] = useState(null);
+    const bannerList = [
+        { id: 1, title: "main" },
+        { id: 2, title: "carousel" },
+        { id: 3, title: "1st carousel" },
+        { id: 4, title: "2nd carousel" }
+    ];
 
-    const handleChange = (e) => {
-        setFormData({ ...formData, [e.target.name]: e.target.value });
+    const handleInputChange = (e) => {
+        const { name, value, files } = e.target;
+        setFormData((prev) => ({
+            ...prev,
+            [name]: files ? files[0] : value,
+        }));
     };
 
-    const handleSubmit = (e) => {
+    const handleBannerSubmit = async (e) => {
         e.preventDefault();
-        if (editingId) {
-            // Update
-            setBanners(banners.map(b =>
-                b.id === editingId ? { ...b, ...formData } : b
-            ));
-            setEditingId(null);
-        } else {
-            // Create
-            const newBanner = { ...formData, id: Date.now() };
-            setBanners([...banners, newBanner]);
+
+        const selectedType = bannerList.find(b => b.id === parseInt(formData.category_id))?.title;
+
+        if (!selectedType || !formData.image) {
+            alert("Please select a banner type and upload an image.");
+            return;
         }
-        setFormData({ title: '', image: '' });
+
+        const data = new FormData();
+        data.append('type', selectedType);
+        data.append('slider_image', formData.image);
+
+        try {
+            const response = await axiosInstance.post('/user/createBanner', data);
+            console.log("API Response:", response.data);
+            alert("Banner uploaded successfully!");
+            setFormData({ image: '', category_id: '' });
+            setShowModal(false);
+        } catch (error) {
+            console.error("Error submitting banner:", error);
+            alert("There was an error submitting the banner. Please try again.");
+        }
     };
 
-    const handleEdit = (id) => {
-        const banner = banners.find(b => b.id === id);
-        setFormData({ title: banner.title, image: banner.image });
-        setEditingId(id);
+    const fetchData = async () => {
+        try {
+            const response = await axiosInstance.get('/user/allBanners');
+            console.log("API Response:", response.data);
+            setBanners(response.data);
+        } catch (error) {
+            console.error("Error fetching categories:", error);
+        }
     };
 
-    const handleDelete = (id) => {
-        setBanners(banners.filter(b => b.id !== id));
-    };
+    useEffect(() => {
+        fetchData();
+    }, []);
+
     return (
-        <div>
-            <div className="admin-page">
-                <div className="admin-header">
-                    <h2>Banner Management</h2>
-                </div>
+        <div className="admin-page">
+            <div className="admin-header">
+                <h2>Banner Management</h2>
+            </div>
 
-                <form className="banner-form" onSubmit={handleSubmit}>
-                    <input
-                        type="text"
-                        name="title"
-                        placeholder="Banner Title"
-                        value={formData.title}
-                        onChange={handleChange}
-                        required
-                    />
-                    <input
-                        type="text"
-                        name="image"
-                        placeholder="Banner Image URL"
-                        value={formData.image}
-                        onChange={handleChange}
-                        required
-                    />
-                    <button type="submit" className="btn-save">
-                        {editingId ? 'Update' : 'Add'} Banner
-                    </button>
-                </form>
+            <button
+                type="button"
+                className="btn-save"
+                onClick={() => setShowModal(true)}
+            >
+                Add Banner
+            </button>
 
-                <div className="banner-list">
-                    {banners.map(banner => (
-                        <div className="banner-card" key={banner.id}>
-                            <img src={banner.image} alt={banner.title} />
-                            <h4>{banner.title}</h4>
-                            <div className="banner-actions">
-                                <button onClick={() => handleEdit(banner.id)} className="btn-edit">Edit</button>
-                                <button onClick={() => handleDelete(banner.id)} className="btn-delete">Delete</button>
+            {showModal && (
+                <div className="modal-overlay">
+                    <div className="modal">
+                        <h3>Add New Banner</h3>
+                        <form onSubmit={handleBannerSubmit}>
+                            <select
+                                name="category_id"
+                                value={formData.category_id || ''}
+                                onChange={handleInputChange}
+                                required
+                                className="selectCss"
+                            >
+                                <option value="">Select Banner Type</option>
+                                {bannerList.map(item => (
+                                    <option key={item.id} value={item.id}>
+                                        {item.title}
+                                    </option>
+                                ))}
+                            </select>
+
+                            <input
+                                type="file"
+                                name="image"
+                                accept="image/*"
+                                onChange={handleInputChange}
+                                required
+                            />
+
+                            <div className="modal-actions">
+                                <button type="submit" className="btn-save">Save</button>
+                                <button
+                                    type="button"
+                                    className="btn-cancel"
+                                    onClick={() => setShowModal(false)}
+                                >
+                                    Cancel
+                                </button>
                             </div>
-                        </div>
-                    ))}
+                        </form>
+                    </div>
                 </div>
+            )}
+
+            <div className='bannerFlex'>
+                {banners.map((item, i) => {
+                    return (
+                        <div key={i} className='bannerCard'>
+                            <img className='bannerImg' src={`${API_URL}/${item.slider_image}`} alt={`Banner ${i + 1}`} />
+                            <p>{item.type}</p>
+                        </div>
+                    )
+                })}
             </div>
         </div>
-    )
-}
+    );
+};
 
-export default PharmaBanner
+export default PharmaBanner;
+

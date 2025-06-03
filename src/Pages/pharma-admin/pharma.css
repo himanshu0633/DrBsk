@@ -24,6 +24,28 @@
     box-sizing: border-box;
     margin-bottom: 10px;
 }
-select,input:focus{
+
+select,
+input:focus {
     outline: none;
+}
+
+.bannerCard {
+    width: 32%;
+    background-color: white;
+    padding: 10px;
+    border: 1px solid #ccc;
+}
+
+.bannerFlex {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px;
+}
+.bannerImg{
+    width: 100%;
+    height: 150px;
+    object-fit: cover;
+    border-radius: 5px;
 }
