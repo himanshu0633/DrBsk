@@ -6,6 +6,7 @@ import './Cart.css';
 import Header from '../../components/Header/Header';
 import SignUpForm from '../../components/SignUp';
 import axiosInstance from '../../components/AxiosInstance';
+import WholesalePartnerForm from '../../components/wholeSale_signup';
 
 const Cart = () => {
   const [showPassword, setShowPassword] = useState(false);
@@ -19,6 +20,8 @@ const Cart = () => {
   const [errors, setErrors] = useState({});
   const [isLoading, setIsLoading] = useState(false);
   const [loginError, setLoginError] = useState(null);
+  const [isWholesalePartner, setIsWholesalePartner] = useState(false);
+
 
   const togglePasswordVisibility = () => setShowPassword(!showPassword);
   const toggleLoginMethod = () => {
@@ -165,11 +168,22 @@ const Cart = () => {
                     Sign up
                   </button>
                 </div>
+                 <div className="davaindia-form-footer">
+                  Want to be Our WholeSale Partner?{' '}
+                <button type="button" onClick={() => {
+  setShowSignUp(true);
+  setIsWholesalePartner(true);
+}} className="davaindia-link-button">
+  Sign up
+</button>
+
+                </div>
               </>
             ) : (
               <>
                 <h1 className="davaindia-form-title">Create Account</h1>
-                <SignUpForm />
+                {isWholesalePartner ? <WholesalePartnerForm /> : <SignUpForm />}
+
                 <div className="davaindia-form-footer">
                   Already have an account?{' '}
                   <button type="button" onClick={() => setShowSignUp(false)} className="davaindia-link-button">

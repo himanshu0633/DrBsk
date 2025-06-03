@@ -10,67 +10,64 @@ const Navbar = () => {
 
   useEffect(() => {
     fetchData();
-  }, [])
+    fetchSubCategories();
+  }, []);
 
   const fetchData = async () => {
     try {
       const response = await axiosInstance.get(`/user/allcategories`);
-      console.log("Fetched categories:", response);
       setCategoryName(response?.data);
     } catch (error) {
-      console.error("Error fetching data:", error);
+      console.error("Error fetching categories:", error);
     }
   };
-  useEffect(() => {
-    fetchSubCategories();
-  }, [])
 
   const fetchSubCategories = async () => {
     try {
       const response = await axiosInstance.get(`/user/allSubcategories`);
-      console.log("Fetched subCategories:", response);
       setSubCategoryName(response?.data);
     } catch (error) {
-      console.error("Error fetching data:", error);
+      console.error("Error fetching subcategories:", error);
     }
   };
 
   return (
-    <div >
+    <div>
       <div className="top-nav">
-        {/* Mobile Menu Button (hidden on desktop) */}
+        {/* Mobile Menu Button */}
         <input type="checkbox" id="mobile-menu" className="mobile-menu-checkbox" />
         <label htmlFor="mobile-menu" className="mobile-menu-button">
           <Menu size={24} />
         </label>
 
-        {/* Left Section */}
+        {/* Left Section - Categories with Subcategories */}
         <div className="nav-left">
-          {categoryName?.map((item, i) => {
-            return (
-              <div key={item._id}>
-                <div className="nav-item" key={item.id}>
-                  <span>{item.name} <ChevronDown size={14} className="dropdown-icon" /></span>
-                  {subcategoryName.map((subItem, i) => {
-                    return (
-                      <div className="dropdown" key={subItem.id}>
-                        <Link to={`/fever`} >{subItem.name}</Link>
-                      </div>
-                    )
-                  })}
-                </div>
+          {categoryName?.map((category) => (
+            <div className="nav-item" key={category._id}>
+              <span>
+                {category.name} <ChevronDown size={14} className="dropdown-icon" />
+              </span>
+              <div className="dropdown">
+                {subcategoryName
+                  .filter(sub => sub.category_id?._id === category._id)
+                  .map(sub => (
+                    <Link key={sub._id} to={`/fever`}>
+                      {sub.name}
+                    </Link>
+                  ))}
               </div>
-            )
-          })}
-
+            </div>
+          ))}
         </div>
 
         {/* Right Section */}
         <div className="nav-right">
-          <a href="Phone" style={{ textDecoration: 'none' }}> <div className="get-app">
-            <Smartphone size={16} className="icon" />
-            <span>Get the App</span>
-          </div></a>
+          <a href="Phone" style={{ textDecoration: 'none' }}>
+            <div className="get-app">
+              <Smartphone size={16} className="icon" />
+              <span>Get the App</span>
+            </div>
+          </a>
           <div className="phone">
             <Phone size={16} className="icon" />
             <span>+91 1234567890</span>
@@ -86,7 +83,3 @@ const Navbar = () => {
 };
 
 export default Navbar;
-
-
-
-
