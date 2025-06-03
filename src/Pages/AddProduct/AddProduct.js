@@ -31,10 +31,9 @@ const AddProduct = () => {
       <div className="product-content">
         <div className="admin-header">
           <h2>Products</h2>
-         <Link to="/admin/Popup">
-  <button className="btn-add">Add New Product</button>
-  {/* fejdmkl */}
-</Link>
+          <Link to="/admin/Popup">
+            <button className="btn-add">Add New Product</button>
+          </Link>
 
         </div>
 

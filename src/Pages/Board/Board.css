@@ -1,10 +1,11 @@
 /* Board.css */
 
 .dashboard-container {
-  max-width: 1000px;
-  margin: 0 auto;
+  /* max-width: 1000px; */
+  /* margin: 0 auto; */
   padding: 20px;
-  margin-top: -650px!important;
+  /* margin-top: -650px!important; */
+  background-color: white;
 }
 
 .dashboard-container h2 {

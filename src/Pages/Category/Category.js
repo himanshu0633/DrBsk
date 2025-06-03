@@ -44,7 +44,7 @@ const Category = () => {
   const handleSubmit = (e) => {
     e.preventDefault();
     console.log('Submitting category:', newCategory);
-    setShowModal(false); // Close modal after submission
+    setShowModal(false); 
   };
 
   return (

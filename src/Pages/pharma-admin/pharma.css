@@ -1,0 +1,61 @@
+.pharmaAdminContainer {
+    display: flex;
+    /* gap: 40px; */
+    height: 100vh;
+}
+
+.pharmaSidebar {
+    width: 260px;
+    background-color: red;
+}
+
+.pharmaAdminContent {
+    width: calc(100% - 260px);
+}
+
+.pharmaAdminContent {
+    padding: 20px;
+}
+
+.selectCss {
+    width: 100%;
+    border: 1px solid #ccc;
+    box-sizing: border-box;
+    margin-bottom: 10px;
+}
+
+select,
+input:focus {
+    outline: none;
+}
+
+.bannerCard {
+    width: 32%;
+    background-color: white;
+    padding: 10px;
+    border: 1px solid #ccc;
+}
+
+.bannerFlex {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px;
+    flex-wrap: wrap;
+    gap: 10px;
+}
+
+.clrOrange {
+    color: rgb(233, 156, 13);
+}
+
+.clrGreen {
+    color: green;
+}
+
+.bannerImg {
+    width: 100%;
+    height: 150px;
+    object-fit: cover;
+    border-radius: 5px;
+}
