@@ -1,38 +1,26 @@
-import React from 'react'
+import React, { useEffect, useState } from 'react'
+import axiosInstance from '../../../components/AxiosInstance';
 
 const PharmaUser = () => {
-    const users = [
-        {
-            name: 'John Doe',
-            email: 'john@example.com',
-            role: 'Admin',
-            user_id: 'U001',
-            deleted_at: null,
-        },
-        {
-            name: 'Jane Smith',
-            email: 'jane@example.com',
-            role: 'Editor',
-            user_id: 'U002',
-            deleted_at: '2024-12-01',
-        },
-        {
-            name: 'Michael Brown',
-            email: 'michael@example.com',
-            role: 'Viewer',
-            user_id: 'U003',
-            deleted_at: null,
-        },
-    ];
+    const [users, setUsers] = useState([]);
 
+    useEffect(() => {
+        const fetchData = async () => {
+            try {
+                const response = await axiosInstance.get('/admin/readallAdmins');
+                console.log("Fetched users:", response.data);
+                setUsers(response.data);
+            } catch (error) {
+                console.error("Error fetching data:", error);
+            }
+        };
+        fetchData();
+    }, []);
 
     return (
         <div className="user-content">
             <div className="user-header">
                 <h2>Users</h2>
-                <a href="#">
-                    <button className="btn-add">Add User</button>
-                </a>
             </div>
 
             <div className="user-table-container">
@@ -48,7 +36,7 @@ const PharmaUser = () => {
                         </tr>
                     </thead>
                     <tbody>
-                        {users.map((user, index) => (
+                        {/* {users.map((user, index) => (
                             <tr key={index}>
                                 <td data-label="Name">{user.name}</td>
                                 <td data-label="Email">{user.email}</td>
@@ -66,7 +54,7 @@ const PharmaUser = () => {
                                     <button className="btn-action btn-delete">Delete</button>
                                 </td>
                             </tr>
-                        ))}
+                        ))} */}
                     </tbody>
                 </table>
             </div>
