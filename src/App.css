@@ -74,9 +74,9 @@
   fill: #ef6824;
 }
 
-.menuHover:hover .iconStyle1 svg path {
+/* .menuHover:hover .iconStyle1 svg path {
   stroke: #ef6824;
-}
+} */
 
 .menuTabFlex {
   display: flex;
@@ -122,9 +122,11 @@
   cursor: pointer;
   font-size: 15px;
 }
-.clrRed{
+
+.clrRed {
   color: red;
 }
+
 .signup-button:hover {
   background-color: #E64A00;
 }
