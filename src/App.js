@@ -49,6 +49,8 @@ import PharmaSubCategory from "./Pages/pharma-admin/component/PharmaSubCategory"
 import PharmaOrder from "./Pages/pharma-admin/component/PharmaOrder";
 import MyChart from "./Pages/pharma-admin/component/Mychart";
 import PharmaWholeSale from "./Pages/pharma-admin/component/PharmaWholeSale";
+import PharmaAdminLogin from "./Pages/pharma-admin/page/PharmaAdminLogin";
+import ProtectedRoute from "./Pages/pharma-admin/page/ProtectedRoute";
 
 
 
@@ -71,6 +73,7 @@ function App() {
   //   useEffect(() => {
   //   toast.info('Test toast works!');
   // }, []);
+
   return (
     <Routes>
       <Route path="/" element={<Dashboard />} />
@@ -105,20 +108,30 @@ function App() {
       {/* </Route> */}
 
       {/* pharma admin */}
-      <Route path="/pharma-admin" element={<PharmaAdmin />}>
-        <Route path="dashboard" element={<PharmaDashboard />} />
-        <Route path="category" element={<PharmaCategory />} />
-        <Route path="subCategory" element={<PharmaSubCategory />} />
-        <Route path="products" element={<PharmaProducts />} />
-        <Route path="orders" element={<PharmaOrder />} />
-        <Route path="addNewProduct" element={<AddNewProduct />} />
-        <Route path="banner" element={<PharmaBanner />} />
-        <Route path="user" element={<PharmaUser />} />
-        <Route path="settings" element={<PharmaSetting />} />
-        <Route path="chart" element={<MyChart />} />
-        <Route path="wholesale" element={<PharmaWholeSale />} />
-      </Route>
+      <Route>
+        <Route path="/admin-login" element={<PharmaAdminLogin />} />
 
+        <Route
+          path="/pharma-admin"
+          element={
+            <ProtectedRoute>
+              <PharmaAdmin />
+            </ProtectedRoute>
+          }
+        >
+          <Route path="dashboard" element={<PharmaDashboard />} />
+          <Route path="category" element={<PharmaCategory />} />
+          <Route path="subCategory" element={<PharmaSubCategory />} />
+          <Route path="products" element={<PharmaProducts />} />
+          <Route path="orders" element={<PharmaOrder />} />
+          <Route path="addNewProduct" element={<AddNewProduct />} />
+          <Route path="banner" element={<PharmaBanner />} />
+          <Route path="user" element={<PharmaUser />} />
+          <Route path="settings" element={<PharmaSetting />} />
+          <Route path="chart" element={<MyChart />} />
+          <Route path="wholesale" element={<PharmaWholeSale />} />
+        </Route>
+      </Route>
 
     </Routes>
   );
