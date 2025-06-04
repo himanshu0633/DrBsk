@@ -1,10 +1,12 @@
 import React, { useEffect, useState } from 'react'
 import axiosInstance from '../../../components/AxiosInstance';
+import CustomLoader from '../../../components/CustomLoader';
 
 const PharmaDashboard = () => {
   const [totalUsers, setTotalUsers] = useState(0);
   const [totalOrders, setTotalOrders] = useState(0);
   const [totalProducts, setTotalProducts] = useState(0);
+  const [loading, setLoading] = useState(true);
 
   const fetchTotalUsers = async () => {
     try {
@@ -15,6 +17,7 @@ const PharmaDashboard = () => {
       console.error("Error fetching users:", error);
     }
   };
+  
   const fetchTotalOrders = async () => {
     try {
       const response = await axiosInstance.get('/api/totalOrdercount');
@@ -38,25 +41,28 @@ const PharmaDashboard = () => {
     fetchTotalUsers();
     fetchTotalOrders();
     fetchTotalProducts();
+    setLoading(false);
   }, []);
 
   return (
     <div className="dashboard-container">
-      <h2>Dashboard</h2>
-      <div className="stats-container">
-        <div className="stat-card">
-          <h3>Total Users</h3>
-          <p>{totalUsers.totalAdmins}</p>
+      {loading ? <CustomLoader /> : (<div>
+        <h2>Dashboard</h2>
+        <div className="stats-container">
+          <div className="stat-card">
+            <h3>Total Users</h3>
+            <p>{totalUsers.totalAdmins}</p>
+          </div>
+          <div className="stat-card">
+            <h3>Total Products</h3>
+            <p>{totalProducts.total}</p>
+          </div>
+          <div className="stat-card">
+            <h3>Total Orders</h3>
+            <p>{totalOrders.totalOrders}</p>
+          </div>
         </div>
-        <div className="stat-card">
-          <h3>Total Products</h3>
-          <p>{totalProducts.total}</p>
-        </div>
-        <div className="stat-card">
-          <h3>Total Orders</h3>
-          <p>{totalOrders.totalOrders}</p>
-        </div>
-      </div>
+      </div>)}
     </div>
   )
 }

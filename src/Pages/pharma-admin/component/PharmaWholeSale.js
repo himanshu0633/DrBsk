@@ -1,154 +1,14 @@
-// import React, { useEffect, useState } from 'react';
-// import axiosInstance from '../../../components/AxiosInstance';
-
-// const PharmaWholeSale = () => {
-//     const [wholeSaleUsers, setWholeSaleUsers] = useState([]);
-//     const [selectedUserId, setSelectedUserId] = useState(null);
-//     const [showActionModal, setShowActionModal] = useState(false);
-//     const [submitDropdown, setSubmitDropdown] = useState(false);
-
-//     const fetchData = async () => {
-//         try {
-//             const response = await axiosInstance.get('/user/allWholesalePartners');
-//             console.log("API Response:", response.data);
-//             setWholeSaleUsers(response.data.data);
-//         } catch (error) {
-//             console.error("Error fetching wholesale users:", error);
-//         }
-//     };
-
-//     useEffect(() => {
-//         fetchData();
-//     }, []);
-
-//     const handleStatusUpdate = async (status) => {
-//         if (!selectedUserId) return;
-
-//         try {
-//             const response = await axiosInstance.put(
-//                 `/user/updateWholesalePartner/${selectedUserId}`,
-//                 { status },
-//                 {
-//                     headers: { 'Content-Type': 'application/json' }
-//                 }
-//             );
-
-//             if (response.status === 200 || response.status === 201) {
-//                 alert(`User status updated to "${status}"`);
-//                 setSelectedUserId(null);
-//                 setShowActionModal(false);
-//                 fetchData(); // Refresh data
-//             } else {
-//                 throw new Error('Failed to update status');
-//             }
-//         } catch (error) {
-//             console.error("Error updating status:", error);
-//             alert("Error updating status. Please try again.");
-//         }
-//     };
-
-
-//     return (
-//         <div className="user-content">
-//             <div className="user-header">
-//                 <h2>Wholesale Users</h2>
-//             </div>
-
-//             <div className="user-table-container tableOverflow">
-//                 <table className="user-table tableWidth">
-//                     <thead>
-//                         <tr>
-//                             <th>Company Name</th>
-//                             <th>Website</th>
-//                             <th>GST Number</th>
-//                             <th>Email</th>
-//                             <th>Phone</th>
-//                             <th>Country</th>
-//                             <th>State</th>
-//                             <th>City</th>
-//                             <th>Street</th>
-//                             <th>Zip Code</th>
-//                             <th>Billing Email</th>
-//                             <th>Status</th>
-//                             <th>Action</th>
-//                         </tr>
-//                     </thead>
-//                     <tbody>
-//                         {wholeSaleUsers.map((user) => (
-//                             <tr key={user._id}>
-//                                 <td>{user.companyName}</td>
-//                                 <td>{user.website}</td>
-//                                 <td>{user.gstNumber}</td>
-//                                 <td>{user.email}</td>
-//                                 <td>{user.phone}</td>
-//                                 <td>{user.country}</td>
-//                                 <td>{user.state}</td>
-//                                 <td>{user.city}</td>
-//                                 <td>{user.street}</td>
-//                                 <td>{user.zipcode}</td>
-//                                 <td>{user.billingEmail}</td>
-//                                 <td className={user.status === 'Pending' ? 'clrOrange' : 'clrGreen'}>
-//                                     {user.status}
-//                                 </td>
-//                                 <td>
-//                                     <button
-//                                         onClick={() => {
-//                                             setSelectedUserId(user._id);
-//                                             setShowActionModal(true);
-//                                         }}
-//                                         className="btn-action btn-update"
-//                                     >
-//                                         Update
-//                                     </button>
-//                                 </td>
-//                             </tr>
-//                         ))}
-//                     </tbody>
-//                 </table>
-
-//                 {showActionModal && (
-//                     <div className="modal-overlay">
-//                         <div className="action-dropdown">
-//                             <div className='actionFlex'>
-//                                 <button onClick={() => {
-//                                     handleStatusUpdate('Accepted'),
-//                                         setSubmitDropdown(true);
-//                                 }} className="btn-action btn-edit">Accept</button>
-//                                 <button onClick={() => handleStatusUpdate('Rejected')} className="btn-action btn-delete">Reject</button>
-//                             </div>
-//                             {submitDropdown && (
-//                                 <div className='actionFlex'>
-//                                     <button onClick={() => {
-//                                         setSelectedUserId(null);
-//                                         setShowActionModal(false);
-//                                     }} className="btn-action btn-accept">Submit</button>
-//                                     <button onClick={() => {
-//                                         setSelectedUserId(null);
-//                                         setShowActionModal(false);
-//                                     }} className="btn-action btn-cancel">Cancel</button>
-//                                 </div>
-//                             )}
-
-//                         </div>
-//                     </div>
-//                 )}
-//             </div>
-//         </div>
-//     );
-// };
-
-// export default PharmaWholeSale;
-
-
 import React, { useEffect, useState } from 'react';
 import axiosInstance from '../../../components/AxiosInstance';
 import { toast } from 'react-toastify';
+import CustomLoader from '../../../components/CustomLoader';
 
 const PharmaWholeSale = () => {
     const [wholeSaleUsers, setWholeSaleUsers] = useState([]);
     const [selectedUserId, setSelectedUserId] = useState(null);
     const [showActionModal, setShowActionModal] = useState(false);
-    const [pendingStatus, setPendingStatus] = useState(null); // 'Accepted' or 'Rejected'
+    const [pendingStatus, setPendingStatus] = useState(null);
+    const [loading, setLoading] = useState(true);
 
     const fetchData = async () => {
         try {
@@ -157,6 +17,7 @@ const PharmaWholeSale = () => {
         } catch (error) {
             console.error("Error fetching wholesale users:", error);
         }
+        setLoading(false)
     };
 
     useEffect(() => {
@@ -208,60 +69,67 @@ const PharmaWholeSale = () => {
             </div>
 
             <div className="user-table-container tableOverflow">
-                <table className="user-table tableWidth">
-                    <thead>
-                        <tr>
-                            <th>Company Name</th>
-                            <th>Website</th>
-                            <th>GST Number</th>
-                            <th>Email</th>
-                            <th>Phone</th>
-                            <th>Country</th>
-                            <th>State</th>
-                            <th>City</th>
-                            <th>Street</th>
-                            <th>Zip Code</th>
-                            <th>Billing Email</th>
-                            <th>Status</th>
-                            <th>Action</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {wholeSaleUsers.map((user) => (
-                            <tr key={user._id}>
-                                <td>{user.companyName}</td>
-                                <td>{user.website}</td>
-                                <td>{user.gstNumber}</td>
-                                <td>{user.email}</td>
-                                <td>{user.phone}</td>
-                                <td>{user.country}</td>
-                                <td>{user.state}</td>
-                                <td>{user.city}</td>
-                                <td>{user.street}</td>
-                                <td>{user.zipcode}</td>
-                                <td>{user.billingEmail}</td>
-                                <td className={user.status === 'Pending' ? 'clrOrange' : 'clrGreen'}>
-                                    {user.status}
-                                </td>
-                                <td>
-                                    <button
-                                        onClick={() => {
-                                            setSelectedUserId(user._id);
-                                            setShowActionModal(true);
-                                        }}
-                                        className="btn-action btn-update"
-                                    >
-                                        Update
-                                    </button>
-                                </td>
+                {loading ? <CustomLoader /> : (
+                    <table className="user-table tableWidth">
+                        <thead>
+                            <tr>
+                                <th>Company Name</th>
+                                <th>Website</th>
+                                <th>GST Number</th>
+                                <th>Email</th>
+                                <th>Phone</th>
+                                <th>Country</th>
+                                <th>State</th>
+                                <th>City</th>
+                                <th>Street</th>
+                                <th>Zip Code</th>
+                                <th>Billing Email</th>
+                                <th>Status</th>
+                                <th>Action</th>
                             </tr>
-                        ))}
-                    </tbody>
-                </table>
+                        </thead>
+                        <tbody>
+                            {wholeSaleUsers.map((user) => (
+                                <tr key={user._id}>
+                                    <td>{user.companyName}</td>
+                                    <td>{user.website}</td>
+                                    <td>{user.gstNumber}</td>
+                                    <td>{user.email}</td>
+                                    <td>{user.phone}</td>
+                                    <td>{user.country}</td>
+                                    <td>{user.state}</td>
+                                    <td>{user.city}</td>
+                                    <td>{user.street}</td>
+                                    <td>{user.zipcode}</td>
+                                    <td>{user.billingEmail}</td>
+                                    <td className={
+                                        user.status === 'Pending' ? 'clrOrange' :
+                                            user.status === 'Accepted' ? 'clrGreen' :
+                                                'clrRed'
+                                    }>
+                                        {user.status}
+                                    </td>
 
-                {showActionModal && (
+                                    <td>
+                                        <button
+                                            onClick={() => {
+                                                setSelectedUserId(user._id);
+                                                setShowActionModal(true);
+                                            }}
+                                            className="btn-action btn-update"
+                                        >
+                                            Update
+                                        </button>
+                                    </td>
+                                </tr>
+                            ))}
+                        </tbody>
+                    </table>)}
+
+                {/* {showActionModal && (
                     <div className="modal-overlay">
                         <div className="action-dropdown">
+                            
                             <div className="actionFlex">
                                 <button
                                     onClick={() => setPendingStatus('Accepted')}
@@ -285,7 +153,40 @@ const PharmaWholeSale = () => {
                             )}
                         </div>
                     </div>
+                )} */}
+
+                {showActionModal && (
+                    <div className="modal-overlay">
+                        <div className="action-dropdown">
+
+                            {/* Dropdown for Accept/Reject */}
+                            <div className="actionFlex">
+                                <select
+                                    value={pendingStatus || ''}
+                                    onChange={(e) => setPendingStatus(e.target.value)}
+                                    className="dropdown-select"
+                                >
+                                    <option value="" disabled>Select Action</option>
+                                    <option value="Accepted">Accept</option>
+                                    <option value="Rejected">Reject</option>
+                                </select>
+                            </div>
+
+                            {/* Submit and Cancel Buttons (Always visible) */}
+                            <div className="actionFlex">
+                                <button
+                                    onClick={handleStatusUpdate}
+                                    className="btn-action btn-edit"
+                                    disabled={!pendingStatus}
+                                >
+                                    Submit
+                                </button>
+                                <button onClick={handleCancel} className="btn-action btn-cancel">Cancel</button>
+                            </div>
+                        </div>
+                    </div>
                 )}
+
             </div>
         </div>
     );

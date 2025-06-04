@@ -14,6 +14,7 @@ const Fever = () => {
   const [products, setProducts] = useState([]);
   const [allProducts, setAllProducts] = useState([]);
   const [addedToCart, setAddedToCart] = useState({});
+  const [isAuthenticated, setIsAuthenticated] = useState(null);
 
   const [filters, setFilters] = useState({
     minPrice: 0,
@@ -141,6 +142,10 @@ const Fever = () => {
     return item ? item.quantity : 0;
   };
 
+  const storedUser = sessionStorage.getItem('userData');
+  const userData = storedUser ? JSON.parse(storedUser) : null;
+
+
   return (
     <>
       <Header />
@@ -263,12 +268,30 @@ const Fever = () => {
                         <div className="product-details">
                           <h3 className="product-title">{product.name}</h3>
                           <p className="product-quantity">{product.quantity}</p>
-                          <div className="product-price">
+                          {/* <div className="product-price">
                             <span>₹{product.consumer_price}</span>
                             {product.retail_price > product.consumer_price && (
                               <span className="original-price">₹{product.retail_price}</span>
                             )}
+                          </div> */}
+                          <div className="product-price">
+                            {userData?.type === "wholesalePartner" ? (
+                              <>
+                                <span>₹{product.retail_price}</span>
+                                {product.consumer_price < product.retail_price && (
+                                  <span className="original-price">₹{product.consumer_price}</span>
+                                )}
+                              </>
+                            ) : (
+                              <>
+                                <span>₹{product.consumer_price}</span>
+                                {product.retail_price > product.consumer_price && (
+                                  <span className="original-price">₹{product.retail_price}</span>
+                                )}
+                              </>
+                            )}
                           </div>
+
                         </div>
                       </Link>
 

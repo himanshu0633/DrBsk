@@ -24,28 +24,28 @@
 //         console.log('Submitting category:', newCategory);
 //         setShowModal(false);
 //     };
-    // const handleCreateCategory = async (e) => {
-    //     e.preventDefault();
+// const handleCreateCategory = async (e) => {
+//     e.preventDefault();
 
-    //     const formData = new FormData();
-    //     formData.append('name', newCategory.name);
-    //     formData.append('image', newCategory.image);
+//     const formData = new FormData();
+//     formData.append('name', newCategory.name);
+//     formData.append('image', newCategory.image);
 
-    //     try {
-    //         const response = await axiosInstance.post(
-    //             '/user/createCategory',
-    //             formData
-    //         );
+//     try {
+//         const response = await axiosInstance.post(
+//             '/user/createCategory',
+//             formData
+//         );
 
-    //         console.log("API Response:", response.data);
-    //         setShowModal(false);
-    //         fetchData(); // refresh the list
-    //     } catch (error) {
-    //         console.error("Error submitting category:", error);
-    //         setShowModal(false);
-    //         alert("There was an error submitting the category. Please try again.");
-    //     }
-    // };
+//         console.log("API Response:", response.data);
+//         setShowModal(false);
+//         fetchData(); // refresh the list
+//     } catch (error) {
+//         console.error("Error submitting category:", error);
+//         setShowModal(false);
+//         alert("There was an error submitting the category. Please try again.");
+//     }
+// };
 
 
 //     useEffect(() => {
@@ -166,12 +166,14 @@
 import React, { useEffect, useState } from 'react'
 import axiosInstance from '../../../components/AxiosInstance';
 import API_URL from '../../../config';
+import CustomLoader from '../../../components/CustomLoader';
 
 const PharmaCategory = () => {
     const [showModal, setShowModal] = useState(false);
     const [isEditing, setIsEditing] = useState(false);
     const [editingCategoryId, setEditingCategoryId] = useState(null);
     const [categoryList, setCategoryList] = useState([]);
+    const [loading, setLoading] = useState(true);
     const [newCategory, setNewCategory] = useState({
         name: '',
         image: null,
@@ -227,6 +229,7 @@ const PharmaCategory = () => {
             console.error("Error updating category:", error.response?.data || error.message);
             alert("Failed to update category: " + (error.response?.data?.message || error.message));
         }
+
     };
 
 
@@ -265,6 +268,7 @@ const PharmaCategory = () => {
         } catch (error) {
             console.error("Error fetching categories:", error);
         }
+        setLoading(false);
     };
 
     useEffect(() => {
@@ -279,48 +283,51 @@ const PharmaCategory = () => {
                     Add Category
                 </button>
             </div>
-
-            <table className="admin-table">
-                <thead>
-                    <tr>
-                        <th>Name</th>
-                        <th>Description</th>
-                        <th>Category ID</th>
-                        <th>Image</th>
-                        <th>Status</th>
-                        <th>Actions</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {categoryList.map((cat, index) => (
-                        <tr key={index}>
-                            <td>{cat.name}</td>
-                            <td>{cat.description}</td>
-                            <td>{cat.category_id}</td>
-                            <td>
-                                <img
-                                    src={`${API_URL}/${cat.image}`}
-                                    alt={cat.name}
-                                    width="60"
-                                    height="60"
-                                    style={{ borderRadius: '6px' }}
-                                />
-                            </td>
-                            <td>
-                                {cat.deleted_at ? (
-                                    <span className="status-badge deleted">Deleted</span>
-                                ) : (
-                                    <span className="status-badge active">Active</span>
-                                )}
-                            </td>
-                            <td>
-                                <button onClick={() => handleEditCategory(cat)} className="btn-edit">Edit</button>
-                                <button onClick={() => handleDeleteCategory(cat.category_id)} className="btn-delete">Delete</button>
-                            </td>
+            {loading ? (<CustomLoader />) : (<div>
+                <table className="admin-table">
+                    <thead>
+                        <tr>
+                            <th>Name</th>
+                            <th>Description</th>
+                            <th>Category ID</th>
+                            <th>Image</th>
+                            <th>Status</th>
+                            <th>Actions</th>
                         </tr>
-                    ))}
-                </tbody>
-            </table>
+                    </thead>
+                    <tbody>
+                        {categoryList.map((cat, index) => (
+                            <tr key={index}>
+                                <td>{cat.name}</td>
+                                <td>{cat.description}</td>
+                                <td>{cat.category_id}</td>
+                                <td>
+                                    <img
+                                        src={`${API_URL}/${cat.image}`}
+                                        alt={cat.name}
+                                        width="60"
+                                        height="60"
+                                        style={{ borderRadius: '6px' }}
+                                    />
+                                </td>
+                                <td>
+                                    {cat.deleted_at ? (
+                                        <span className="status-badge deleted">Deleted</span>
+                                    ) : (
+                                        <span className="status-badge active">Active</span>
+                                    )}
+                                </td>
+                                <td>
+                                    <button onClick={() => handleEditCategory(cat)} className="btn-edit">Edit</button>
+                                    <button onClick={() => handleDeleteCategory(cat.category_id)} className="btn-delete">Delete</button>
+                                </td>
+                            </tr>
+                        ))}
+                    </tbody>
+                </table>
+            </div>)}
+
+
 
             {/* Modal */}
             {showModal && (

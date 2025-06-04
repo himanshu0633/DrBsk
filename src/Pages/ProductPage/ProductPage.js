@@ -44,7 +44,7 @@ const ProductPage = () => {
   const [product, setProduct] = useState(null);
   const [loading, setLoading] = useState(false);
   const [addedToCart, setAddedToCart] = useState(false);
-const navigate = useNavigate();
+  const navigate = useNavigate();
 
 
 
@@ -87,22 +87,22 @@ const navigate = useNavigate();
 
   const dispatch = useDispatch();
 
-const handleAddToCart = () => {
-  if (!product) return;
+  const handleAddToCart = () => {
+    if (!product) return;
 
-  const productToAdd = {
-    ...product,
-    quantity,
+    const productToAdd = {
+      ...product,
+      quantity,
+    };
+
+    toast.success('Item added to cart!', {
+      position: 'top-right',
+      autoClose: 2000,
+    });
+
+    dispatch(addData(productToAdd));
+    setAddedToCart(true);
   };
-
-  toast.success('Item added to cart!', {
-    position: 'top-right',
-    autoClose: 2000,
-  });
-
-  dispatch(addData(productToAdd));
-  setAddedToCart(true);
-};
 
 
   useEffect(() => {
@@ -120,7 +120,8 @@ const handleAddToCart = () => {
   if (!product) {
     return <div>Loading...</div>;
   }
-
+  const storedUser = sessionStorage.getItem('userData');
+  const userData = storedUser ? JSON.parse(storedUser) : null;
 
   return (
     <>
@@ -154,13 +155,13 @@ const handleAddToCart = () => {
                   <span>Bestseller</span>
                 </div>
               </div>
-             <div className="image-thumbnails">
-  {product.media.map((mediaItem, index) => (
-    <div key={index} className="thumbnail">
-      <img src={`${API_URL}${mediaItem.url}`} alt={`Thumbnail ${index + 1}`} />
-    </div>
-  ))}
-</div>
+              <div className="image-thumbnails">
+                {product.media.map((mediaItem, index) => (
+                  <div key={index} className="thumbnail">
+                    <img src={`${API_URL}${mediaItem.url}`} alt={`Thumbnail ${index + 1}`} />
+                  </div>
+                ))}
+              </div>
 
             </div>
 
@@ -227,7 +228,7 @@ const handleAddToCart = () => {
                   <CalendarDays className="detail-icon" size={16} />
                   <div>
                     <strong>Expires on or after:</strong>
-                    <span>{product?.expires_on || "..." }</span>
+                    <span>{product?.expires_on || "..."}</span>
                   </div>
                 </div>
 
@@ -248,7 +249,7 @@ const handleAddToCart = () => {
                 </div> */}
               </div>
 
-              <div className="price-section">
+              {/* <div className="price-section">
                 <div className="price-container">
                   <div className="current-price">₹{product?.consumer_price || "..."}</div>
                   <div className="original-price">₹{product?.retail_price || "..."}</div>
@@ -256,23 +257,41 @@ const handleAddToCart = () => {
 
                 </div>
                 <div className="tax-info">Inclusive of all taxes</div>
+              </div> */}
+
+              <div className="product-price">
+                {userData?.type === "wholesalePartner" ? (
+                  <>
+                    <span>₹{product.retail_price}</span>
+                    {product.consumer_price < product.retail_price && (
+                      <span className="original-price">₹{product.consumer_price}</span>
+                    )}
+                  </>
+                ) : (
+                  <>
+                    <span>₹{product.consumer_price}</span>
+                    {product.retail_price > product.consumer_price && (
+                      <span className="original-price">₹{product.retail_price}</span>
+                    )}
+                  </>
+                )}
               </div>
 
-         <div className="delivery-info">
-  <label className="delivery-option" htmlFor="standard">
-    <input type="radio" id="standard" name="delivery" defaultChecked />
-    <span className="delivery-type">Standard Delivery</span>
-    <span className="delivery-time">3-5 business days</span>
-    <span className="delivery-price">FREE</span>
-  </label>
+              <div className="delivery-info">
+                <label className="delivery-option" htmlFor="standard">
+                  <input type="radio" id="standard" name="delivery" defaultChecked />
+                  <span className="delivery-type">Standard Delivery</span>
+                  <span className="delivery-time">3-5 business days</span>
+                  <span className="delivery-price">FREE</span>
+                </label>
 
-  <label className="delivery-option" htmlFor="express">
-    <input type="radio" id="express" name="delivery" />
-    <span className="delivery-type">Express Delivery</span>
-    <span className="delivery-time">1-2 business days</span>
-    <span className="delivery-price">+ ₹50.00</span>
-  </label>
-</div>
+                <label className="delivery-option" htmlFor="express">
+                  <input type="radio" id="express" name="delivery" />
+                  <span className="delivery-type">Express Delivery</span>
+                  <span className="delivery-time">1-2 business days</span>
+                  <span className="delivery-price">+ ₹50.00</span>
+                </label>
+              </div>
 
 
               {/* Quantity & Buttons */}
@@ -299,24 +318,24 @@ const handleAddToCart = () => {
                 </div>
               </div>
 
-             <div className="action-buttons">
-  {addedToCart ? (
-    <button className="add-to-cart-btn" onClick={() => navigate('/cart')}>
-      <ShoppingCart className="btn-icon" size={18} />
-      Go to Cart
-    </button>
-  ) : (
-    <button className="add-to-cart-btn" onClick={handleAddToCart}>
-      <ShoppingCart className="btn-icon" size={18} />
-      Add to Cart
-    </button>
-  )}
+              <div className="action-buttons">
+                {addedToCart ? (
+                  <button className="add-to-cart-btn" onClick={() => navigate('/cart')}>
+                    <ShoppingCart className="btn-icon" size={18} />
+                    Go to Cart
+                  </button>
+                ) : (
+                  <button className="add-to-cart-btn" onClick={handleAddToCart}>
+                    <ShoppingCart className="btn-icon" size={18} />
+                    Add to Cart
+                  </button>
+                )}
 
-  {/* Removed "Buy Now" button */}
-</div>
+                {/* Removed "Buy Now" button */}
+              </div>
 
 
-                {/* <button className="buy-now-btn">Buy Now</button>
+              {/* <button className="buy-now-btn">Buy Now</button>
               </div> */}
 
               <div className="product-policy">

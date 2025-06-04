@@ -2,11 +2,13 @@
 import React, { useEffect, useState } from 'react';
 import axiosInstance from '../../../components/AxiosInstance';
 import API_URL from '../../../config';
+import CustomLoader from '../../../components/CustomLoader';
 
 const PharmaBanner = () => {
     const [formData, setFormData] = useState({ image: '', category_id: '' });
     const [showModal, setShowModal] = useState(false);
     const [banners, setBanners] = useState([]);
+    const [loading, setLoading] = useState(true);
 
     const bannerList = [
         { id: 1, title: "main" },
@@ -57,6 +59,7 @@ const PharmaBanner = () => {
         } catch (error) {
             console.error("Error fetching categories:", error);
         }
+        setLoading(false)
     };
 
     useEffect(() => {
@@ -120,7 +123,7 @@ const PharmaBanner = () => {
                 </div>
             )}
 
-            <div className='bannerFlex'>
+            {loading ? <CustomLoader /> : (<div className='bannerFlex'>
                 {banners.map((item, i) => {
                     return (
                         <div key={i} className='bannerCard'>
@@ -129,7 +132,9 @@ const PharmaBanner = () => {
                         </div>
                     )
                 })}
-            </div>
+            </div>)}
+
+
         </div>
     );
 };

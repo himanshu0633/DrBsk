@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import axiosInstance from '../../../components/AxiosInstance';
 import API_URL from '../../../config';
+import CustomLoader from '../../../components/CustomLoader';
 
 
 const PharmaSubCategory = () => {
@@ -16,12 +17,12 @@ const PharmaSubCategory = () => {
     const [categories, setCategories] = useState([]);
     const [showModal, setShowModal] = useState(false);
     const [subCategoryList, setSubCategoryList] = useState([]);
+    const [loading, setLoading] = useState(true);
     const [newCategory, setNewCategory] = useState({
         name: '',
         image: null,
         category_id: '',
     });
-
 
     const fetchData = async () => {
         try {
@@ -30,6 +31,7 @@ const PharmaSubCategory = () => {
         } catch (error) {
             console.error("Error fetching categories:", error);
         }
+            setLoading(false);
     };
 
     useEffect(() => {
@@ -62,6 +64,7 @@ const PharmaSubCategory = () => {
             console.log("API Response:", response.data);
             setShowModal(false);
             fetchData();
+           
         } catch (error) {
             console.error("Error submitting category:", error);
             setShowModal(false);
@@ -126,7 +129,7 @@ const PharmaSubCategory = () => {
                                     type="file"
                                     name="image"
                                     accept="image/*"
-                                    // onChange={handleInputChange}
+                                    onChange={handleInputChange}
                                     required
                                 />
                                 <div className="modal-actions">
@@ -140,43 +143,47 @@ const PharmaSubCategory = () => {
                     </div>
                 )}
 
-                <table className="admin-table">
-                    <thead>
-                        <tr>
-                            <th>Name</th>
-                            <th>Description</th>
-                            <th>Image</th>
-                            <th>Sub Category</th>
-                            <th>Status</th>
-                        </tr>
-                    </thead>
-                    <tbody>
+                {loading ? (<CustomLoader />) : (<div>
+                    <table className="admin-table">
+                        <thead>
+                            <tr>
+                                <th>Name</th>
+                                <th>Description</th>
+                                <th>Image</th>
+                                <th>Sub Category</th>
+                                <th>Status</th>
+                            </tr>
+                        </thead>
+                        <tbody>
 
-                        {subCategoryList.map((item, i) => {
-                            // console.log("Image URL:", item.category_id?.image);
-                            return (
-                                <tr key={i}>
-                                    <td>{item.category_id?.name || 'Unknown'}</td>
-                                    <td>{item.description}</td>
-                                    <td>
-                                        <img
-                                            // src={`${API_URL}/${item.category_id?.image}`}
-                                            src={item.category_id?.image}
-                                            alt={item.name} width="60" height="60" style={{ borderRadius: '6px' }} />
-                                    </td>
-                                    <td>{item.name}</td>
-                                    <td>
-                                        {item.deleted_at ? (
-                                            <span className="status-badge deleted">Deleted</span>
-                                        ) : (
-                                            <span className="status-badge active">Active</span>
-                                        )}
-                                    </td>
-                                </tr>
-                            );
-                        })}
-                    </tbody>
-                </table>
+                            {subCategoryList.map((item, i) => {
+                                // console.log("Image URL:", item.category_id?.image);
+                                return (
+                                    <tr key={i}>
+                                        <td>{item.category_id?.name || 'Unknown'}</td>
+                                        <td>{item.description}</td>
+                                        <td>
+                                            <img
+                                                // src={`${API_URL}/${item.category_id?.image}`}
+                                                src={item.category_id?.image}
+                                                alt={item.name} width="60" height="60" style={{ borderRadius: '6px' }} />
+                                        </td>
+                                        <td>{item.name}</td>
+                                        <td>
+                                            {item.deleted_at ? (
+                                                <span className="status-badge deleted">Deleted</span>
+                                            ) : (
+                                                <span className="status-badge active">Active</span>
+                                            )}
+                                        </td>
+                                    </tr>
+                                );
+                            })}
+                        </tbody>
+                    </table>
+                </div>)}
+
+
             </div>
         </>
     );

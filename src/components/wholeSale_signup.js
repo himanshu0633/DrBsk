@@ -13,7 +13,8 @@ const WholesalePartnerForm = () => {
     state: '',
     zipcode: '',
     country: '',
-    billingEmail: ''
+    billingEmail: '',
+    password: ''
   });
 
   const [errors, setErrors] = useState({});
@@ -96,7 +97,7 @@ const WholesalePartnerForm = () => {
         console.log("Registration successful:", response.data);
         setSuccess(true);
         toast.success('Wholeseller is created');
-        window.location.href = '/pharma-admin/wholesale';
+        // window.location.href = '/pharma-admin/wholesale';
 
         setFormData({
           companyName: '',
@@ -108,7 +109,8 @@ const WholesalePartnerForm = () => {
           state: '',
           zipcode: '',
           country: '',
-          billingEmail: ''
+          billingEmail: '',
+          password: ''
         });
       } else {
         throw new Error(response.statusText || 'Registration failed');
@@ -190,6 +192,10 @@ const WholesalePartnerForm = () => {
         <div style={styles.formGroup}>
           <label style={styles.label}>Billing Email Address</label>
           <input type="email" name="billingEmail" value={formData.billingEmail} onChange={handleChange} style={styles.input} />
+        </div>
+        <div style={styles.formGroup}>
+          <label style={styles.label}>Password</label>
+          <input type="password" name="password" value={formData.password} onChange={handleChange} style={styles.input} />
         </div>
 
         <button type="submit" style={styles.button} disabled={isSubmitting}>

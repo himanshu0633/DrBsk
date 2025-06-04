@@ -3,6 +3,7 @@ import './AddProduct.css';
 import Admin from '../../components/Admin/Admin';
 import { Link } from 'react-router-dom';
 import axiosInstance from '../../components/AxiosInstance';
+import { CircularProgress } from '@mui/material';
 
 const AddProduct = () => {
   const [products, setProducts] = useState([]);
@@ -38,7 +39,7 @@ const AddProduct = () => {
         </div>
 
         {loading ? (
-          <p>Loading products...</p>
+          <CircularProgress />
         ) : (
           <div className="table-responsive">
             <table className="product-table">

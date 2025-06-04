@@ -122,7 +122,9 @@
   cursor: pointer;
   font-size: 15px;
 }
-
+.clrRed{
+  color: red;
+}
 .signup-button:hover {
   background-color: #E64A00;
 }
