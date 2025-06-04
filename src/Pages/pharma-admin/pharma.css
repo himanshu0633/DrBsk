@@ -17,6 +17,14 @@
     padding: 20px;
 }
 
+.tableWidth {
+    width: 1120px;
+}
+
+.tableOverflow {
+    overflow-x: auto;
+}
+
 .selectCss {
     width: 100%;
     border: 1px solid #ccc;
@@ -27,6 +35,35 @@
 select,
 input:focus {
     outline: none;
+}
+
+.posRelative {
+    position: relative;
+    cursor: pointer;
+}
+
+.action-dropdown {
+    position: absolute;
+    width: 300px;
+    height: 150px;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background-color: white;
+    border: 1px solid #ccc;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    z-index: 1000;
+    border-radius: 4px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    gap: 10px;
+}
+
+.actionFlex {
+    display: flex;
+    justify-content: center;
+    align-items: center;
 }
 
 .bannerCard {
