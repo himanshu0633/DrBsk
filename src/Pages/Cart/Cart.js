@@ -7,6 +7,7 @@ import Header from '../../components/Header/Header';
 import SignUpForm from '../../components/SignUp';
 import axiosInstance from '../../components/AxiosInstance';
 import WholesalePartnerForm from '../../components/wholeSale_signup';
+import { toast } from 'react-toastify';
 
 const Cart = () => {
   const [showPassword, setShowPassword] = useState(false);
@@ -43,8 +44,9 @@ const Cart = () => {
     setTimeout(() => {
       setOtpSent(true);
       setIsLoading(false);
-      alert(`OTP sent to +91${mobile}`);
+     toast.success(`OTP sent to +91${mobile}`);
     }, 1500);
+      
   };
 
   const handleSubmit = async (e) => {

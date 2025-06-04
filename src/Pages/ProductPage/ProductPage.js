@@ -34,6 +34,7 @@ import {
 import axiosInstance from '../../components/AxiosInstance';
 import API_URL from '../../config';
 import { toast } from 'react-toastify';
+import CustomLoader from '../../components/CustomLoader';
 
 const ProductPage = () => {
   const [quantity, setQuantity] = useState(1);
@@ -118,7 +119,7 @@ const ProductPage = () => {
   const product1 = location.state?.product;
 
   if (!product) {
-    return <div>Loading...</div>;
+    return <div><CustomLoader /></div>;
   }
   const storedUser = sessionStorage.getItem('userData');
   const userData = storedUser ? JSON.parse(storedUser) : null;
@@ -170,7 +171,7 @@ const ProductPage = () => {
               <div className="product-header">
                 {/* <h1 className="product-title">Cough Drops (Coolsa) - JAR</h1> */}
                 {/* <h1 className="product-title">{product.name}</h1> */}
-                <h1 className="product-title">{product ? product.name : "Loading..."}</h1>
+                <h1 className="product-title">{product ? product.name : <CustomLoader />}</h1>
 
 
                 <button

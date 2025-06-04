@@ -13,6 +13,7 @@ const AddToCart = () => {
   const [isAuthenticated, setIsAuthenticated] = useState(null);
   const [showModal, setShowModal] = useState(false);
   const [addresses, setAddresses] = useState([]);
+  const[loading, setLoading] = useState(true);
   const [formData, setFormData] = useState({
     flat: '',
     landmark: '',
@@ -85,6 +86,7 @@ const AddToCart = () => {
       toast.error("Failed to update address");
       console.error("Address update error:", error);
     }
+    setLoading(false);
   };
 
   const loadRazorpayScript = () => {

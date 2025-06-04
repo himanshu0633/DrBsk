@@ -3,6 +3,7 @@ import Header from '../../components/Header/Header';
 import './EditProfile.css';
 import Footer from '../../components/Footer/Footer';
 import axiosInstance from '../../components/AxiosInstance';
+import { toast } from 'react-toastify';
 
 const EditProfile = () => {
   const [formData, setFormData] = useState({
@@ -51,7 +52,6 @@ const EditProfile = () => {
   }, []);
 
 
-
   if (isAuthenticated === null) return null;
 
   const handleChange = (e) => {
@@ -68,7 +68,6 @@ const EditProfile = () => {
     }
   };
 
-
   const handleSubmit = async (e) => {
     e.preventDefault();
 
@@ -83,19 +82,16 @@ const EditProfile = () => {
       if (response.status === 200 || response.status === 201) {
         console.log("Profile updated:", response.data);
 
-        // Optionally update session storage with new values
         sessionStorage.setItem('userData', JSON.stringify(response.data.updatedUser || updatedData));
-        alert("Profile updated successfully!");
+        toast.success('Profile updated successfully!');
       } else {
         throw new Error("Failed to update profile");
       }
     } catch (error) {
       console.error("Error updating profile:", error);
-      alert("Error updating profile. Please try again.");
+      toast.error("Error updating profile. Please try again.");
     }
   };
-
-
 
   return (
     <>

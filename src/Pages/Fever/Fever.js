@@ -9,6 +9,7 @@ import { useDispatch, useSelector } from "react-redux";
 import { addData } from "../../store/Action";
 import API_URL from "../../config";
 import { toast } from "react-toastify";
+import CustomLoader from "../../components/CustomLoader";
 
 const Fever = () => {
   const [products, setProducts] = useState([]);
@@ -155,8 +156,7 @@ const Fever = () => {
           {mobileFiltersOpen ? "Hide Filters" : "Show Filters"}
           <span className="filter-icon">{mobileFiltersOpen ? "✕" : "☰"}</span>
         </button>
-
-        <div className="fever-content">
+        {loading ? <CustomLoader /> : (<div className="fever-content">
           <div className={`sidebar ${mobileFiltersOpen ? "mobile-open" : ""}`}>
             <div className="filter-card">
               <div className="filter-header">
@@ -324,7 +324,8 @@ const Fever = () => {
               )}
             </div>
           </div>
-        </div>
+        </div>)}
+
       </div>
       <Footer />
     </>
