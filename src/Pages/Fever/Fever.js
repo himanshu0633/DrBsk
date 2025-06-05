@@ -272,13 +272,13 @@ const Fever = () => {
           {/* Product Grid */}
           <div className="product-grid">
             <div className="product-header">
-              <nav aria-label="breadcrumb">
+              {/* <nav aria-label="breadcrumb">
                 <ol className="breadcrumb">
                   <li className="breadcrumb-item"><a href="/">Home</a></li>
                   <li className="breadcrumb-item"><a href="#">Health Conditions</a></li>
                   <li className="breadcrumb-item active">Fever Cough Cold</li>
                 </ol>
-              </nav>
+              </nav> */}
 
               <div className="sort-container">
                 <label>Sort By:</label>

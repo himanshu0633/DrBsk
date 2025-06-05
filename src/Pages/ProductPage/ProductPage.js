@@ -130,7 +130,7 @@ const ProductPage = () => {
       <Navbar />
       <div className="product-page">
         {/* Breadcrumb Navigation */}
-        <div className="breadcrumb">
+        {/* <div className="breadcrumb">
           <span>Home</span>
           <span className="breadcrumb-divider">/</span>
           <span>Health & Wellness</span>
@@ -138,7 +138,7 @@ const ProductPage = () => {
           <span>Cough & Cold</span>
           <span className="breadcrumb-divider">/</span>
           <span className="breadcrumb-active">Cough Drops</span>
-        </div>
+        </div> */}
 
         {/* Product Section */}
         <div className="product-container">
