@@ -6,7 +6,7 @@
 
 .pharmaSidebar {
     width: 260px;
-    background-color: red;
+    /* background-color: red; */
 }
 
 .pharmaAdminContent {
@@ -15,6 +15,14 @@
 
 .pharmaAdminContent {
     padding: 20px;
+}
+
+.tableWidth {
+    width: 1120px;
+}
+
+.tableOverflow {
+    overflow-x: auto;
 }
 
 .selectCss {
@@ -28,6 +36,66 @@ select,
 input:focus {
     outline: none;
 }
+
+.posRelative {
+    position: relative;
+    cursor: pointer;
+}
+
+.action-dropdown {
+    position: absolute;
+    width: 300px;
+    height: 200px;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background-color: white;
+    border: 1px solid #ccc;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    z-index: 1000;
+    border-radius: 4px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    gap: 10px;
+}
+
+.actionFlex {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+.dropdown-select {
+    width: 100%;
+    max-width: 200px;
+    padding: 10px 12px;
+    font-size: 16px;
+    border: 1px solid #ccc;
+    border-radius: 6px;
+    background-color: #fff;
+    color: #333;
+    cursor: pointer;
+    appearance: none;
+    outline: none;
+    transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+.dropdown-select:focus {
+    border-color: #007bff;
+    box-shadow: 0 0 0 2px rgba(0, 123, 255, 0.2);
+}
+
+.dropdown-select option {
+    padding: 10px;
+    background-color: #fff;
+    color: #333;
+}
+
+/* Optional: Style for disabled option */
+.dropdown-select option:disabled {
+    color: #aaa;
+}
+
 
 .bannerCard {
     width: 32%;

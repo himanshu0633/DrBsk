@@ -7,6 +7,7 @@ import Header from '../../components/Header/Header';
 import SignUpForm from '../../components/SignUp';
 import axiosInstance from '../../components/AxiosInstance';
 import WholesalePartnerForm from '../../components/wholeSale_signup';
+import { toast } from 'react-toastify';
 
 const Cart = () => {
   const [showPassword, setShowPassword] = useState(false);
@@ -43,8 +44,9 @@ const Cart = () => {
     setTimeout(() => {
       setOtpSent(true);
       setIsLoading(false);
-      alert(`OTP sent to +91${mobile}`);
+     toast.success(`OTP sent to +91${mobile}`);
     }, 1500);
+      
   };
 
   const handleSubmit = async (e) => {
@@ -60,7 +62,7 @@ const Cart = () => {
       if (!otp) newErrors.otp = 'Please enter the OTP';
     } else {
       if (!validateEmail(email)) newErrors.email = 'Please enter a valid email address';
-      if (!password || password.length < 6) newErrors.password = 'Password must be at least 6 characters';
+      if (!password || password.length < 5) newErrors.password = 'Password must be at least 5 characters';
     }
 
     if (Object.keys(newErrors).length > 0) {

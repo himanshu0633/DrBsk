@@ -1,6 +1,8 @@
 import React, { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom';
 import axiosInstance from '../../../components/AxiosInstance';
+import { CircularProgress } from '@mui/material';
+import CustomLoader from '../../../components/CustomLoader';
 // import '../../../Pages/AddProduct/AddProduct.css'
 
 const PharmaProducts = () => {
@@ -13,7 +15,7 @@ const PharmaProducts = () => {
             try {
                 const response = await axiosInstance.get('/user/allproducts');
                 console.log("Fetched products:", response.data);
-                setProducts(response.data);  // Update with fetched data
+                setProducts(response.data);  
             } catch (error) {
                 console.error("Error fetching data:", error);
             }
@@ -36,7 +38,7 @@ const PharmaProducts = () => {
                     </div>
 
                     {loading ? (
-                        <p>Loading products...</p>
+                        <CustomLoader />
                     ) : (
                         <div className="table-responsive">
                             <table className="product-table">

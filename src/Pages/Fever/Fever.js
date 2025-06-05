@@ -9,12 +9,14 @@ import { useDispatch, useSelector } from "react-redux";
 import { addData } from "../../store/Action";
 import API_URL from "../../config";
 import { toast } from "react-toastify";
+import CustomLoader from "../../components/CustomLoader";
+import { useParams } from "react-router-dom";
+
 
 const Fever = () => {
   const [products, setProducts] = useState([]);
   const [allProducts, setAllProducts] = useState([]);
   const [addedToCart, setAddedToCart] = useState({});
-
   const [filters, setFilters] = useState({
     minPrice: 0,
     maxPrice: 5000,
@@ -24,10 +26,48 @@ const Fever = () => {
   const [sortOption, setSortOption] = useState("none");
   const [mobileFiltersOpen, setMobileFiltersOpen] = useState(false);
   const [loading, setLoading] = useState(false);
+  const { subCategoryName } = useParams();
+
+
 
   const dispatch = useDispatch();
   // const cartItems = useSelector((state) => state.cart.items || []);
   const cartItems = useSelector((state) => state.cart?.items || []);
+
+  useEffect(() => {
+    let filtered = allProducts.filter((product) => {
+      const price = parseFloat(product.price) || 0;
+      const discount = parseFloat(product.discount) || 0;
+
+      const matchesFilters =
+        price >= filters.minPrice &&
+        price <= filters.maxPrice &&
+        discount >= filters.minDiscount &&
+        discount <= filters.maxDiscount;
+
+      const matchesSubCategory = subCategoryName
+        ? product.sub_category?.toLowerCase() === subCategoryName.toLowerCase()
+        : true;
+
+      return matchesFilters && matchesSubCategory;
+    });
+
+    switch (sortOption) {
+      case "price-low":
+        filtered.sort((a, b) => a.price - b.price);
+        break;
+      case "price-high":
+        filtered.sort((a, b) => b.price - a.price);
+        break;
+      case "discount-high":
+        filtered.sort((a, b) => b.discount - a.discount);
+        break;
+      default:
+        break;
+    }
+
+    setProducts(filtered);
+  }, [filters, sortOption, allProducts, subCategoryName]);
 
 
   useEffect(() => {
@@ -64,14 +104,20 @@ const Fever = () => {
       const price = parseFloat(product.price) || 0;
       const discount = parseFloat(product.discount) || 0;
 
+      const matchesSubCategory = subCategoryName
+        ? product.sub_category?.toLowerCase().trim() === subCategoryName.toLowerCase().trim()
+        : true;
+
       return (
         price >= filters.minPrice &&
         price <= filters.maxPrice &&
         discount >= filters.minDiscount &&
-        discount <= filters.maxDiscount
+        discount <= filters.maxDiscount &&
+        matchesSubCategory
       );
     });
 
+    // Sorting logic
     switch (sortOption) {
       case "price-low":
         filtered.sort((a, b) => a.price - b.price);
@@ -87,7 +133,8 @@ const Fever = () => {
     }
 
     setProducts(filtered);
-  }, [filters, sortOption, allProducts]);
+  }, [filters, sortOption, allProducts, subCategoryName]); 
+
 
   const handleFilterChange = (e) => {
     const { name, value } = e.target;
@@ -131,7 +178,7 @@ const Fever = () => {
     if (item && item.quantity > 1) {
       dispatch(addData({ ...item, quantity: item.quantity - 1 }));
     } else {
-      // Optional: remove item if quantity hits 0
+
       dispatch(addData({ ...item, quantity: 0 }));
     }
   };
@@ -140,6 +187,10 @@ const Fever = () => {
     const item = cartItems.find((i) => i._id === id);
     return item ? item.quantity : 0;
   };
+
+  const storedUser = sessionStorage.getItem('userData');
+  const userData = storedUser ? JSON.parse(storedUser) : null;
+
 
   return (
     <>
@@ -150,8 +201,7 @@ const Fever = () => {
           {mobileFiltersOpen ? "Hide Filters" : "Show Filters"}
           <span className="filter-icon">{mobileFiltersOpen ? "✕" : "☰"}</span>
         </button>
-
-        <div className="fever-content">
+        {loading ? <CustomLoader /> : (<div className="fever-content">
           <div className={`sidebar ${mobileFiltersOpen ? "mobile-open" : ""}`}>
             <div className="filter-card">
               <div className="filter-header">
@@ -222,13 +272,13 @@ const Fever = () => {
           {/* Product Grid */}
           <div className="product-grid">
             <div className="product-header">
-              <nav aria-label="breadcrumb">
+              {/* <nav aria-label="breadcrumb">
                 <ol className="breadcrumb">
                   <li className="breadcrumb-item"><a href="/">Home</a></li>
                   <li className="breadcrumb-item"><a href="#">Health Conditions</a></li>
                   <li className="breadcrumb-item active">Fever Cough Cold</li>
                 </ol>
-              </nav>
+              </nav> */}
 
               <div className="sort-container">
                 <label>Sort By:</label>
@@ -263,12 +313,30 @@ const Fever = () => {
                         <div className="product-details">
                           <h3 className="product-title">{product.name}</h3>
                           <p className="product-quantity">{product.quantity}</p>
-                          <div className="product-price">
+                          {/* <div className="product-price">
                             <span>₹{product.consumer_price}</span>
                             {product.retail_price > product.consumer_price && (
                               <span className="original-price">₹{product.retail_price}</span>
                             )}
+                          </div> */}
+                          <div className="product-price">
+                            {userData?.type === "wholesalePartner" ? (
+                              <>
+                                <span>₹{product.retail_price}</span>
+                                {product.consumer_price < product.retail_price && (
+                                  <span className="original-price">₹{product.consumer_price}</span>
+                                )}
+                              </>
+                            ) : (
+                              <>
+                                <span>₹{product.consumer_price}</span>
+                                {product.retail_price > product.consumer_price && (
+                                  <span className="original-price">₹{product.retail_price}</span>
+                                )}
+                              </>
+                            )}
                           </div>
+
                         </div>
                       </Link>
 
@@ -301,7 +369,8 @@ const Fever = () => {
               )}
             </div>
           </div>
-        </div>
+        </div>)}
+
       </div>
       <Footer />
     </>

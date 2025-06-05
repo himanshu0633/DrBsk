@@ -379,8 +379,8 @@
 @media (max-width: 800px) {
   .headerLocationShowSmlScreen {
     display: flex !important;
-    padding: 20px 10px;
-
+    justify-content: center;
+    padding: 20px 0px;
   }
 
   .headerLocationHideLgScreen {
