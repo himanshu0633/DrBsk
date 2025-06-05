@@ -92,6 +92,8 @@ function App() {
       <Route path="/cart" element={<AddToCart />} />
       <Route path="/Prescription" element={<Prescription />} />
       <Route path="/Phone" element={<Phone />} />
+      <Route path="/subcategory/:subCategoryName" element={<Fever />} />
+
       {/* {Admin Panel Routes} */}
       {/* <Route path="/admin/AddProduct" element={<AddProduct />} />
       <Route path="/admin/Board" element={<Board />} />

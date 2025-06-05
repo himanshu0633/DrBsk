@@ -83,7 +83,10 @@
   justify-content: space-between;
 }
 
-
+.prescription-thumbnail{
+  width:200px;
+  height:200px;
+}
 
 .signup-container {
   max-width: 400px;

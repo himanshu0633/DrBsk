@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import './Navbar.css';
 import { Phone, Mail, Smartphone, ChevronDown, Menu } from 'lucide-react';
 import axiosInstance from '../AxiosInstance';
-import { Link } from 'react-router-dom';
+import { Link, NavLink } from 'react-router-dom';
 
 const Navbar = () => {
   const [categoryName, setCategoryName] = useState([]);
@@ -47,11 +47,13 @@ const Navbar = () => {
               <span>
                 {category.name} <ChevronDown size={14} className="dropdown-icon" />
               </span>
+              
               <div className="dropdown">
+           {/* <NavLink to={sub.name}></NavLink> */}
                 {subcategoryName
                   .filter(sub => sub.category_id?._id === category._id)
                   .map(sub => (
-                    <Link key={sub._id} to={`/fever`}>
+                    <Link key={sub._id} to={`/subcategory/${sub.name}`}>
                       {sub.name}
                     </Link>
                   ))}

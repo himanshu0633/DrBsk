@@ -85,7 +85,8 @@ const Header = () => {
     setShowInput(false);
     setPincode('');
   };
-
+  const storedUser = sessionStorage.getItem('userData');
+  const userData = storedUser ? JSON.parse(storedUser) : null;
 
   return (
     <div className='container-manual'>
@@ -186,12 +187,14 @@ const Header = () => {
                 )}
               </div>
 
-              <a href="/Prescription" className="no-decoration order_5">
+              {userData?.type === "wholesalePartner" ? null : <a href="/Prescription" className="no-decoration order_5">
                 <div className="upload-box">
                   <span className="upload-icon">📄</span>
                   <span className="location-name">Upload Prescription</span>
                 </div>
-              </a>
+              </a>}
+
+
             </div>
             <div className='navbarIconFlex '>
               <a href="/Cart" className="no-decoration">
