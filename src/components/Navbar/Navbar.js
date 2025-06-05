@@ -49,7 +49,6 @@ const Navbar = () => {
               </span>
               
               <div className="dropdown">
-           {/* <NavLink to={sub.name}></NavLink> */}
                 {subcategoryName
                   .filter(sub => sub.category_id?._id === category._id)
                   .map(sub => (
