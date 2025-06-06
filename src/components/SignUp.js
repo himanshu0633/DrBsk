@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import axiosInstance from './AxiosInstance';
+import { toast } from 'react-toastify';
 
 function SignUpForm() {
     const [formData, setFormData] = useState({
@@ -15,14 +16,20 @@ function SignUpForm() {
 
     const handleChange = (e) => {
         const { name, value } = e.target;
+        if (name === 'mobile' && !/^\d{0,10}$/.test(value)) return;
         setFormData((prev) => ({
             ...prev,
             [name]: value,
         }));
+
     };
 
     const handleSubmit = async (e) => {
         e.preventDefault();
+        if (formData.mobile.length !== 10) {
+            setError('mobile number must be exactly 10 digits');
+            return;
+        }
         setIsSubmitting(true);
         setError(null);
         setSuccess(false);
@@ -32,6 +39,7 @@ function SignUpForm() {
 
             if (response.status === 200 || response.status === 201) {
                 console.log("Registration successful:", response.data);
+                toast.success('Registration successful!');
                 setSuccess(true);
                 setFormData({
                     name: '',
@@ -94,7 +102,7 @@ function SignUpForm() {
                     required
                     className="signup-input"
                 />
-
+                {error && <p className='clrRed'>{error}</p>}
                 <button
                     type="submit"
                     className="signup-button"
@@ -102,6 +110,7 @@ function SignUpForm() {
                 >
                     {isSubmitting ? 'Submitting...' : 'Submit'}
                 </button>
+
             </form>
         </div>
     );

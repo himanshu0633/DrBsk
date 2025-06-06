@@ -28,7 +28,7 @@ const Head = () => {
     <>
       <header className={`header ${scrolled ? 'scrolled' : ''}`}>
         <div className="logo">
-          <a href="Landing"><img src={logo} alt="DavaIndia Logo" /></a>
+          <a href="Landing"><img src={logo} alt="BSK Pharma Logo" /></a>
         </div>
 
         <div className="header-buttons">

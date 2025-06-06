@@ -46,6 +46,7 @@ const Prescription = () => {
   const uploadPrescription = async () => {
     if (!selectedFile) {
       setError('Please select a file first.');
+      toast.error('Please select a file first.');
       return;
     }
 

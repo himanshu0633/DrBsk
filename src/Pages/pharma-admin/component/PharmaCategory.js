@@ -126,8 +126,8 @@ const PharmaCategory = () => {
                     Add Category
                 </button>
             </div>
-            {loading ? (<CustomLoader />) : (<div>
-                <table className="admin-table">
+            {loading ? (<CustomLoader />) : (<div className='overflow_x_auto'>
+                <table className="admin-table w_970">
                     <thead>
                         <tr>
                             <th>Name</th>
@@ -167,8 +167,6 @@ const PharmaCategory = () => {
                     </tbody>
                 </table>
             </div>)}
-
-
 
             {/* Modal */}
             {showModal && (

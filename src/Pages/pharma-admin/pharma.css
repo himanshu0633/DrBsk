@@ -60,11 +60,19 @@ input:focus {
     gap: 10px;
 }
 
+.w_970 {
+    width: 970px;
+}
+.overflow_x_auto{
+    overflow-x: auto;
+}
+
 .actionFlex {
     display: flex;
     justify-content: center;
     align-items: center;
 }
+
 .dropdown-select {
     width: 100%;
     max-width: 200px;
@@ -123,7 +131,15 @@ input:focus {
 
 .bannerImg {
     width: 100%;
-    height: 150px;
+    height: 170px;
     object-fit: cover;
     border-radius: 5px;
+}
+.modalInput input{
+    width: 100%;
+    padding: 10px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    box-sizing: border-box;
+    margin-bottom: 10px;
 }

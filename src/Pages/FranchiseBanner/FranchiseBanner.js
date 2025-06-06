@@ -19,7 +19,7 @@ const FranchiseBanner = () => {
             />
             <h2 className="banner-title">
               Enjoy "90% subsidy" on your investment, begin your<br />
-              Healthcare Business with Davaindia now!<br />
+              Healthcare Business with BSK pharma now!<br />
               Enter your details and Transform your business<br />
               dream into reality.
             </h2>

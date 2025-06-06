@@ -139,7 +139,7 @@ const Footer = () => {
               </div>
               <div className="contact-item">
                 <span className="contact-icon">✉️</span>
-                <span>info@davaindia.com</span>
+                <span>info@bskPharma.com</span>
               </div>
             </div>
             <div className="social-icons">

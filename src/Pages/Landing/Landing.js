@@ -104,7 +104,7 @@ const Landing = () => {
 
   const timelineData = [
     { year: "1995", description: "Inception of 'Zota'" },
-    { year: "2017", description: "Launched DavaIndia brand" },
+    { year: "2017", description: "Launched BSK Pharma brand" },
     { year: "2018", description: "Expanded to 50+ stores" },
     { year: "2019", description: "Won TIMES ICON award" },
     { year: "2020", description: "Reached 100+ stores" },
@@ -114,17 +114,17 @@ const Landing = () => {
 
   const testimonials = [
     {
-      text: "DavaIndia has helped me save over 60% on my monthly medicine bills. The quality is just as good as branded medicines but at a fraction of the cost.",
+      text: "BSK Pharma has helped me save over 60% on my monthly medicine bills. The quality is just as good as branded medicines but at a fraction of the cost.",
       author: "Rajesh Kumar",
       role: "Regular Customer"
     },
     {
-      text: "As a doctor, I recommend DavaIndia to all my patients who need affordable yet effective medication. Their range covers almost all essential medicines.",
+      text: "As a doctor, I recommend BSK Pharma to all my patients who need affordable yet effective medication. Their range covers almost all essential medicines.",
       author: "Dr. Priya Sharma",
       role: "General Physician"
     },
     {
-      text: "The staff at my local DavaIndia store is very knowledgeable and helpful. They guide me to the right generic alternatives for my prescriptions.",
+      text: "The staff at my local BSK Pharma store is very knowledgeable and helpful. They guide me to the right generic alternatives for my prescriptions.",
       author: "Meena Patel",
       role: "Senior Citizen"
     }
@@ -267,7 +267,7 @@ const Landing = () => {
       <section className="about-section">
         <div className="about-container">
           <div className="about-image">
-            <img src={storeImage} alt="DavaIndia Store" />
+            <img src={storeImage} alt="BSK Pharma Store" />
           </div>
           <div className="about-content">
             <h2>About Us</h2>
@@ -358,7 +358,7 @@ Our products are used by veterinarians, farmers, and animal caregivers all over 
       {/* Store Section */}
       <div className="section">
         <div className="store-banner">
-          <img src={storeImage} alt="DavaIndia Store" />
+          <img src={storeImage} alt="BSK Pharma Store" />
           <div className="store-text">
             India's Largest Private<br />
             <span>Our strong leadership helps drive our success.
@@ -445,7 +445,7 @@ Together, we aim to provide better solutions for both animal and human health.</
       <section className="cta-section">
         <div className="cta-container">
           <h2>Ready to Start Saving on Your Medicines?</h2>
-          <p>Join thousands of satisfied customers who trust DavaIndia for affordable, high-quality generic medicines.</p>
+          <p>Join thousands of satisfied customers who trust BSK Pharma for affordable, high-quality generic medicines.</p>
           <div className="cta-buttons">
             <a href="#" className="cta-btn primary">
               <MapPin size={18} /> Find a Store Near You
