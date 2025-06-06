@@ -1,5 +1,6 @@
 import React, { useEffect, useState, useRef } from 'react'
 import axiosInstance from '../../../components/AxiosInstance';
+import { toast } from 'react-toastify';
 
 const AddNewProduct = () => {
     const [categoryList, setCategoryList] = useState([]);
@@ -21,6 +22,7 @@ const AddNewProduct = () => {
         benefits: "",
         dosage: "",
         side_effects: "",
+        prescription: "required",
         created_at: new Date().toISOString(),
         deleted_at: null
     });
@@ -116,8 +118,7 @@ const AddNewProduct = () => {
             // Append non-media fields
             Object.keys(formData).forEach(key => {
                 if (key === 'media') return;
-
-                // Skip 'deleted_at' if it's null
+                
                 if (key === 'deleted_at' && formData[key] === null) return;
 
                 uploadData.append(key, formData[key]);
@@ -143,9 +144,11 @@ const AddNewProduct = () => {
 
                 console.log("API Response:", response.data);
                 setIsSubmitted(true);
+                toast.success('Product added successfully!');
             } catch (error) {
                 console.error("Error submitting product:", error);
-                alert("There was an error submitting the product. Please try again.");
+                // alert("There was an error adding the product. Please try again.");
+                toast.error('There was an error adding the product. Please try again.');
             }
         }
     };
@@ -167,6 +170,7 @@ const AddNewProduct = () => {
             benefits: "",
             dosage: "",
             side_effects: "",
+            prescription: "",
             created_at: new Date().toISOString(),
             deleted_at: null
         });
@@ -235,6 +239,7 @@ const AddNewProduct = () => {
                                     />
                                     {errors.name && <span className="herbal-error">{errors.name}</span>}
                                 </div>
+
                                 <div className="herbal-form-group">
                                     <label>Product Media (Images/Videos)*</label>
                                     <div className="media-upload-container">
@@ -288,6 +293,15 @@ const AddNewProduct = () => {
                                         </div>
                                     </div>
                                 </div>
+
+                                <div className="herbal-form-group">
+                                    <label >Prescription</label>
+                                    <select name="prescription" value={formData.prescription} onChange={handleChange} >
+                                        {/* <option value="">Select Prescription</option> */}
+                                        <option value="required">Required</option>
+                                        <option value="Notrequired">Not Required</option>
+                                    </select>
+                                </div>
                             </div>
 
                             <div className="herbal-form-group">
@@ -302,6 +316,7 @@ const AddNewProduct = () => {
                                 {errors.description && <span className="herbal-error">{errors.description}</span>}
                             </div>
                         </div>
+
 
                         {/* Pricing Information */}
                         <div className="herbal-form-section">
