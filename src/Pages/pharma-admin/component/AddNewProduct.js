@@ -5,9 +5,12 @@ import { useParams, useNavigate } from 'react-router-dom';
 
 
 const AddNewProduct = () => {
+    const { id } = useParams();
+    const isEditMode = !!id;
+    const navigate = useNavigate();
+
     const [categoryList, setCategoryList] = useState([]);
     const [subCategoryList, setSubCategoryList] = useState([]);
-
     const [formData, setFormData] = useState({
         name: "",
         description: "",
@@ -32,6 +35,68 @@ const AddNewProduct = () => {
     const [errors, setErrors] = useState({});
     const [isSubmitted, setIsSubmitted] = useState(false);
     const fileInputRef = useRef(null);
+
+    useEffect(() => {
+        const init = async () => {
+            try {
+                const categoriesResponse = await axiosInstance.get('/user/allcategories');
+                setCategoryList(categoriesResponse.data);
+
+                if (isEditMode) {
+                    const productResponse = await axiosInstance.get(`/user/product/${id}`);
+                    const product = productResponse.data;
+                    console.log('lksdjf;sdkjfl;skjfl;sjdf;', productResponse.data)
+
+                    // Fetch subcategories for selected category
+                    if (product.category) {
+                        const subCategoryResponse = await axiosInstance.get(
+                            `/user/allSubcategories?category=${encodeURIComponent(product.category)}`
+                        );
+                        setSubCategoryList(subCategoryResponse.data);
+                    }
+
+                    setFormData({
+                        ...product,
+                        expires_on: product.expires_on?.split('T')[0],
+                        media: product.media.map(m => ({
+                            ...m,
+                            url: m.url.startsWith('http') ? m.url : `${m.url}`,
+                            type: m.type.includes('video') ? 'video' : 'image',
+                            file: null
+                        }))
+                    });
+                }
+            } catch (error) {
+                console.error("Error during initialization:", error);
+            }
+        };
+
+        init();
+    }, [id]);
+
+
+    // const fetchProductDetails = async (productId) => {
+    //     try {
+    //         const res = await axiosInstance.get(`/user/product/${productId}`);
+    //         const product = res.data;
+
+    //         setFormData({
+    //             ...product,
+    //             expires_on: product.expires_on?.split('T')[0],
+    //             media: product.media.map(m => ({
+    //                 ...m,
+    //                 url: m.url.startsWith('http') ? m.url : `${m.url}`,
+    //                 type: m.type.includes('video') ? 'video' : 'image',
+    //                 file: null // existing media won't be re-uploaded
+    //             }))
+    //         });
+
+    //         fetchSubCategories(product.category);
+    //     } catch (error) {
+    //         console.error("Failed to load product:", error);
+    //     }
+    // };
+
 
     const handleChange = (e) => {
         const { name, value } = e.target;
@@ -114,46 +179,48 @@ const AddNewProduct = () => {
 
     const handleSubmit = async (e) => {
         e.preventDefault();
-        if (validateForm()) {
-            const uploadData = new FormData();
+        if (!validateForm()) return;
 
-            // Append non-media fields
-            Object.keys(formData).forEach(key => {
-                if (key === 'media') return;
+        let productId = id;
 
-                if (key === 'deleted_at' && formData[key] === null) return;
+        try {
+            // Step 1: send all fields except media as JSON
+            const jsonPayload = { ...formData };
+            delete jsonPayload.media;
 
-                uploadData.append(key, formData[key]);
-            });
-
-
-            // Append media files
-            formData.media.forEach(media => {
-                uploadData.append('media', media.file); // single key for all files
-            });
-
-
-            try {
-                const response = await axiosInstance.post(
-                    '/user/createProduct', // Replace with actual pharma_url
-                    uploadData,
-                    {
-                        headers: {
-                            'Content-Type': 'multipart/form-data'
-                        }
-                    }
-                );
-
-                console.log("API Response:", response.data);
-                setIsSubmitted(true);
+            if (isEditMode) {
+                await axiosInstance.put(`/user/updateProduct/${id}`, jsonPayload);
+                toast.success('Product updated successfully!');
+            } else {
+                const res = await axiosInstance.post(`/user/createProduct`, jsonPayload);
+                productId = res.data._id || res.data.product?._id;
                 toast.success('Product added successfully!');
-            } catch (error) {
-                console.error("Error submitting product:", error);
-                // alert("There was an error adding the product. Please try again.");
-                toast.error('There was an error adding the product. Please try again.');
             }
+
+            // Step 2: send only new media files (file is present)
+            const newMedia = formData.media.filter(m => m.file);
+            if (newMedia.length > 0) {
+                const uploadData = new FormData();
+                newMedia.forEach(media => {
+                    uploadData.append('media', media.file);
+                });
+
+                await axiosInstance.post(`/user/uploadProductMedia/${productId}`, uploadData, {
+                    headers: { 'Content-Type': 'multipart/form-data' }
+                });
+
+                toast.success('Media uploaded successfully!');
+            }
+
+            navigate("/pharma-admin/products");
+
+        } catch (error) {
+            toast.error('Something went wrong. Please try again.');
+            console.error('Submit Error:', error);
         }
     };
+
+
 
     const handleReset = () => {
         setFormData({
@@ -197,10 +264,6 @@ const AddNewProduct = () => {
     };
 
 
-    useEffect(() => {
-        fetchData();
-    }, [])
-
     const fetchData = async () => {
         try {
             const response = await axiosInstance.get('/user/allcategories');
@@ -215,8 +278,10 @@ const AddNewProduct = () => {
         <div>
             <div className="herbal-form-container">
                 <div className="herbal-form-header">
-                    <h2>Add New Herbal Product</h2>
-                    <button type="button" className="herbal-cancel-btn">Cancel</button>
+                    <h2>{isEditMode ? "Edit Product" : "Add New Product"}</h2>
+                    <button type="button" className="herbal-cancel-btn" onClick={() => navigate("/pharma-admin/products")}>
+                        Cancel
+                    </button>
                 </div>
 
                 {isSubmitted ? (
@@ -498,9 +563,12 @@ const AddNewProduct = () => {
                             <button type="button" onClick={handleReset} className="herbal-reset-btn">
                                 Reset
                             </button>
+                            {/* <p>{isEditMode ? "Edit Product" : "Add New Product"}</p> */}
+
                             <button type="submit" className="herbal-submit-btn">
-                                Submit Product
+                                {isEditMode ? "Update Product" : "Submit Product"}
                             </button>
+
                         </div>
                     </form>
                 )}

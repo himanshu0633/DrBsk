@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, Navigate, useNavigate } from 'react-router-dom';
 import axiosInstance from '../../../components/AxiosInstance';
 import CustomLoader from '../../../components/CustomLoader';
 import API_URL from '../../../config';
@@ -8,8 +8,9 @@ const PharmaProducts = () => {
     const [products, setProducts] = useState([]);
     const [loading, setLoading] = useState(true);
     const [selectedProduct, setSelectedProduct] = useState(null);
-    console.log("API URLdsdasda:", selectedProduct);
     const [showModal, setShowModal] = useState(false);
+    const navigate = useNavigate();
+
 
     const fetchData = async () => {
         setLoading(true);
@@ -37,17 +38,20 @@ const PharmaProducts = () => {
         }
     };
 
-    const handleEdit = async (id) => {
-        const newName = prompt("Enter new name:");
-        if (newName) {
-            try {
-                await axiosInstance.put(`/user/updateProduct/${id}`, { name: newName });
-                fetchData();
-            } catch (error) {
-                console.error("Edit error:", error);
-            }
-        }
+    // const handleEdit = async (id) => {
+    //     navigate(`/pharma-admin/addNewProduct/${id}`);
+    //     try {
+    //         await axiosInstance.put(`/user/updateProduct/${id}`);
+    //         fetchData();
+    //     } catch (error) {
+    //         console.error("Edit error:", error);
+    //     }
+    // };
+
+    const handleEdit = (id) => {
+        navigate(`/pharma-admin/addNewProduct/${id}`);
     };
+
 
     const handleView = (product) => {
         setSelectedProduct(product);
