@@ -63,7 +63,8 @@ input:focus {
 .w_970 {
     width: 970px;
 }
-.overflow_x_auto{
+
+.overflow_x_auto {
     overflow-x: auto;
 }
 
@@ -135,11 +136,91 @@ input:focus {
     object-fit: cover;
     border-radius: 5px;
 }
-.modalInput input{
+
+.modalInput input {
     width: 100%;
     padding: 10px;
     border: 1px solid #ccc;
     border-radius: 4px;
     box-sizing: border-box;
     margin-bottom: 10px;
+}
+
+.admin-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+}
+
+.btn-add,
+.btn-edit,
+.btn-delete,
+.btn-view {
+    padding: 5px 10px;
+    margin: 0 3px;
+    border: none;
+    cursor: pointer;
+    border-radius: 4px;
+    font-weight: bold;
+}
+
+.btn-add {
+    background-color: #28a745;
+    color: #fff;
+}
+
+.btn-edit {
+    background-color: #ffc107;
+    color: #000;
+}
+
+.btn-delete {
+    background-color: #dc3545;
+    color: #fff;
+}
+
+.btn-view {
+    background-color: #17a2b8;
+    color: #fff;
+}
+
+.modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: rgba(0, 0, 0, 0.5);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 9999;
+}
+
+.modal-content {
+    background: #fff;
+    padding: 20px;
+    width: 500px;
+    max-height: 70vh;
+    overflow-y: auto;
+    border-radius: 8px;
+    position: relative;
+}
+
+.close-button {
+    position: absolute;
+    right: 15px;
+    top: 10px;
+    font-size: 20px;
+    cursor: pointer;
+    font-weight: bold;
+}
+
+.modal-image {
+    width: 100%;
+    height: 250px;
+    margin-bottom: 10px;
+    border-radius: 4px;
+    object-fit: cover;
 }

@@ -1,6 +1,8 @@
 import React, { useEffect, useState, useRef } from 'react'
 import axiosInstance from '../../../components/AxiosInstance';
 import { toast } from 'react-toastify';
+import { useParams, useNavigate } from 'react-router-dom';
+
 
 const AddNewProduct = () => {
     const [categoryList, setCategoryList] = useState([]);
@@ -118,7 +120,7 @@ const AddNewProduct = () => {
             // Append non-media fields
             Object.keys(formData).forEach(key => {
                 if (key === 'media') return;
-                
+
                 if (key === 'deleted_at' && formData[key] === null) return;
 
                 uploadData.append(key, formData[key]);

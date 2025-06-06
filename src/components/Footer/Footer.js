@@ -135,11 +135,15 @@ const Footer = () => {
             <div className="contact-info">
               <div className="contact-item">
                 <span className="contact-icon">📞</span>
-                <span>+91 1234567890</span>
+                <p>+91-911-551-3759 </p>
+              </div>
+              <div className="contact-item">
+                <span className="contact-icon">📞</span>
+                <p>+91-911-591-5933 </p>
               </div>
               <div className="contact-item">
                 <span className="contact-icon">✉️</span>
-                <span>info@bskPharma.com</span>
+                <span>ukgermanpharmaceutical@gmail.com</span>
               </div>
             </div>
             <div className="social-icons">
@@ -167,7 +171,7 @@ const Footer = () => {
           <div className="foo ter-col footerLinkSec">
             <h4>Company</h4>
             <ul className="footer-links">
-              <li><a href="#">About Davaindia</a></li>
+              <li><a href="#">About BSK Pharma</a></li>
               <li><a href="#">Our Products</a></li>
               <li><a href="#">Customer Speaks</a></li>
               <li><a href="#">Career</a></li>
