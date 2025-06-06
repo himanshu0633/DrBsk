@@ -128,7 +128,6 @@ function App() {
           <Route path="orders" element={<PharmaOrder />} />
           <Route path="products" element={<PharmaProducts />} />
           <Route path="addNewProduct" element={<AddNewProduct />} />
-          {/* <Route path="editProduct/:id" element={<AddNewProduct />} /> */}
           <Route path="banner" element={<PharmaBanner />} />
           <Route path="user" element={<PharmaUser />} />
           <Route path="settings" element={<PharmaSetting />} />
