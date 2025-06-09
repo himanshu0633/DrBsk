@@ -204,13 +204,13 @@ import { toast } from 'react-toastify';
 
 const PharmaSubCategory = () => {
     const [formData, setFormData] = useState({
-    name: '',
-    description: '',
-    image: '',
-    category_id: '',
-    subCategoryvariety: '', // New field added
-});
-const [filteredCategories, setFilteredCategories] = useState([]);
+        name: '',
+        description: '',
+        image: '',
+        category_id: '',
+        subCategoryvariety: '', // New field added
+    });
+    const [filteredCategories, setFilteredCategories] = useState([]);
 
 
     const [editingId, setEditingId] = useState(null);
@@ -219,17 +219,17 @@ const [filteredCategories, setFilteredCategories] = useState([]);
     const [showModal, setShowModal] = useState(false);
     const [loading, setLoading] = useState(true);
 
-   const fetchData = async () => {
-    try {
-        const response = await axiosInstance.get('/user/allcategories');
-        setCategories(response.data);
-        setFilteredCategories(response.data); // Set initially
-    } catch (error) {
-        console.error("Error fetching categories:", error);
-        toast.error("Failed to fetch categories. Please try again.");
-    }
-    setLoading(false);
-};
+    const fetchData = async () => {
+        try {
+            const response = await axiosInstance.get('/user/allcategories');
+            setCategories(response.data);
+            setFilteredCategories(response.data); // Set initially
+        } catch (error) {
+            console.error("Error fetching categories:", error);
+            toast.error("Failed to fetch categories. Please try again.");
+        }
+        setLoading(false);
+    };
 
 
     const fetchSubCategories = async () => {
@@ -249,25 +249,25 @@ const [filteredCategories, setFilteredCategories] = useState([]);
         fetchSubCategories();
     }, []);
 
-  const handleInputChange = (e) => {
-    const { name, value, files } = e.target;
+    const handleInputChange = (e) => {
+        const { name, value, files } = e.target;
 
-    if (name === "subCategoryvariety") {
-        setFormData((prev) => ({
-            ...prev,
-            [name]: value,
-            category_id: '', // Reset category selection when variety changes
-        }));
+        if (name === "subCategoryvariety") {
+            setFormData((prev) => ({
+                ...prev,
+                [name]: value,
+                category_id: '', // Reset category selection when variety changes
+            }));
 
-        const filtered = categories.filter(cat => cat.variety === value);
-        setFilteredCategories(filtered);
-    } else {
-        setFormData((prev) => ({
-            ...prev,
-            [name]: files ? files[0] : value,
-        }));
-    }
-};
+            const filtered = categories.filter(cat => cat.variety === value);
+            setFilteredCategories(filtered);
+        } else {
+            setFormData((prev) => ({
+                ...prev,
+                [name]: files ? files[0] : value,
+            }));
+        }
+    };
 
 
 
@@ -302,26 +302,26 @@ const [filteredCategories, setFilteredCategories] = useState([]);
         }
     };
 
-   const startEditingSubCategory = (item) => {
-    const selectedVariety = item.subCategoryvariety || '';
-    const filtered = categories.filter(cat => cat.variety === selectedVariety);
+    const startEditingSubCategory = (item) => {
+        const selectedVariety = item.subCategoryvariety || '';
+        const filtered = categories.filter(cat => cat.variety === selectedVariety);
 
-    setFormData({
-        name: item.name,
-        description: item.description,
-        image: '',
-        category_id: item.category_id?._id || '',
-        subCategoryvariety: selectedVariety,
-    });
+        setFormData({
+            name: item.name,
+            description: item.description,
+            image: '',
+            category_id: item.category_id?._id || '',
+            subCategoryvariety: selectedVariety,
+        });
 
-    setFilteredCategories(filtered);
-    setEditingId(item._id);
-    setShowModal(true);
-};
+        setFilteredCategories(filtered);
+        setEditingId(item._id);
+        setShowModal(true);
+    };
 
 
     const resetForm = () => {
-        setFormData({ name: '', image: '', description: '', category_id: '' ,  subCategoryvariety: '', });
+        setFormData({ name: '', image: '', description: '', category_id: '', subCategoryvariety: '', });
         setEditingId(null);
     };
 
@@ -352,28 +352,29 @@ const [filteredCategories, setFilteredCategories] = useState([]);
                     <div className="modal">
                         <h3>{editingId ? "Edit Sub Category" : "Add New Sub Category"}</h3>
                         <form onSubmit={handleCreateOrUpdate}>
-                             <select
-                name="subCategoryvariety"
-                value={formData.subCategoryvariety}
-                onChange={handleInputChange}
-                required
-            >
-                <option value="" disabled>Select Variety</option>
-                <option value="Human">Human</option>
-                <option value="Veterinary">Veterinary</option>
-            </select>
-                           <select
-    name="category_id"
-    value={formData.category_id}
-    onChange={handleInputChange}
-    required
-    className="selectCss"
->
-    <option value="">Select Category</option>
-    {filteredCategories.map(cat => (
-        <option key={cat._id} value={cat._id}>{cat.name}</option>
-    ))}
-</select>
+                            <select
+                                name="subCategoryvariety"
+                                value={formData.subCategoryvariety}
+                                onChange={handleInputChange}
+                                className='selectCss'
+                                required
+                            >
+                                <option value="" disabled>Select Variety</option>
+                                <option value="Human">Human</option>
+                                <option value="Veterinary">Veterinary</option>
+                            </select>
+                            <select
+                                name="category_id"
+                                value={formData.category_id}
+                                onChange={handleInputChange}
+                                required
+                                className="selectCss"
+                            >
+                                <option value="">Select Category</option>
+                                {filteredCategories.map(cat => (
+                                    <option key={cat._id} value={cat._id}>{cat.name}</option>
+                                ))}
+                            </select>
 
 
                             <input
@@ -424,7 +425,7 @@ const [filteredCategories, setFilteredCategories] = useState([]);
                 <table className="admin-table">
                     <thead>
                         <tr>
-                             <th>Variety</th>
+                            <th>Variety</th>
                             <th>Name</th>
                             <th>Description</th>
                             <th>Image</th>
@@ -436,7 +437,7 @@ const [filteredCategories, setFilteredCategories] = useState([]);
                     <tbody>
                         {subCategoryList.map((item, i) => (
                             <tr key={i}>
-                                 <td>{item.subCategoryvariety || 'Unknown'}</td>
+                                <td>{item.subCategoryvariety || 'Unknown'}</td>
                                 <td>{item.name || 'Unknown'}</td>
                                 <td>{item.description || '-'}</td>
                                 <td>
