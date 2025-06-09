@@ -71,11 +71,11 @@ const Navbar = () => {
           </a>
           <div className="phone">
             <Phone size={16} className="icon" />
-            <span>+91 1234567890</span>
+            <span>+91-911-551-3759</span>
           </div>
           <div className="email">
             <Mail size={16} className="icon" />
-            <span>support@example.com</span>
+            <span>ukgermanpharmaceutical@gmail.com</span>
           </div>
         </div>
       </div>

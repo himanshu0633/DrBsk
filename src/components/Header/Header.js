@@ -200,9 +200,9 @@ const Header = () => {
               <a href="/Cart" className="no-decoration">
                 <div className="cart-icon">🛒 Cart</div>
               </a>
-              <a href="/Notifications" className="no-decoration">
+              {/* <a href="/Notifications" className="no-decoration">
                 <div className="bell-icon">🔔</div>
-              </a>
+              </a> */}
               <div className="signin-dropdown-wrapper" ref={dropdownRef}>
                 <div className="signin-btn" onClick={toggleDropdown}>
                   <div className="signin-icon">👤</div>
@@ -216,7 +216,7 @@ const Header = () => {
                     <a className="dropdown-item" href="/orders">
                       <span className="dropdown-icon">📦</span> My Orders
                     </a>
-                    <a className="dropdown-item" href="/patients">
+                    {/* <a className="dropdown-item" href="/patients">
                       <span className="dropdown-icon">👩‍⚕️</span> Patients
                     </a>
                     <a className="dropdown-item" href="/notifications">
@@ -224,7 +224,7 @@ const Header = () => {
                     </a>
                     <a className="dropdown-item" href="/consultations">
                       <span className="dropdown-icon">💬</span> Consultations
-                    </a>
+                    </a> */}
                     <a href="#" className="dropdown-item" onClick={handleLogout}>
                       <span className="dropdown-icon">🚪</span> Logout
                     </a>
@@ -280,63 +280,4 @@ const Header = () => {
 export default Header;
 
 
-// <div className="header  ">
-//         <a className='logo_size' href="/">
-//           <img src={logo} alt="Logo" className="logo" />
-//         </a>
 
-//         <div className='w_200 flexProp flex_wrap'>
-//           <div className="location-box order_4 ">
-//             <span className="location-icon">📍</span>
-//             <span className="pincode">560068</span>
-//             <span className="location-name">Bommanahalli (Bengaluru)</span>
-//             <span className="dropdown-icon">▼</span>
-//           </div>
-
-//           <a href="/Prescription" className="no-decoration order_5">
-//             <div className="upload-box">
-//               <span className="upload-icon">📄</span>
-//               <span className="location-name">Upload Prescription</span>
-//             </div>
-//           </a>
-
-//           <div className='navbarIconFlex '>
-//             <a href="/Cart" className="no-decoration">
-//               <div className="cart-icon">🛒 Cart</div>
-//             </a>
-
-//             <a href="/Notifications" className="no-decoration">
-//               <div className="bell-icon">🔔</div>
-//             </a>
-
-//             <div className="signin-dropdown-wrapper" ref={dropdownRef}>
-//               <div className="signin-btn" onClick={toggleDropdown}>
-//                 <div className="signin-icon">👤</div>
-//                 <span>Sign In</span>
-//               </div>
-//               {showDropdown && (
-//                 <div className="dropdown-menu">
-//                   <a className="dropdown-item" href="/EditProfile">
-//                     <span className="dropdown-icon">👤</span> My Profile
-//                   </a>
-//                   <a className="dropdown-item" href="/orders">
-//                     <span className="dropdown-icon">📦</span> My Orders
-//                   </a>
-//                   <a className="dropdown-item" href="/patients">
-//                     <span className="dropdown-icon">👩‍⚕️</span> Patients
-//                   </a>
-//                   <a className="dropdown-item" href="/notifications">
-//                     <span className="dropdown-icon">🔔</span> Notifications
-//                   </a>
-//                   <a className="dropdown-item" href="/consultations">
-//                     <span className="dropdown-icon">💬</span> Consultations
-//                   </a>
-//                   <a href="#" className="dropdown-item" onClick={handleLogout}>
-//                     <span className="dropdown-icon">🚪</span> Logout
-//                   </a>
-//                 </div>
-//               )}
-//             </div>
-//           </div>
-//         </div>
-//       </div>

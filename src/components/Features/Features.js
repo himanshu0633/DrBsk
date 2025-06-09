@@ -1,40 +1,45 @@
-// src/components/FeaturesSection.jsx
+
 import React from 'react';
 import './Features.css';
-import { useNavigate } from 'react-router-dom';
+import { NavLink, useNavigate } from 'react-router-dom';
 
 const Features = () => {
   const navigate = useNavigate();
 
-  const handleClick = () => {
-    navigate('/fever');
+  // const handleClick = () => {
+  //   navigate('/fever');
+  // };
+
+  const handleClick = (filterByPrescription = false) => {
+    navigate('/fever', { state: { filterByPrescription } });
   };
+
 
   return (
     <div className="container-fluid featurs py-5">
       <div className="container py-5">
         <div className="featurs-row">
           {/* Feature Card */}
-         <div
-      className="featurs-item text-center rounded p-4"
-      onClick={handleClick}
-      style={{ cursor: 'pointer' }}
-    >
-      <div className="featurs-icon">
-        <img
-          src="https://app.davaindia.com/images/QuickActions/drugs.gif"
-          alt="Order Medicine"
-        />
-      </div>
-      <div className="featurs-content">
-        <h5>Order Medicine</h5>
-        <p className="mb-0">Order our generic medicines</p>
-      </div>
-    </div>
+          <div
+            className="featurs-item text-center rounded p-4"
+            onClick={() => handleClick(false)}
+            style={{ cursor: 'pointer' }}
+          >
+            <div className="featurs-icon">
+              <img
+                src="https://app.davaindia.com/images/QuickActions/drugs.gif"
+                alt="Order Medicine"
+              />
+            </div>
+            <div className="featurs-content">
+              <h5>Order Medicine</h5>
+              <p className="mb-0">Order our generic medicines</p>
+            </div>
+          </div>
 
           {/* Feature Card */}
-          <div className="featurs-item text-center rounded p-4"  onClick={handleClick}
-      style={{ cursor: 'pointer' }}>
+          <div className="featurs-item text-center rounded p-4" onClick={() => handleClick(true)}
+            style={{ cursor: 'pointer' }}>
             <div className="featurs-icon">
               <img src="https://app.davaindia.com/images/QuickActions/doctor.gif" alt="No Prescription" />
             </div>
@@ -45,20 +50,25 @@ const Features = () => {
           </div>
 
           {/* Feature Card */}
-          <div className="featurs-item text-center rounded p-4"  onClick={handleClick}
-      style={{ cursor: 'pointer' }}>
-            <div className="featurs-icon">
-              <img src="https://app.davaindia.com/images/QuickActions/PrevBought.gif" alt="Previously Bought" />
-            </div>
-            <div className="featurs-content">
-              <h5>Previously Bought</h5>
-              <p className="mb-0">Check your previously bought items</p>
-            </div>
+          <div className="featurs-item text-center rounded p-4"
+            style={{ cursor: 'pointer' }}>
+            <NavLink to='OrderPage' className='textDecorNone'>
+              <div className="featurs_item1 text-center rounded p-4"
+                style={{ cursor: 'pointer' }}>
+                <div className="featurs-icon">
+                  <img src="https://app.davaindia.com/images/QuickActions/PrevBought.gif" alt="Previously Bought" />
+                </div>
+                <div className="featurs-content">
+                  <h5 >Previously Bought</h5>
+                  <p className="mb-0 ">Check your previously bought items</p>
+                </div>
+              </div>
+            </NavLink>
           </div>
 
           {/* Feature Card */}
-          <div className="featurs-item text-center rounded p-4"  onClick={handleClick}
-      style={{ cursor: 'pointer' }}>
+          <div className="featurs-item text-center rounded p-4"
+            style={{ cursor: 'pointer' }}>
             <div className="featurs-icon">
               <img src="https://app.davaindia.com/images/QuickActions/sale.gif" alt="Deals For You" />
             </div>
