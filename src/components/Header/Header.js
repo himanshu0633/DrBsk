@@ -2,8 +2,13 @@ import React, { useState, useEffect, useRef } from 'react';
 import './Header.css';
 import '../../App.css'
 import logo from '../../logo/logo1.jpg';
+import { useSelector } from 'react-redux';
+import { ShoppingCart } from 'lucide-react';
+import { Link } from 'react-router-dom';
 
 const Header = () => {
+  const cartItems = useSelector((state) => state.app.data);
+  const cartCount = cartItems.length;
   const [showDropdown, setShowDropdown] = useState(false);
   const [selectedLanguage, setSelectedLanguage] = useState('English');
   const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
@@ -197,9 +202,16 @@ const Header = () => {
 
             </div>
             <div className='navbarIconFlex '>
-              <a href="/Cart" className="no-decoration">
+              {/* <a href="/Cart" className="no-decoration">
                 <div className="cart-icon">🛒 Cart</div>
-              </a>
+                 {cartCount > 0 && <span className="cart-badge">{cartCount}</span>}
+              </a> */}
+             
+                <Link to="/cart" className="cart-link">
+                  <ShoppingCart size={30} />
+                  {cartCount > 0 && <span className="cart-badge">{cartCount}</span>}
+                </Link>
+            
               {/* <a href="/Notifications" className="no-decoration">
                 <div className="bell-icon">🔔</div>
               </a> */}

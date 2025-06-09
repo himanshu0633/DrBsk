@@ -142,7 +142,7 @@ const Fever = () => {
     filterByPrescription,
   ]);
 
-  // 🟡 Cart controls
+  // Cart controls
   const getQuantity = (id) =>
     cartItems.find((i) => i._id === id)?.quantity || 0;
 

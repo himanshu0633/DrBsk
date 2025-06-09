@@ -47,7 +47,7 @@ const Navbar = () => {
               <span>
                 {category.name} <ChevronDown size={14} className="dropdown-icon" />
               </span>
-              
+
               <div className="dropdown">
                 {subcategoryName
                   .filter(sub => sub.category_id?._id === category._id)
