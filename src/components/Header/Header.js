@@ -52,7 +52,6 @@ const Header = () => {
     console.log('Logging out...');
     const userData = sessionStorage.clear('userData');
     window.location.href = '/login';
-
   };
 
   const handleDivClick = () => {
@@ -206,26 +205,27 @@ const Header = () => {
                 <div className="cart-icon">🛒 Cart</div>
                  {cartCount > 0 && <span className="cart-badge">{cartCount}</span>}
               </a> */}
-             
-                <Link to="/cart" className="cart-link">
-                  <ShoppingCart size={30} />
-                  {cartCount > 0 && <span className="cart-badge">{cartCount}</span>}
-                </Link>
-            
+
+              <Link to="/cart" className="cart-link">
+                <ShoppingCart size={30} />
+                {cartCount > 0 && <span className="cart-badge">{cartCount}</span>}
+              </Link>
+
               {/* <a href="/Notifications" className="no-decoration">
                 <div className="bell-icon">🔔</div>
               </a> */}
               <div className="signin-dropdown-wrapper" ref={dropdownRef}>
                 <div className="signin-btn" onClick={toggleDropdown}>
                   <div className="signin-icon">👤</div>
-                  <span>Sign In</span>
+                  <span className='margin_left_8'> {userData ? null : 'Sign In'} </span>
+
                 </div>
                 {showDropdown && (
                   <div className="dropdown-menu">
                     <a className="dropdown-item" href="/EditProfile">
                       <span className="dropdown-icon">👤</span> My Profile
                     </a>
-                    <a className="dropdown-item" href="/orders">
+                    <a className="dropdown-item" href="/OrderPage">
                       <span className="dropdown-icon">📦</span> My Orders
                     </a>
                     {/* <a className="dropdown-item" href="/patients">

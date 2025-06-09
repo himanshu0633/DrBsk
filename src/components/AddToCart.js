@@ -14,12 +14,14 @@ const AddToCart = () => {
   const [showModal, setShowModal] = useState(false);
   const [addresses, setAddresses] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [states, setStates] = useState([]);
+  const [cities, setCities] = useState([]);
   const [formData, setFormData] = useState({
     flat: '',
     landmark: '',
     state: '',
     city: '',
-    country: '',
+    country: 'India',
     phone: '',
     selectedAddress: ''
   });
@@ -37,7 +39,8 @@ const AddToCart = () => {
     }
   }, []);
 
-  if (isAuthenticated === null) return null;
+  // if (isAuthenticated === null) return null;
+
 
   const totalPrice = cartItems.reduce((acc, item) => {
     const price = parseFloat(item.consumer_price || item.price || 0);
@@ -88,6 +91,37 @@ const AddToCart = () => {
     }
     setLoading(false);
   };
+
+  useEffect(() => {
+    const fetchStates = async () => {
+      try {
+        const res = await axiosInstance.post('https://countriesnow.space/api/v0.1/countries/states', {
+          country: 'India'
+        });
+        setStates(res.data.data.states.map(s => s.name));
+      } catch (err) {
+        console.error('Error fetching states', err);
+      }
+    };
+    fetchStates();
+  }, []);
+
+  useEffect(() => {
+    if (!formData.state) return;
+
+    const fetchCities = async () => {
+      try {
+        const res = await axiosInstance.post('https://countriesnow.space/api/v0.1/countries/state/cities', {
+          country: 'India',
+          state: formData.state
+        });
+        setCities(res.data.data);
+      } catch (err) {
+        console.error('Error fetching cities', err);
+      }
+    };
+    fetchCities();
+  }, [formData.state]);
 
   const loadRazorpayScript = () => {
     return new Promise((resolve) => {
@@ -275,34 +309,36 @@ const AddToCart = () => {
                   >
                     ➕ Add New Address
                   </button>
-                  {addresses.length > 0 ? (
-                    <div className="saved-addresses">
-                      <h4 className="section-subtitle">📍 Saved Addresses</h4>
-                      <ul className="address-list">
-                        {addresses.map((addr, index) => (
-                          <li
-                            key={index}
-                            className={`address-card ${formData.selectedAddress === addr ? 'selected' : ''}`}
-                          >
-                            <label>
-                              <input
-                                type="radio"
-                                name="selectedAddress"
-                                value={addr}
-                                checked={formData.selectedAddress === addr}
-                                onChange={() =>
-                                  setFormData({ ...formData, selectedAddress: addr })
-                                }
-                              />
-                              <span>{addr}</span>
-                            </label>
-                          </li>
-                        ))}
-                      </ul>
-                    </div>
-                  ) : (
-                    <p className="no-address-text">No address saved yet. Please add one.</p>
-                  )}
+                  <div className='my_10'>
+                    {addresses.length > 0 ? (
+                      <div className="saved-addresses">
+                        <h4 className="section-subtitle">📍 Saved Addresses</h4>
+                        <ul className="address-list">
+                          {addresses.map((addr, index) => (
+                            <li
+                              key={index}
+                              className={`address-card ${formData.selectedAddress === addr ? 'selected' : ''}`}
+                            >
+                              <label>
+                                <input
+                                  type="radio"
+                                  name="selectedAddress"
+                                  value={addr}
+                                  checked={formData.selectedAddress === addr}
+                                  onChange={() =>
+                                    setFormData({ ...formData, selectedAddress: addr })
+                                  }
+                                />
+                                <span>{addr}</span>
+                              </label>
+                            </li>
+                          ))}
+                        </ul>
+                      </div>
+                    ) : (
+                      <p className="no-address-text">No address saved yet. Please add one.</p>
+                    )}
+                  </div>
 
                   <div className="summary-details">
                     <div className="summary-row">
@@ -377,7 +413,7 @@ const AddToCart = () => {
                 onChange={(e) => setFormData({ ...formData, landmark: e.target.value })}
               />
             </Grid>
-            <Grid item xs={12} sm={6}>
+            {/* <Grid item xs={12} sm={6}>
               <TextField
                 label="City"
                 fullWidth
@@ -394,14 +430,24 @@ const AddToCart = () => {
                 size="small"
                 onChange={(e) => setFormData({ ...formData, state: e.target.value })}
               />
-            </Grid>
+            </Grid> */}
+
+            <select name="state" value={formData.state} onChange={(e) => setFormData({ ...formData, state: e.target.value })} >
+              <option value="">Select State</option>
+              {states.map((state) => <option key={state} value={state}>{state}</option>)}
+            </select>
+
+            <select name="city" value={formData.city} onChange={(e) => setFormData({ ...formData, city: e.target.value })} >
+              <option value="">Select City</option>
+              {cities.map((city) => <option key={city} value={city}>{city}</option>)}
+            </select>
+
             <Grid item xs={12} sm={6}>
               <TextField
-                label="Country"
                 fullWidth
                 variant="outlined"
                 size="small"
-                onChange={(e) => setFormData({ ...formData, country: e.target.value })}
+                value="India"
               />
             </Grid>
             <Grid item xs={12} sm={6}>

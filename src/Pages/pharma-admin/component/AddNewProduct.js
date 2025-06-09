@@ -179,6 +179,8 @@ const AddNewProduct = () => {
         return Object.keys(newErrors).length === 0;
     };
 
+    // option 1 : sending data as json+formData
+
     // const handleSubmit = async (e) => {
     //     e.preventDefault();
     //     if (!validateForm()) return;
@@ -223,48 +225,109 @@ const AddNewProduct = () => {
     // };
 
 
+    // option 2 : sending data as FormData+json
+
+    // const handleSubmit = async (e) => {
+    //     e.preventDefault();
+    //     if (!validateForm()) return;
+
+    //     let productId = id;
+
+    //     try {
+    //         // Step 1: Prepare JSON payload (exclude media)
+    //         const { media, ...jsonPayload } = formData;
+
+    //         if (isEditMode) {
+    //             await axiosInstance.put(`/user/updateProduct/${productId}`, jsonPayload);
+    //             toast.success('Product updated successfully!');
+    //         } else {
+    //             const res = await axiosInstance.post(`/user/createProduct`, jsonPayload);
+    //             productId = res.data._id || res.data.product?._id;
+    //             toast.success('Product added successfully!');
+    //         }
+
+    //         // Step 2: Always send media separately via FormData if any exists
+    //         if (media?.length > 0) {
+    //             const uploadData = new FormData();
+    //             media.forEach(item => {
+    //                 if (item?.file) {
+    //                     uploadData.append('media', item.file);
+    //                 }
+    //             });
+
+    //             if ([...uploadData].length > 0) {
+    //                 await axiosInstance.post(`/user/createProduct/${productId}`, uploadData, {
+    //                     headers: { 'Content-Type': 'multipart/form-data' }
+    //                 });
+
+    //                 toast.success('Media uploaded successfully!');
+    //             }
+    //         }
+
+    //         navigate("/pharma-admin/products");
+
+    //     } catch (error) {
+    //         toast.error('Something went wrong. Please try again.');
+    //         console.error('Submit Error:', error);
+    //     }
+    // };
+
+
+    // option 3 : sending data as FormData
     const handleSubmit = async (e) => {
         e.preventDefault();
         if (!validateForm()) return;
 
-        let productId = id;
-
         try {
-            // Step 1: Prepare JSON payload (exclude media)
-            const { media, ...jsonPayload } = formData;
+            const formPayload = new FormData();
 
+            // Append all fields (excluding media for now)
+            Object.entries(formData).forEach(([key, value]) => {
+                if (key === 'media') return;
+                if (value !== null && value !== undefined) {
+                    formPayload.append(key, value);
+                }
+            });
+
+            // Append media files (only new uploads with .file property)
+            formData.media.forEach((item) => {
+                if (item?.file) {
+                    formPayload.append('media', item.file);
+                } else {
+                    // Optionally append existing media URLs if needed
+                    formPayload.append('existingMedia', item.url);
+                }
+            });
+
+            let res;
             if (isEditMode) {
-                await axiosInstance.put(`/user/updateProduct/${productId}`, jsonPayload);
+                res = await axiosInstance.put(
+                    `/user/updateProduct/${id}`,
+                    formPayload,
+                    {
+                        headers: {
+                            'Content-Type': 'multipart/form-data',
+                        },
+                    }
+                );
                 toast.success('Product updated successfully!');
             } else {
-                const res = await axiosInstance.post(`/user/createProduct`, jsonPayload);
-                productId = res.data._id || res.data.product?._id;
+                res = await axiosInstance.post(
+                    '/user/createProduct',
+                    formPayload,
+                    {
+                        headers: {
+                            'Content-Type': 'multipart/form-data',
+                        },
+                    }
+                );
                 toast.success('Product added successfully!');
             }
 
-            // Step 2: Always send media separately via FormData if any exists
-            if (media?.length > 0) {
-                const uploadData = new FormData();
-                media.forEach(item => {
-                    if (item?.file) {
-                        uploadData.append('media', item.file);
-                    }
-                });
-
-                if ([...uploadData].length > 0) {
-                    await axiosInstance.post(`/user/uploadProductMedia/${productId}`, uploadData, {
-                        headers: { 'Content-Type': 'multipart/form-data' }
-                    });
-
-                    toast.success('Media uploaded successfully!');
-                }
-            }
-
-            navigate("/pharma-admin/products");
-
+            navigate('/pharma-admin/products');
         } catch (error) {
-            toast.error('Something went wrong. Please try again.');
             console.error('Submit Error:', error);
+            toast.error('Something went wrong. Please try again.');
         }
     };
 
@@ -529,7 +592,6 @@ const AddNewProduct = () => {
                                     <select
                                         name="productvariety"
                                         value={formData.productvariety}
-                                        className='selectCss'
                                         onChange={(e) => {
                                             const selectedVariety = e.target.value;
                                             setFormData(prev => ({
@@ -539,6 +601,7 @@ const AddNewProduct = () => {
                                                 sub_category: ""
                                             }));
                                         }}
+                                        className='selectCss'
                                     >
                                         <option value="">Select Variety</option>
                                         <option value="Human">Human</option>

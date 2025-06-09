@@ -216,7 +216,6 @@
 }
 
 .signin-icon {
-  margin-right: 8px;
   background-color: white;
   color: #28a745;
   width: 25px;
@@ -226,6 +225,9 @@
   align-items: center;
   justify-content: center;
   font-size: 14px;
+}
+.margin_left_8{
+  margin-left: 8px;
 }
 
 .signin-dropdown-wrapper {

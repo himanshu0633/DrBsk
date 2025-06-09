@@ -1,4 +1,4 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import './Prescription.css';
 import prescription from "../../logo/Prescription.webp";
 import Header from '../../components/Header/Header';
@@ -12,6 +12,7 @@ const Prescription = () => {
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
   const fileInputRef = useRef(null);
+  const [isAuthenticated, setIsAuthenticated] = useState(null);
 
   const userData = sessionStorage.getItem('userData');
   const userId = userData ? JSON.parse(userData)._id : null;
@@ -74,6 +75,17 @@ const Prescription = () => {
       setUploading(false);
     }
   };
+
+   useEffect(() => {
+      const userData = sessionStorage.getItem('userData');
+      if (userData) {
+        setIsAuthenticated(true);
+      } else {
+        window.location.href = '/login';
+      }
+    }, []);
+  
+    if (isAuthenticated === null) return null;
 
   return (
     <>

@@ -24,7 +24,7 @@
 .nav-right {
   display: flex;
   align-items: center;
-  gap: 1.5rem;
+  gap: 10px;
 }
 
 .nav-item {
@@ -154,7 +154,7 @@
   }
 }
 
-@media (max-width: 768px) {
+@media (max-width: 1050px) {
   .top-nav {
     flex-wrap: wrap;
     padding: 0.8rem 1rem;
