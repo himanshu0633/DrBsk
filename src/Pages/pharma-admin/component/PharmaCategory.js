@@ -10,18 +10,20 @@ const PharmaCategory = () => {
     const [categoryList, setCategoryList] = useState([]);
     const [loading, setLoading] = useState(true);
     const [newCategory, setNewCategory] = useState({
+          variety: "",
         name: '',
         description: '',
         image: null,
     });
 
-    const handleInputChange = (e) => {
-        const { name, value, files } = e.target;
-        setNewCategory((prev) => ({
-            ...prev,
-            [name]: files ? files[0] : value
-        }));
-    };
+  const handleInputChange = (e) => {
+    const { name, value, files } = e.target;
+    setNewCategory((prev) => ({
+        ...prev,
+        [name]: name === "image" ? files[0] : value,
+    }));
+};
+
 
     const handleSubmit = (e) => {
         e.preventDefault();
@@ -36,6 +38,7 @@ const PharmaCategory = () => {
         e.preventDefault();
 
         const formData = new FormData();
+        formData.append('variety', newCategory.variety);
         formData.append('name', newCategory.name);
         formData.append('description', newCategory.description);
         formData.append('image', newCategory.image);
@@ -52,6 +55,7 @@ const PharmaCategory = () => {
 
     const handleUpdateCategory = async () => {
         const formData = new FormData();
+        formData.append('variety', newCategory.variety);
         formData.append('name', newCategory.name);
         formData.append('description', newCategory.description);
 
@@ -88,6 +92,7 @@ const PharmaCategory = () => {
         setIsEditing(true);
         setEditingCategoryId(cat._id);
         setNewCategory({
+            variety: cat.variety || '',
             name: cat.name || '',
             description: cat.description || '',
             image: null,
@@ -130,6 +135,7 @@ const PharmaCategory = () => {
                 <table className="admin-table w_970">
                     <thead>
                         <tr>
+                         <th>Variety</th>
                             <th>Name</th>
                             <th>Description</th>
                             <th>Image</th>
@@ -140,6 +146,7 @@ const PharmaCategory = () => {
                     <tbody>
                         {categoryList.map((cat, index) => (
                             <tr key={index}>
+                                 <td>{cat.variety}</td>
                                 <td>{cat.name}</td>
                                 <td>{cat.description}</td>
                                 <td>
@@ -174,6 +181,16 @@ const PharmaCategory = () => {
                     <div className="modal">
                         <h3>{isEditing ? "Edit Category" : "Add New Category"}</h3>
                         <form onSubmit={handleSubmit}>
+                         <select
+                name="variety"
+                value={newCategory.variety}
+                onChange={handleInputChange}
+                required
+            >
+                <option value="" disabled>Select Variety</option>
+                <option value="Human">Human</option>
+                <option value="Veterinary">Veterinary</option>
+            </select>
                             <input
                                 type="text"
                                 name="name"

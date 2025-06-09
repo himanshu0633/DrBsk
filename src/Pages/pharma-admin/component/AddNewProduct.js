@@ -21,6 +21,7 @@ const AddNewProduct = () => {
         mrp: "",
         quantity: "",
         category: "",
+        productvariety: "",
         sub_category: "",
         expires_on: "",
         suitable_for: "",
@@ -45,7 +46,7 @@ const AddNewProduct = () => {
                 if (isEditMode) {
                     const productResponse = await axiosInstance.get(`/user/product/${id}`);
                     const product = productResponse.data;
-                    console.log('lksdjf;sdkjfl;skjfl;sjdf;', productResponse.data)
+                    // console.log('lksdjf;sdkjfl;skjfl;sjdf;', productResponse.data)
 
                     // Fetch subcategories for selected category
                     if (product.category) {
@@ -158,10 +159,11 @@ const AddNewProduct = () => {
 
     const validateForm = () => {
         const newErrors = {};
-        const requiredFields = [
-            'name', 'description', 'retail_price', 'consumer_price',
-            'quantity', 'category', 'expires_on', 'dosage'
-        ];
+       const requiredFields = [
+    'name', 'description', 'retail_price', 'consumer_price',
+    'quantity', 'category', 'expires_on', 'dosage', 'productvariety'
+];
+
 
         requiredFields.forEach(field => {
             if (!formData[field]) {
@@ -234,6 +236,7 @@ const AddNewProduct = () => {
             quantity: "",
             category: "",
             sub_category: "",
+            productvariety:"",
             expires_on: "",
             suitable_for: "",
             benefits: "",
@@ -390,7 +393,7 @@ const AddNewProduct = () => {
                             <h3>Pricing Information</h3>
                             <div className="herbal-form-row">
                                 <div className="herbal-form-group">
-                                    <label>Retail Price (MRP)*</label>
+                                    <label>WholesalePartner Price (MRP)*</label>
                                     <input
                                         type="number"
                                         name="retail_price"
@@ -476,20 +479,47 @@ const AddNewProduct = () => {
                         <div className="herbal-form-section">
                             <h3>Category Information</h3>
                             <div className="herbal-form-row">
-                                <div className="herbal-form-group">
-                                    <label>Category*</label>
-                                    <select
-                                        name="category"
-                                        value={formData.category}
-                                        onChange={handleChange}
-                                    >
-                                        <option value="">Select category</option>
-                                        {categoryList.map((sub, index) => (
-                                            <option key={index} value={sub.name}>{sub.name}</option>
-                                        ))}
-                                    </select>
-                                    {errors.category && <span className="herbal-error">{errors.category}</span>}
-                                </div>
+                               <div className="herbal-form-group">
+    <label>Variety*</label>
+    <select
+        name="productvariety"
+        value={formData.productvariety}
+        onChange={(e) => {
+            const selectedVariety = e.target.value;
+            setFormData(prev => ({
+                ...prev,
+                productvariety: selectedVariety,
+                category: "",
+                sub_category: ""
+            }));
+        }}
+    >
+        <option value="">Select Variety</option>
+        <option value="Human">Human</option>
+        <option value="Veterinary">Veterinary</option>
+    </select>
+    {errors.variety && <span className="herbal-error">{errors.variety}</span>}
+</div>
+
+
+                               <div className="herbal-form-group">
+    <label>Category*</label>
+    <select
+        name="category"
+        value={formData.category}
+        onChange={handleChange}
+    >
+        <option value="">Select Category</option>
+        {categoryList
+            .filter(cat => cat.variety === formData.productvariety
+)
+            .map((sub, index) => (
+                <option key={index} value={sub.name}>{sub.name}</option>
+        ))}
+    </select>
+    {errors.category && <span className="herbal-error">{errors.category}</span>}
+</div>
+
 
                                 <div className="herbal-form-group">
                                     <label>Sub Category</label>
