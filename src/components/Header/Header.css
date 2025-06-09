@@ -23,6 +23,28 @@
   position: relative;
 }
 
+
+.cart-wrapper {
+  position: relative;
+  display: inline-block;
+}
+
+.cart-icon {
+  position: relative;
+  font-size: 16px;
+}
+
+.cart-badge {
+  position: absolute;
+  top: -5px;
+  right: -10px;
+  background-color: red;
+  color: white;
+  font-size: 10px;
+  padding: 2px 6px;
+  border-radius: 50%;
+}
+
 .pincodeUi {
   position: absolute;
   top: 50px;
