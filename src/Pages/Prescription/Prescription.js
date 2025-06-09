@@ -46,6 +46,7 @@ const Prescription = () => {
   const uploadPrescription = async () => {
     if (!selectedFile) {
       setError('Please select a file first.');
+      toast.error('Please select a file first.');
       return;
     }
 
@@ -149,7 +150,7 @@ const Prescription = () => {
             <div className="prescription-option-box">
               <div className="prescription-option-icon">📞</div>
               <div className="prescription-option-content">
-                <div className="prescription-option-title">Get a call from Davaindia</div>
+                <div className="prescription-option-title">Get a call from BSK Pharma</div>
                 <div className="prescription-option-description">Our pharmacist will call to confirm your medicines</div>
               </div>
             </div>

@@ -44,9 +44,9 @@ const Cart = () => {
     setTimeout(() => {
       setOtpSent(true);
       setIsLoading(false);
-     toast.success(`OTP sent to +91${mobile}`);
+      toast.success(`OTP sent to +91${mobile}`);
     }, 1500);
-      
+
   };
 
   const handleSubmit = async (e) => {
@@ -125,9 +125,11 @@ const Cart = () => {
 
                       <div className={`davaindia-form-group ${errors.password ? 'error' : ''}`}>
                         <label>Password</label>
-                        <div className="davaindia-input-container">
-                          <Lock size={18} className="davaindia-input-icon left" />
-                          <input type={showPassword ? 'text' : 'password'} value={password} onChange={(e) => setPassword(e.target.value)} placeholder="Enter your password" />
+                        <div className="davaindia-input-container justifyBetween">
+                          <div className='davaindia-input-container1'>
+                            <Lock size={18} className="davaindia-input-icon left" />
+                            <input type={showPassword ? 'text' : 'password'} value={password} onChange={(e) => setPassword(e.target.value)} placeholder="Enter your password" />
+                          </div>
                           <button type="button" onClick={togglePasswordVisibility}>
                             {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
                           </button>
@@ -170,14 +172,14 @@ const Cart = () => {
                     Sign up
                   </button>
                 </div>
-                 <div className="davaindia-form-footer">
+                <div className="davaindia-form-footer">
                   Want to be Our WholeSale Partner?{' '}
-                <button type="button" onClick={() => {
-  setShowSignUp(true);
-  setIsWholesalePartner(true);
-}} className="davaindia-link-button">
-  Sign up
-</button>
+                  <button type="button" onClick={() => {
+                    setShowSignUp(true);
+                    setIsWholesalePartner(true);
+                  }} className="davaindia-link-button">
+                    Sign up
+                  </button>
 
                 </div>
               </>

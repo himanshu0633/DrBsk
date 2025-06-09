@@ -120,7 +120,6 @@ const WholesalePartnerForm = () => {
       setError(error.response?.data?.message || error.message || 'Registration failed. Please try again.');
     } finally {
       setIsSubmitting(false);
-
     }
   };
 

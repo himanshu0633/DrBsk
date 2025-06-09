@@ -66,7 +66,7 @@ const Adminlogin = () => {
               <form onSubmit={handleSubmit}>
                 <div className="davaindia-form-group">
                   <label htmlFor="email" className="davaindia-form-label">Email Address</label>
-                  <div className={`davaindia-input-container ${errors.email ? 'error' : ''}`}>
+                  <div className={`davaindia-input-container  ${errors.email ? 'error' : ''}`}>
                     <Mail size={18} className="davaindia-input-icon left" />
                     <input
                       type="email"

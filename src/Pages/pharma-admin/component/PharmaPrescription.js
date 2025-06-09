@@ -31,8 +31,7 @@ const PharmaPrescription = () => {
             const userMap = {};
             userResponses.forEach((res, index) => {
                 const userId = uniqueUserIds[index];
-               userMap[userId] = res.data?.data || res.data; // fallback if not wrapped inside `data`
-
+               userMap[userId] = res.data?.data || res.data; 
             });
 
             setUsers(userMap);
@@ -60,8 +59,8 @@ const PharmaPrescription = () => {
                                 src={`${API_URL}/${item.image.replace(/\\/g, '/')}`}
                                 alt={`Prescription ${i + 1}`}
                             />
-                            <p>User ID: {item.userId}</p>
-                            <p>User Name: {users[item.userId]?.name || 'Loading...'}</p>
+                            {/* <p>User ID: {item.userId}</p> */}
+                            <h3>User Name: {users[item.userId]?.name || 'Loading...'}</h3>
                         </div>
                     ))}
                 </div>
