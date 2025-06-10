@@ -10,19 +10,19 @@ const PharmaCategory = () => {
     const [categoryList, setCategoryList] = useState([]);
     const [loading, setLoading] = useState(true);
     const [newCategory, setNewCategory] = useState({
-          variety: "",
+        variety: '',
         name: '',
         description: '',
         image: null,
     });
 
-  const handleInputChange = (e) => {
-    const { name, value, files } = e.target;
-    setNewCategory((prev) => ({
-        ...prev,
-        [name]: name === "image" ? files[0] : value,
-    }));
-};
+    const handleInputChange = (e) => {
+        const { name, value, files } = e.target;
+        setNewCategory((prev) => ({
+            ...prev,
+            [name]: name === "image" ? files[0] : value,
+        }));
+    };
 
 
     const handleSubmit = (e) => {
@@ -135,7 +135,7 @@ const PharmaCategory = () => {
                 <table className="admin-table w_970">
                     <thead>
                         <tr>
-                         <th>Variety</th>
+                            <th>Variety</th>
                             <th>Name</th>
                             <th>Description</th>
                             <th>Image</th>
@@ -146,7 +146,7 @@ const PharmaCategory = () => {
                     <tbody>
                         {categoryList.map((cat, index) => (
                             <tr key={index}>
-                                 <td>{cat.variety}</td>
+                                <td>{cat.variety}</td>
                                 <td>{cat.name}</td>
                                 <td>{cat.description}</td>
                                 <td>
@@ -181,16 +181,16 @@ const PharmaCategory = () => {
                     <div className="modal">
                         <h3>{isEditing ? "Edit Category" : "Add New Category"}</h3>
                         <form onSubmit={handleSubmit}>
-                         <select
-                name="variety"
-                value={newCategory.variety}
-                onChange={handleInputChange}
-                required
-            >
-                <option value="" disabled>Select Variety</option>
-                <option value="Human">Human</option>
-                <option value="Veterinary">Veterinary</option>
-            </select>
+                            <select
+                                name="variety"
+                                value={newCategory.variety}
+                                onChange={handleInputChange}
+                                required
+                            >
+                                <option value="selectVariety" >Select Variety</option>
+                                <option value="Human">Human</option>
+                                <option value="Veterinary">Veterinary</option>
+                            </select>
                             <input
                                 type="text"
                                 name="name"
