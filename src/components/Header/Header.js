@@ -217,8 +217,7 @@ const Header = () => {
               <div className="signin-dropdown-wrapper" ref={dropdownRef}>
                 <div className="signin-btn" onClick={toggleDropdown}>
                   <div className="signin-icon">👤</div>
-                  <span className='margin_left_8'> {userData ? null : 'Sign In'} </span>
-
+                  {userData ? null : <span className='margin_left_8'>Sign In</span>}
                 </div>
                 {showDropdown && (
                   <div className="dropdown-menu">

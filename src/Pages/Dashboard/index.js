@@ -22,8 +22,8 @@ function Dashboard() {
       <div className="header-spacer"></div>
       <Navbar />
       <HeroSection />
-      <Features />
       <Banner />
+      <Features />
       <div className="spacer"></div>
       <Slider />
       <Categories />

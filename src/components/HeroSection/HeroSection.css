@@ -35,7 +35,8 @@
 }
 
 .search-section {
-  background: linear-gradient(to right, #009e51, #00b894);
+  /* background: linear-gradient(to right, #009e51, #00b894); */
+  background-color: #68171b;
   padding: 40px 20px;
   border-radius: 16px;
   margin: 20px auto;

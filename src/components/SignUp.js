@@ -7,7 +7,8 @@ function SignUpForm() {
         name: '',
         email: '',
         mobile: '',
-        password: ''
+        password: '',
+        address: ''
     });
 
     const [isSubmitting, setIsSubmitting] = useState(false);
@@ -45,7 +46,8 @@ function SignUpForm() {
                     name: '',
                     email: '',
                     mobile: '',
-                    password: ''
+                    password: '',
+                    address: ''
                 });
             } else {
                 throw new Error(response.statusText || 'Registration failed');
@@ -53,6 +55,7 @@ function SignUpForm() {
         } catch (error) {
             console.error("Registration error:", error);
             setError(error.response?.data?.message || error.message || 'Registration failed. Please try again.');
+            toast.error('Registration failed')
         } finally {
             setIsSubmitting(false);
         }
@@ -98,6 +101,15 @@ function SignUpForm() {
                     name="mobile"
                     placeholder="Mobile Number"
                     value={formData.mobile}
+                    onChange={handleChange}
+                    required
+                    className="signup-input"
+                />
+                <input
+                    type="text"
+                    name="address"
+                    placeholder="Address"
+                    value={formData.address}
                     onChange={handleChange}
                     required
                     className="signup-input"

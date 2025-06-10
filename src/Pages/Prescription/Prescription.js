@@ -5,6 +5,7 @@ import Header from '../../components/Header/Header';
 import axios from 'axios';
 import API_URL from '../../config';
 import { toast } from 'react-toastify';
+import { useNavigate } from 'react-router-dom';
 
 const Prescription = () => {
   const [selectedFile, setSelectedFile] = useState(null);
@@ -16,7 +17,7 @@ const Prescription = () => {
 
   const userData = sessionStorage.getItem('userData');
   const userId = userData ? JSON.parse(userData)._id : null;
-
+  const navigate = useNavigate();
   const handleFileSelect = (event) => {
     const file = event.target.files[0];
     if (file) {
@@ -48,8 +49,10 @@ const Prescription = () => {
     if (!selectedFile) {
       setError('Please select a file first.');
       toast.error('Please select a file first.');
-      return;
     }
+    // if (selectedFile) {
+    //   navigate('/')
+    // }
 
     const formData = new FormData();
     formData.append('userId', userId);
@@ -65,7 +68,7 @@ const Prescription = () => {
       toast.success('Prescription uploaded successfully.')
       setSuccess('Prescription uploaded successfully.');
       setError('');
-      console.log(response.data);
+      // console.log(response.data);
     } catch (err) {
       toast.error('Upload failed. Please try again.')
       setError('Upload failed. Please try again.');
@@ -76,16 +79,16 @@ const Prescription = () => {
     }
   };
 
-   useEffect(() => {
-      const userData = sessionStorage.getItem('userData');
-      if (userData) {
-        setIsAuthenticated(true);
-      } else {
-        window.location.href = '/login';
-      }
-    }, []);
-  
-    if (isAuthenticated === null) return null;
+  useEffect(() => {
+    const userData = sessionStorage.getItem('userData');
+    if (userData) {
+      setIsAuthenticated(true);
+    } else {
+      window.location.href = '/login';
+    }
+  }, []);
+
+  if (isAuthenticated === null) return null;
 
   return (
     <>
