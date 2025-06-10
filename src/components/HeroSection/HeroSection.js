@@ -13,32 +13,35 @@ const HeroSection = () => {
   useEffect(() => {
     const delayDebounce = setTimeout(() => {
       if (query.trim() !== '') {
-        axiosInstance.get(`/user/search?query=${encodeURIComponent(query)}`)
-          .then(res => setResults(res.data))
-          .catch(err => console.error(err));
+        axiosInstance
+          .get(`/user/search?query=${encodeURIComponent(query)}`)
+          .then(res => setResults(res.data.results))
+          .catch(err => {
+            console.error('Search API error:', err);
+            setResults([]);
+          });
       } else {
         setResults([]);
       }
-    }, 100);
+    }, 300);
 
     return () => clearTimeout(delayDebounce);
   }, [query]);
 
   const handleSuggestionClick = (productId) => {
-    navigate(`/fever/${productId}`);
+    navigate(`/ProductPage/${productId}`);
   };
 
   return (
     <div className="hero-container">
       <div className="search-section">
-        <img
-          src={Right}
-          alt="Decorative pattern"
-          className="decorative-image right-image"
-        />
+        <img src={Right} alt="Decorative" className="decorative-image right-image" />
 
         <div className="hero-content">
-          <h2>Buy generic medicines online at the <span className="highlight">lowest price</span></h2>
+          <h2>
+            Buy generic medicines online at the{' '}
+            <span className="highlight">lowest price</span>
+          </h2>
 
           <div className="search-box">
             <div className="search-icon">🔍</div>
@@ -50,15 +53,13 @@ const HeroSection = () => {
               onChange={(e) => setQuery(e.target.value)}
             />
 
-            {/* Optional: Display search results */}
-            {results.length > 0 && (
+            {query.trim() !== '' && results.length > 0 && (
               <div className="search-results">
-                {results.map(product => (
+                {results.map((product) => (
                   <div
                     key={product._id}
                     className="search-result-item"
                     onClick={() => handleSuggestionClick(product._id)}
-                    style={{ cursor: 'pointer' }}
                   >
                     {product.name}
                   </div>
@@ -67,16 +68,11 @@ const HeroSection = () => {
             )}
           </div>
 
-          <img
-            src={Left}
-            alt="Decorative pattern"
-            className="decorative-image left-image"
-          />
         </div>
+        <img src={Left} alt="Decorative" className="decorative-image left-image" />
       </div>
     </div>
   );
-
 };
 
 export default HeroSection;

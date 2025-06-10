@@ -82,6 +82,7 @@ function App() {
         <Route path="/" element={<Dashboard />} />
         <Route path="/success" element={<OrderSuccessModal />} />
         <Route path="/fever" element={<Fever />} />
+        <Route path="/fever/:id" element={<Fever />} />
         <Route path="/ProductPage/:id" element={<ProductPage />} />
         <Route path="/FranchiseBanner" element={<FranchiseBanner />} />
         <Route path="/EditProfile" element={<EditProfile />} />
