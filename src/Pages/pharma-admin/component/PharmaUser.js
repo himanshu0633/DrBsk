@@ -212,8 +212,8 @@ const PharmaUser = () => {
                 <h2>Users</h2>
             </div>
 
-            <div className="user-table-container">
-                <table className="user-table">
+            <div className="user-table-container overflow_x_auto ">
+                <table className="user-table w_970">
                     <thead>
                         <tr>
                             <th>Name</th>

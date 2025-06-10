@@ -422,59 +422,61 @@ const PharmaSubCategory = () => {
             {loading ? (
                 <CustomLoader />
             ) : (
-                <table className="admin-table">
-                    <thead>
-                        <tr>
-                            <th>Variety</th>
-                            <th>Name</th>
-                            <th>Description</th>
-                            <th>Image</th>
-                            <th>Category</th>
-                            <th>Status</th>
-                            <th>Action</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {subCategoryList.map((item, i) => (
-                            <tr key={i}>
-                                <td>{item.subCategoryvariety || 'Unknown'}</td>
-                                <td>{item.name || 'Unknown'}</td>
-                                <td>{item.description || '-'}</td>
-                                <td>
-                                    <img
-                                        src={`${API_URL}/${item.category_id?.image}`}
-                                        alt={item.name}
-                                        width="60"
-                                        height="60"
-                                        style={{ borderRadius: '6px' }}
-                                    />
-                                </td>
-                                <td>{item.category_id?.name || 'Unknown'}</td>
-                                <td>
-                                    {item.deleted_at ? (
-                                        <span className="status-badge deleted">Deleted</span>
-                                    ) : (
-                                        <span className="status-badge active">Active</span>
-                                    )}
-                                </td>
-                                <td>
-                                    <button
-                                        onClick={() => startEditingSubCategory(item)}
-                                        className="btn-edit"
-                                    >
-                                        Edit
-                                    </button>
-                                    <button
-                                        onClick={() => handleDeleteSubCategory(item._id)}
-                                        className="btn-delete"
-                                    >
-                                        Delete
-                                    </button>
-                                </td>
+                <div className='overflow_x_auto'>
+                    <table className=" admin-table w_970">
+                        <thead>
+                            <tr>
+                                <th>Variety</th>
+                                <th>Name</th>
+                                <th>Description</th>
+                                <th>Image</th>
+                                <th>Category</th>
+                                <th>Status</th>
+                                <th>Action</th>
                             </tr>
-                        ))}
-                    </tbody>
-                </table>
+                        </thead>
+                        <tbody>
+                            {subCategoryList.map((item, i) => (
+                                <tr key={i}>
+                                    <td>{item.subCategoryvariety || 'Unknown'}</td>
+                                    <td>{item.name || 'Unknown'}</td>
+                                    <td>{item.description || '-'}</td>
+                                    <td>
+                                        <img
+                                            src={`${API_URL}/${item.category_id?.image}`}
+                                            alt={item.name}
+                                            width="60"
+                                            height="60"
+                                            style={{ borderRadius: '6px' }}
+                                        />
+                                    </td>
+                                    <td>{item.category_id?.name || 'Unknown'}</td>
+                                    <td>
+                                        {item.deleted_at ? (
+                                            <span className="status-badge deleted">Deleted</span>
+                                        ) : (
+                                            <span className="status-badge active">Active</span>
+                                        )}
+                                    </td>
+                                    <td>
+                                        <button
+                                            onClick={() => startEditingSubCategory(item)}
+                                            className="btn-edit"
+                                        >
+                                            Edit
+                                        </button>
+                                        <button
+                                            onClick={() => handleDeleteSubCategory(item._id)}
+                                            className="btn-delete"
+                                        >
+                                            Delete
+                                        </button>
+                                    </td>
+                                </tr>
+                            ))}
+                        </tbody>
+                    </table>
+                </div>
             )}
         </div>
     );

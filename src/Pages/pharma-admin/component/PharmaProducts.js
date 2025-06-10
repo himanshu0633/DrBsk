@@ -75,8 +75,8 @@ const PharmaProducts = () => {
             {loading ? (
                 <CustomLoader />
             ) : (
-                <div className="table-responsive">
-                    <table className="product-table">
+                <div className=" overflow_x_auto">
+                    <table className="product-table w_970">
                         <thead>
                             <tr>
                                 <th>ID</th>

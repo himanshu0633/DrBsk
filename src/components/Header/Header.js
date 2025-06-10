@@ -15,8 +15,8 @@ const Header = () => {
   const dropdownRef = useRef(null);
   const [showInput, setShowInput] = useState(false);
   const [pincode, setPincode] = useState('');
-  const [locationName, setLocationName] = useState('Bommanahalli (Bengaluru)');
-  const [currentPincode, setCurrentPincode] = useState('560068');
+  const [locationName, setLocationName] = useState('');
+  const [currentPincode, setCurrentPincode] = useState('');
 
   useEffect(() => {
     const handleResize = () => {

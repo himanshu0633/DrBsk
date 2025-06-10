@@ -42,7 +42,7 @@ const Navbar = () => {
 
         {/* Left Section - Categories with Subcategories */}
         <div className="nav-left">
-          {categoryName?.map((category) => (
+          {categoryName?.slice(0, 5).map((category) => (
             <div className="nav-item" key={category._id}>
               <span>
                 {category.name} <ChevronDown size={14} className="dropdown-icon" />
