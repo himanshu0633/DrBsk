@@ -5,6 +5,7 @@ import axiosInstance from '../AxiosInstance';
 import API_URL from '../../config';
 import CustomLoader from '../CustomLoader';
 import { useNavigate } from 'react-router-dom';
+import Slider from "react-slick";
 
 
 const Categories = () => {
@@ -29,11 +30,37 @@ const Categories = () => {
       console.error("Error fetching subcategories:", error);
     }
   };
+  const settings = {
+    dots: true,
+    infinite: true,
+    speed: 500,
+    slidesToShow: 6,
+    slidesToScroll: 3,
+    arrow: true,
+  };
 
   return (
     <div className="categories-wrapper">
-      <h4 className="categories-title">Popular Human Categories</h4>
-      <div className="scrolling-wrapper">
+
+
+      {loading ? <CustomLoader /> : <div className="slider_container">
+        <h4 className="categories-title">Popular Human Categories</h4>
+        <Slider {...settings}>
+          {categoryName.map((item, index) => (
+            <div className="category-card cursor-pointer" key={index}
+              onClick={() => navigate('/fever', { state: { categoryId: item._id } })}
+            >
+              <div className="category-image-container" style={{ background: item.bg }}>
+                <img src={`${API_URL}/${item.image}`} alt={item.name} className="category-image" />
+                <p className="category-title">{item.name}</p>
+              </div>
+            </div>
+          ))}
+        </Slider>
+      </div>}
+
+
+      {/* <div className="scrolling-wrapper">
         {loading ? <CustomLoader /> : (<div className="scrolling-content">
           {categoryName.map((item, index) => (
             <div className="category-card cursor-pointer" key={index}
@@ -49,7 +76,7 @@ const Categories = () => {
           ))}
         </div>)}
 
-      </div>
+      </div> */}
     </div>
   );
 };

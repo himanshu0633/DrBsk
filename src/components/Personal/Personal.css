@@ -217,7 +217,7 @@
 }
 
 .category-card {
-  min-width: 180px;
+  /* min-width: 180px; */
   flex-shrink: 0;
   transition: transform 0.3s;
 }
