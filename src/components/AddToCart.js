@@ -13,6 +13,7 @@ const AddToCart = () => {
   const [isAuthenticated, setIsAuthenticated] = useState(null);
   const [showModal, setShowModal] = useState(false);
   const [addresses, setAddresses] = useState([]);
+  const [OriginalAddress, setOriginalAddress] = useState([]);
   const [loading, setLoading] = useState(true);
   const [states, setStates] = useState([]);
   const [cities, setCities] = useState([]);
@@ -195,6 +196,45 @@ const AddToCart = () => {
     razorpay.open();
   };
 
+  useEffect(() => {
+    fetchData();
+  }, []);
+
+  const fetchData = async () => {
+    const userData = JSON.parse(sessionStorage.getItem('userData'));
+    const userId = userData?._id;
+
+    if (!userId) {
+      console.error("User ID not found.");
+      return;
+    }
+
+    try {
+      const response = await axiosInstance.get(`/admin/readAdmin/${userId}`);
+
+      const userInfo = response?.data?.data; // ✅ Actual user data is nested here
+
+      console.log("✅ Fetched user info:", userInfo);
+      console.log("✅ Fetched address:", userInfo?.address);
+
+      setOriginalAddress(userInfo);
+
+      if (Array.isArray(userInfo?.address)) {
+        setAddresses(userInfo.address);
+      } else {
+        console.warn("⚠️ Address is not an array.");
+      }
+    } catch (error) {
+      console.error("Error fetching address:", error);
+    }
+  };
+
+  useEffect(() => {
+    console.log("Addresses state updated:", addresses);
+  }, [addresses]);
+
+
+
 
   return (
     <>
@@ -308,17 +348,16 @@ const AddToCart = () => {
                     onClick={() => setShowModal(true)}
                   >
                     ➕ Add New Address
+
                   </button>
+
                   <div className='my_10'>
                     {addresses.length > 0 ? (
                       <div className="saved-addresses">
                         <h4 className="section-subtitle">📍 Saved Addresses</h4>
                         <ul className="address-list">
                           {addresses.map((addr, index) => (
-                            <li
-                              key={index}
-                              className={`address-card ${formData.selectedAddress === addr ? 'selected' : ''}`}
-                            >
+                            <li key={index} className={`address-card ${formData.selectedAddress === addr ? 'selected' : ''}`}>
                               <label>
                                 <input
                                   type="radio"
@@ -329,14 +368,18 @@ const AddToCart = () => {
                                     setFormData({ ...formData, selectedAddress: addr })
                                   }
                                 />
-                                <span>{addr}</span>
+                                <span className='text_20'>{addr}</span>
                               </label>
                             </li>
                           ))}
+
                         </ul>
                       </div>
                     ) : (
-                      <p className="no-address-text">No address saved yet. Please add one.</p>
+                      <p className="no-address-text">
+                        No address saved yet. Please add one.
+                      </p>
+
                     )}
                   </div>
 

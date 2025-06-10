@@ -276,8 +276,15 @@
 .my_10{
 margin: 10px 0;
 }
+.address-list{
+  list-style: none;
+}
 .quantity-btn:hover:not(:disabled) {
   background: #e5e7eb;
+}
+.text_20{
+  font-size: 20px;
+  margin-left: 10px;
 }
 
 .quantity-btn:disabled {
