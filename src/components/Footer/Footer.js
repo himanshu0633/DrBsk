@@ -171,7 +171,7 @@ const Footer = () => {
           <div className="foo ter-col footerLinkSec">
             <h4>Company</h4>
             <ul className="footer-links">
-              <li><a href="#">About us</a></li>
+              <li><a href="/aboutus">About us</a></li>
               <li><a href="#">Our Products</a></li>
               <li><a href="#">Customer Speaks</a></li>
               <li><a href="#">Career</a></li>

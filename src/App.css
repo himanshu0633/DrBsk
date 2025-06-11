@@ -83,9 +83,9 @@
   justify-content: space-between;
 }
 
-.prescription-thumbnail{
-  width:200px;
-  height:200px;
+.prescription-thumbnail {
+  width: 200px;
+  height: 200px;
 }
 
 .signup-container {
@@ -406,3 +406,27 @@
 /* .adminSidebarLayout{
 width: 260px;
 } */
+
+.clrLogo {
+  color: #68171b;
+}
+
+.aboutTitle {
+  font-size: 28px;
+  text-align: center;
+  margin: 20px 0;
+}
+
+.product_right_image {
+  float: right;
+  max-width: 500px;
+  width: 100%;
+  margin: 0px 0 25px 15px;
+  text-align: center;
+  overflow: hidden;
+  border-radius: 10px;
+}
+
+.topPharmacyHead {
+  display: flex;
+}

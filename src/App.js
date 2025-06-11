@@ -53,6 +53,7 @@ import PharmaAdminLogin from "./Pages/pharma-admin/page/PharmaAdminLogin";
 import ProtectedRoute from "./Pages/pharma-admin/page/ProtectedRoute";
 import PharmaPrescription from "./Pages/pharma-admin/component/PharmaPrescription";
 import ScrollToTop from "./components/ScrollToTop";
+import AboutUs from "./Pages/footerLinksPages/AboutUs";
 
 
 
@@ -97,7 +98,8 @@ function App() {
         <Route path="/Prescription" element={<Prescription />} />
         <Route path="/Phone" element={<Phone />} />
         <Route path="/subcategory/:subCategoryName" element={<Fever />} />
-       {/* <Route path="/product/:id" element={<ProductDetailPage />} /> */}
+        <Route path="/aboutus" element={<AboutUs />} />
+    
 
 
         {/* {Admin Panel Routes} */}
