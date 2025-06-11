@@ -93,6 +93,16 @@ const Cart = () => {
     }
   };
 
+  const handleShowSignUp = (isWholesale = false) => {
+    setIsWholesalePartner(isWholesale);
+    setShowSignUp(true);
+  };
+
+  const handleBackToLogin = () => {
+    setShowSignUp(false);
+    setIsWholesalePartner(false);
+  };
+
   return (
     <div className="davaindia-cart-page">
       <Header />
@@ -168,16 +178,13 @@ const Cart = () => {
 
                 <div className="davaindia-form-footer">
                   Don’t have an account?{' '}
-                  <button type="button" onClick={() => setShowSignUp(true)} className="davaindia-link-button">
+                  <button type="button" onClick={() => handleShowSignUp(false)} className="davaindia-link-button">
                     Sign up
                   </button>
                 </div>
                 <div className="davaindia-form-footer">
                   Want to be Our WholeSale Partner?{' '}
-                  <button type="button" onClick={() => {
-                    setShowSignUp(true);
-                    setIsWholesalePartner(true);
-                  }} className="davaindia-link-button">
+                  <button type="button" onClick={() => handleShowSignUp(true)} className="davaindia-link-button">
                     Sign up
                   </button>
 
@@ -190,7 +197,7 @@ const Cart = () => {
 
                 <div className="davaindia-form-footer">
                   Already have an account?{' '}
-                  <button type="button" onClick={() => setShowSignUp(false)} className="davaindia-link-button">
+                  <button type="button" onClick={handleBackToLogin} className="davaindia-link-button">
                     Sign in
                   </button>
                 </div>

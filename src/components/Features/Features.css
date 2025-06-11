@@ -85,7 +85,9 @@
     justify-content: flex-start;
     padding: 15px;
   }
-
+.featurs_item1 {
+  flex-direction: row;
+}
   .featurs-icon {
     width: 60px;
     height: 60px;
