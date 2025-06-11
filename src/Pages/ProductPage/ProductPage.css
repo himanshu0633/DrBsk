@@ -68,14 +68,14 @@
   justify-content: center;
 }
 
-.product-image {
-  max-height: 100%;
-  max-width: 100%;
-  object-fit: contain;
+.product-image1 {
+ height: 100%;
+ width: 100%;
+  object-fit: cover;
   transition: transform 0.3s ease;
 }
 
-.product-image:hover {
+.product-image1:hover {
   transform: scale(1.05);
 }
 
