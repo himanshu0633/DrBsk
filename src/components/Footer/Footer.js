@@ -147,19 +147,19 @@ const Footer = () => {
               </div>
             </div>
             <div className="social-icons">
-              <a href="#" aria-label="Facebook">
+              <a href="https://www.facebook.com/people/Dr-BSKs/61576600531948/" target='blank' aria-label="Facebook">
                 <img src="https://cdn-icons-png.flaticon.com/512/2111/2111392.png" alt="Facebook" />
               </a>
-              <a href="#" aria-label="Instagram">
+              <a href="https://www.instagram.com/drbsk_humanhealth?utm_source=ig_web_button_share_sheet&igsh=ZDNlZDc0MzIxNw==" target='blank' aria-label="Instagram">
                 <img src="https://cdn-icons-png.flaticon.com/512/2111/2111463.png" alt="Instagram" />
               </a>
-              <a href="#" aria-label="YouTube">
+              <a href="https://www.youtube.com/@Dr.BSKsURUMEED-w4o" target='blank' aria-label="YouTube">
                 <img src="https://cdn-icons-png.flaticon.com/512/1384/1384060.png" alt="YouTube" />
               </a>
-              <a href="#" aria-label="Twitter">
+              {/* <a href="#" aria-label="Twitter">
                 <img src="https://cdn-icons-png.flaticon.com/512/3670/3670151.png" alt="Twitter" />
-              </a>
-              <a href="#" aria-label="LinkedIn">
+              </a> */}
+              <a href="https://www.linkedin.com/company/dr-bsk-s/" target='blank' aria-label="LinkedIn">
                 <img src="https://cdn-icons-png.flaticon.com/512/3536/3536505.png" alt="LinkedIn" />
               </a>
             </div>
@@ -171,7 +171,7 @@ const Footer = () => {
           <div className="foo ter-col footerLinkSec">
             <h4>Company</h4>
             <ul className="footer-links">
-              <li><a href="#">About BSK Pharma</a></li>
+              <li><a href="#">About us</a></li>
               <li><a href="#">Our Products</a></li>
               <li><a href="#">Customer Speaks</a></li>
               <li><a href="#">Career</a></li>
@@ -208,19 +208,18 @@ const Footer = () => {
           <div className="foo ter-col footerLinkSec">
             <h4>Registered Office</h4>
             <address>
-              123 Business Park,<br />
-              Sector 45, Noida,<br />
-              Uttar Pradesh 201301<br />
-              India
+              UK German Pharmaceuticals,<br /> Akal Academy Road,<br />
+              Opp. Malwa Gramin Bank,<br /> Cheema Mandi -148029,<br />
+              Distt. Sangrur (Punjab) India
             </address>
 
-            <h4>Head Office</h4>
+            {/* <h4>Head Office</h4>
             <address>
               456 Corporate Tower,<br />
               MG Road, Gurugram,<br />
               Haryana 122002<br />
               India
-            </address>
+            </address> */}
           </div>
         </div>
       </div>
