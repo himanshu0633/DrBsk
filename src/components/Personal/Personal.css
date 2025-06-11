@@ -8,10 +8,10 @@
   /* position: relative; */
 }
 
-.personal-wrapper .slick-initialized .slick-slide {
-  /* width: 180px !important; */
-  /* float: left !important; */
-}
+/* .personal-wrapper .slick-initialized .slick-slide {
+  width: 180px !important;
+  float: left !important;
+} */
 
 .personal-title {
   text-align: center;
