@@ -138,14 +138,30 @@ const Landing = () => {
 
       {/* Mobile Menu */}
       <div className={`mobile-menu ${mobileMenuActive ? 'active' : ''}`}>
-        <a href="#">Home</a>
-        <a href="#">About Us</a>
-        <a href="#">Products</a>
-        <a href="#">Stores</a>
-        <a href="#">Contact</a>
+        {/* <a href="/">Home</a>
+        <a href="/aboutus">About Us</a>
+        <a href="/products">Products</a>
+        <a href="/store">Stores</a>
+        <a href="/contactus">Contact</a> */}
+        <NavLink to="/">Home</NavLink>
+        <NavLink to="/aboutus">About Us</NavLink>
+        <NavLink to="/products">Products</NavLink>
+        <NavLink to="/store">Stores</NavLink>
+        <NavLink to="/contactus">Contact</NavLink>
+
         <div className="mobile-buttons">
           <a href="franchisee-enquiry.html"><ClipboardList size={16} /> Franchise Inquiry</a>
-          <NavLink to="/homepage"><ShoppingCart size={16} /> Buy Medicines</NavLink>
+          <NavLink
+            to="/homepage"
+            onClick={() => {
+              console.log("Navigating to homepage...");
+              setMobileMenuActive(false);
+            }}
+          >
+            <ShoppingCart size={16} /> Buy Medicines
+          </NavLink>
+
+
         </div>
       </div>
       <div className={`overlay ${mobileMenuActive ? 'active' : ''}`} onClick={toggleMobileMenu}></div>
