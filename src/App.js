@@ -56,6 +56,7 @@ import ScrollToTop from "./components/ScrollToTop";
 import AboutUs from "./Pages/footerLinksPages/AboutUs";
 import ContactusForm from "./Pages/footerLinksPages/ContactusForm";
 import PhotoGallery from "./Pages/footerLinksPages/PhotoGallery";
+import Testimonial from "./Pages/footerLinksPages/component/Testimonial";
 
 
 
@@ -103,6 +104,7 @@ function App() {
         <Route path="/aboutus" element={<AboutUs />} />
         <Route path="/contactus" element={<ContactusForm />} />
         <Route path="/photo" element={<PhotoGallery />} />
+        <Route path="/testimonial" element={<Testimonial />} />
 
 
 

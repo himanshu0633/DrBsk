@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import Header from '../../components/Header/Header';
 import Footer from '../../components/Footer/Footer';
+import Testimonial from './component/Testimonial';
 
 const PhotoGallery = () => {
     const [isModalOpen, setIsModalOpen] = useState(false);
@@ -101,6 +102,10 @@ const PhotoGallery = () => {
                     </div>
                 </div>
             )}
+
+            <Testimonial/>
+
+          
         </div>
     );
 };
