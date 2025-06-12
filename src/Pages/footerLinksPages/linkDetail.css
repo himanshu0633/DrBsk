@@ -1,0 +1,307 @@
+.about_page {
+    float: left;
+    width: 100%;
+    margin: 0;
+    padding: 50px 0;
+    background: #fff;
+}
+
+.clearfix::after {
+    display: block;
+    clear: both;
+    content: "";
+}
+
+.clr_ylw {
+    color: #e7b109;
+}
+
+.serv-card .tx-bx {
+    font-size: 16px;
+    font-weight: bold;
+}
+
+.serv-card .tx-bx p {
+    font-size: 15px;
+    font-weight: 500;
+    line-height: 1.3;
+}
+
+.aboutTitle {
+    font-size: 28px;
+    text-align: center;
+    margin: 20px 0;
+    font-weight: 800;
+}
+
+.descriptionFont {
+    font-size: 14px;
+}
+
+.product_right_image {
+    float: right;
+    max-width: 500px;
+    width: 100%;
+    margin: 0px 0 25px 15px;
+    text-align: center;
+    overflow: hidden;
+    border-radius: 10px;
+}
+
+.doctorImgSize {
+    max-width: 400px;
+}
+
+.right_image1 {
+    float: right;
+    width: 340px;
+    margin: 0px 0px 15px 15px;
+    text-align: center;
+}
+
+.right_image1 .left_centered {
+    width: 100%;
+    position: relative;
+    padding: 0px;
+    min-height: 338px;
+    overflow: hidden;
+    border: 1px solid #eee;
+}
+
+.right_image1 .left_centered .image {
+    width: 100%;
+    text-align: center;
+    overflow: hidden;
+    position: relative;
+    height: 338px;
+    transition: transform .5s ease;
+    border-radius: 10px;
+}
+
+.animalImgWidth {
+    max-width: 100%;
+    height: auto;
+    width: auto;
+}
+
+.heading_banner {
+    float: left;
+    width: 100%;
+    position: relative;
+    background-size: 100%;
+    background-position: center;
+    padding: 70px 0 60px;
+    margin: 0;
+    background-repeat: no-repeat;
+    background-size: cover;
+}
+
+.heading_banner:before {
+    position: absolute;
+    display: block;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.4);
+    top: 0;
+    left: 0;
+    z-index: 0;
+    content: '';
+}
+
+.animalBackground {
+    background: url('https://www.ukgermanpharmaceuticals.com/designer/images/about/abt-bnr.jpg') !important;
+}
+
+.heading_banner .container {
+    position: relative !important;
+    z-index: 9 !important;
+}
+
+.heading_banner .cat_title {
+    margin: 0 0 10px;
+    text-transform: capitalize;
+    font-size: 30px;
+    font-weight: 600;
+    color: #fff;
+    text-align: center;
+    display: inline-block;
+    width: auto;
+    padding: 10px 20px;
+    background: rgba(0, 0, 0, 0.5);
+    border-radius: 10px;
+}
+
+.about_page .serv-card {
+    background-color: #f6f6f6;
+    padding: 15px;
+    margin-bottom: 20px;
+    border-radius: 10px;
+    box-shadow: 2px 2px 6px 0 #252a531f;
+}
+
+.faq_section {
+    float: left;
+    width: 100%;
+    margin: 0;
+    padding: 40px 0;
+    background: #eee;
+}
+
+.accordion-item {
+    margin-bottom: 15px;
+    border-radius: 10px !important;
+    overflow: hidden;
+}
+
+.accordion-item {
+    background-color: #fff !important;
+    border: 1px solid rgba(0, 0, 0, .125);
+}
+
+.accordion-header {
+    padding: 0 !important;
+    margin: 0 !important;
+    text-transform: initial;
+}
+
+.accordion-body {
+    padding: 1rem 1.25rem;
+}
+
+.accordion-item:not(:first-of-type) {
+    border: 1px solid rgba(0, 0, 0, 0.125) !important;
+}
+
+.accordion-item:first-of-type .accordion-button {
+    border-top-left-radius: calc(.25rem - 1px) !important;
+    border-top-right-radius: calc(.25rem - 1px) !important;
+}
+
+.accordion-button:not(.collapsed) {
+    color: #fff !important;
+    background: #68171b !important;
+    font-weight: 500;
+}
+
+.accordion-button:not(.collapsed) {
+    /* color: #0c63e4; */
+    /* background-color: #e7f1ff; */
+    box-shadow: inset 0 -1px 0 rgba(0, 0, 0, .125);
+}
+
+.accordion-button {
+    padding: 12px 15px;
+    font-size: 18px;
+    font-weight: 500;
+}
+
+.home_testimonials_webpulse {
+    float: left;
+    width: 100%;
+    position: relative;
+    padding: 40px 0 40px;
+    background: #1C1C1C;
+    background-size: cover;
+    background-position: center;
+    background-attachment: fixed;
+}
+
+/* .home_testimonials_webpulse:before {
+    position: absolute;
+    left: 0;
+    bottom: 0;
+    height: 120px;
+    width: 100%;
+    background-color: #ffffff;
+    content: "";
+} */
+
+.home_testimonials_webpulse .title-column {
+    position: relative;
+}
+
+.sec-title {
+    position: relative;
+    display: block;
+    margin-bottom: 20px;
+}
+
+.home_testimonials_webpulse .title-column .sec-title span {
+    color: white;
+    max-width: 300px;
+    font-size: 16px;
+}
+
+
+.sec-title .title:before {
+    position: absolute;
+    left: 0;
+    top: 30px;
+    height: 2px;
+    width: 40px;
+    background-color: #fff;
+    content: '';
+    border-radius: 10px;
+}
+
+.home_testimonials_webpulse .sec-title .head {
+    color: #e7b109;
+    font-size: 26px;
+    margin: 20px 0;
+}
+
+.home_testimonials_webpulse .title-column .sec-title .text,
+.home_testimonials_webpulse .title-column .sec-title span {
+    color: white;
+    max-width: 300px;
+    font-size: 16px;
+}
+
+.home_testimonials_webpulse .testimonials_column {
+    position: relative;
+}
+
+.testimonials_block {
+    position: relative;
+    padding: 30px 10px;
+    background-color: #ffffff;
+    box-shadow: 0 2px 18px rgba(0, 0, 0, 0.18);
+    border-radius: 10px;
+}
+
+.testimony_card {
+    border: 1px solid #68171b;
+    padding: 5px 15px;
+    margin-right: 10px;
+}
+
+.clientFont {
+    font-size: 20px;
+    font-weight: 600;
+}
+
+.testimonials_column .slick-prev,
+.slick-next {
+    display: none !important;
+}
+
+.testFlex {
+    /* display: flex; */
+    /* gap: 50px; */
+}
+
+@media (max-width: 650px) {
+    .product_right_image {
+        margin: 0 0 15px 0px;
+    }
+
+    .aboutTitle {
+        font-size: 22px;
+        margin: 20px 0;
+    }
+
+    .descriptionFont {
+        font-size: 12px;
+    }
+
+}

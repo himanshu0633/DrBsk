@@ -147,7 +147,7 @@ const ProductPage = () => {
             {/* Product Image Section */}
             <div className="product-image-container">
               <div className="image-wrapper">
-                <img src={`${API_URL}${product.media[selectedImageIndex]?.url}`} alt="Cough Drops Jar" className="product-image" />
+                <img src={`${API_URL}${product.media[selectedImageIndex]?.url}`} alt="Cough Drops Jar" className="product-image1" />
                 <div className="product-badge natural-badge">
                   <Leaf className="badge-icon" size={16} />
                   <span>100% Natural</span>
@@ -387,12 +387,12 @@ const ProductPage = () => {
             >
               Directions
             </button>
-            <button
+            {/* <button
               className={`tab-btn ${activeTab === 'reviews' ? 'active' : ''}`}
               onClick={() => setActiveTab('reviews')}
             >
               Reviews (128)
-            </button>
+            </button> */}
           </div>
 
           <div className="tab-content">

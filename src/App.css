@@ -13,6 +13,13 @@
   }
 }
 
+.container_manual {
+  max-width: 97%;
+  margin: 0 auto;
+  padding-left: 20px;
+  padding-right: 20px;
+}
+
 .App-header {
   background-color: #282c34;
   min-height: 100vh;
@@ -83,9 +90,9 @@
   justify-content: space-between;
 }
 
-.prescription-thumbnail{
-  width:200px;
-  height:200px;
+.prescription-thumbnail {
+  width: 200px;
+  height: 200px;
 }
 
 .signup-container {
@@ -403,6 +410,6 @@
   display: flex;
 }
 
-/* .adminSidebarLayout{
-width: 260px;
-} */
+.clrLogo {
+  color: #68171b;
+}
