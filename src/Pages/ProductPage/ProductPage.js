@@ -610,7 +610,7 @@ const ProductPage = () => {
         </div>
 
         {/* Frequently Bought Together */}
-        <div className="frequently-bought">
+        {/* <div className="frequently-bought">
           <h2>Frequently Bought Together</h2>
           <div className="bought-together-container">
             <div className="bought-together-products">
@@ -653,13 +653,13 @@ const ProductPage = () => {
               <div className="savings">You save ₹50.00 with this combo</div>
             </div>
           </div>
-        </div>
+        </div> */}  
 
         {/* Related Products */}
-        <ProductCarousel title="You May Also Like" />
+        {/* <ProductCarousel title="You May Also Like" /> */}
 
         {/* Recently Viewed */}
-        <ProductCarousel title="Recently Viewed" />
+        {/* <ProductCarousel title="Recently Viewed" /> */}
       </div>
       <Footer />
     </>
