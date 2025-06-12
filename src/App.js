@@ -81,7 +81,8 @@ function App() {
   return (
     <>
       <Routes>
-        <Route path="/" element={<Dashboard />} />
+        <Route path="/" element={<Landing />} />
+        <Route path="/homepage" element={<Dashboard />} />
         <Route path="/success" element={<OrderSuccessModal />} />
         <Route path="/fever" element={<Fever />} />
         <Route path="/fever/:id" element={<Fever />} />
@@ -92,7 +93,6 @@ function App() {
         <Route path="/PatientsPage" element={<PatientsPage />} />
         <Route path="/NotificationsPage" element={<NotificationsPage />} />
         <Route path="/ConsultationsPage" element={<ConsultationsPage />} />
-        <Route path="/Landing" element={<Landing />} />
         <Route path="/Head" element={<Head />} />
         <Route path="/login" element={<Cart />} />
         <Route path="/cart" element={<AddToCart />} />
@@ -101,7 +101,7 @@ function App() {
         <Route path="/subcategory/:subCategoryName" element={<Fever />} />
         <Route path="/aboutus" element={<AboutUs />} />
         <Route path="/contactus" element={<ContactusForm />} />
-    
+
 
 
         {/* {Admin Panel Routes} */}
