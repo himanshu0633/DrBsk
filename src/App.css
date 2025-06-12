@@ -13,6 +13,13 @@
   }
 }
 
+.container_manual {
+  max-width: 97%;
+  margin: 0 auto;
+  padding-left: 20px;
+  padding-right: 20px;
+}
+
 .App-header {
   background-color: #282c34;
   min-height: 100vh;
@@ -403,30 +410,6 @@
   display: flex;
 }
 
-/* .adminSidebarLayout{
-width: 260px;
-} */
-
 .clrLogo {
   color: #68171b;
-}
-
-.aboutTitle {
-  font-size: 28px;
-  text-align: center;
-  margin: 20px 0;
-}
-
-.product_right_image {
-  float: right;
-  max-width: 500px;
-  width: 100%;
-  margin: 0px 0 25px 15px;
-  text-align: center;
-  overflow: hidden;
-  border-radius: 10px;
-}
-
-.topPharmacyHead {
-  display: flex;
 }

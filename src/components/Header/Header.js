@@ -93,7 +93,7 @@ const Header = () => {
   const userData = storedUser ? JSON.parse(storedUser) : null;
 
   return (
-    <div className='container-manual'>
+    <div >
       <header className="header-container">
         {/* <div className="header ">
           Left Section
@@ -247,8 +247,8 @@ const Header = () => {
           <div className='headerLocationShowSmlScreen flexProp'>
             <div className="location-box order_4 ">
               <span className="location-icon">📍</span>
-              <span className="pincode">560068</span>
-              <span className="location-name">Bommanahalli (Bengaluru)</span>
+              <span className="pincode">{currentPincode}</span>
+              <span className="location-name">{locationName}</span>
               <span className="dropdown-icon">▼</span>
             </div>
             <a href="/Prescription" className="no-decoration order_5">
