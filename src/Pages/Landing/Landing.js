@@ -177,10 +177,27 @@ const Landing = () => {
           <p className="description animate__animated animate__fadeInUp">
             <strong>India's largest</strong> private generic pharmacy retail chain offering high-quality medicines at affordable prices.
           </p>
-          <a href="#" className="cta-button animate__animated animate__fadeInUp">Shop Now</a>
+          <a href="" className="cta-button animate__animated animate__fadeInUp">Shop Now</a>
           <p className="tc animate__animated animate__fadeInUp">* Terms and conditions apply</p>
           <div className="social-icons">
             {/* Social Icons here */}
+            <div className="social-icons">
+              <a href="https://www.facebook.com/people/Dr-BSKs/61576600531948/" target='blank' aria-label="Facebook">
+                <img src="https://cdn-icons-png.flaticon.com/512/2111/2111392.png" alt="Facebook" />
+              </a>
+              <a href="https://www.instagram.com/drbsk_humanhealth?utm_source=ig_web_button_share_sheet&igsh=ZDNlZDc0MzIxNw==" target='blank' aria-label="Instagram">
+                <img src="https://cdn-icons-png.flaticon.com/512/2111/2111463.png" alt="Instagram" />
+              </a>
+              <a href="https://www.youtube.com/@Dr.BSKsURUMEED-w4o" target='blank' aria-label="YouTube">
+                <img src="https://cdn-icons-png.flaticon.com/512/1384/1384060.png" alt="YouTube" />
+              </a>
+              {/* <a href="#" aria-label="Twitter">
+                <img src="https://cdn-icons-png.flaticon.com/512/3670/3670151.png" alt="Twitter" />
+              </a> */}
+              <a href="https://www.linkedin.com/company/dr-bsk-s/" target='blank' aria-label="LinkedIn">
+                <img src="https://cdn-icons-png.flaticon.com/512/3536/3536505.png" alt="LinkedIn" />
+              </a>
+            </div>
           </div>
         </div>
         <div className="banner-image animate__animated animate__fadeInRight">

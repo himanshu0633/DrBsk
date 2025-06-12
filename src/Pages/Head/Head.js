@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { ClipboardList, ShoppingCart } from 'lucide-react';
 import logo from '../../logo/logo1.jpg';
 import './Head.css'
+import { NavLink } from 'react-router-dom';
 
 const Head = () => {
   const [mobileMenuActive, setMobileMenuActive] = useState(false);
@@ -27,17 +28,25 @@ const Head = () => {
   return (
     <>
       <header className={`header ${scrolled ? 'scrolled' : ''}`}>
-        <div className="logo">
-          <a href="Landing"><img src={logo} alt="BSK Pharma Logo" /></a>
+        <div className='logodivWidth'>
+          <div className="logo">
+            <a href="/"><img src={logo} alt="BSK Pharma Logo" /></a>
+          </div>
         </div>
 
         <div className="header-buttons">
           <a href="FranchiseBanner">
             <ClipboardList size={16} /> Franchise Inquiry
           </a>
-          <a href="http://localhost:3000/">
+          <NavLink
+            to="/homepage"
+            onClick={() => {
+              console.log("Navigating to homepage...");
+              setMobileMenuActive(false);
+            }}
+          >
             <ShoppingCart size={16} /> Buy Medicines
-          </a>
+          </NavLink>
         </div>
 
         <div className={`hamburger ${mobileMenuActive ? 'active' : ''}`} onClick={toggleMobileMenu}>
@@ -49,18 +58,26 @@ const Head = () => {
 
       {/* Mobile Menu */}
       <div className={`mobile-menu ${mobileMenuActive ? 'active' : ''}`}>
-        <a href="#">Home</a>
-        <a href="#">About Us</a>
-        <a href="#">Products</a>
-        <a href="#">Stores</a>
-        <a href="#">Contact</a>
+        <button className="close-menu-btn" onClick={toggleMobileMenu}>
+          ✕
+        </button>
+        <NavLink to="/">Home</NavLink>
+        <NavLink to="/aboutus">About Us</NavLink>
+        <NavLink to="/products">Products</NavLink>
+        <NavLink to="/store">Stores</NavLink>
+        <NavLink to="/contactus">Contact</NavLink>
+
         <div className="mobile-buttons">
-          <a href="franchisee-enquiry.html">
-            <ClipboardList size={16} /> Franchise Inquiry
-          </a>
-          <a href="index.html">
+          <a href="franchisee-enquiry.html"><ClipboardList size={16} /> Franchise Inquiry</a>
+          <NavLink
+            to="/homepage"
+            onClick={() => {
+              console.log("Navigating to homepage...");
+              setMobileMenuActive(false);
+            }}
+          >
             <ShoppingCart size={16} /> Buy Medicines
-          </a>
+          </NavLink>
         </div>
       </div>
 
