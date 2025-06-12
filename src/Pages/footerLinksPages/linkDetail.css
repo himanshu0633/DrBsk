@@ -286,6 +286,9 @@
 .slick-next {
     display: none !important;
 }
+.contact_page{
+    padding: 40px 0;
+}
 
 .lineClamp6 {
     /* line-clamp: 4 !important;

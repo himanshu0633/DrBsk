@@ -1,9 +1,12 @@
 import React from 'react'
+import Footer from '../../components/Footer/Footer'
+import Header from '../../components/Header/Header'
 
 const ContactusForm = () => {
     return (
         <div>
-            <section class="contact_page">
+            <Header/>
+            <section class="contact_page ">
                 <div class="container">
                     <div class="contact_form_grid1">
                         <div class="row">
@@ -48,7 +51,7 @@ const ContactusForm = () => {
                                     </div>
                                 </div>
                             </div>
-                            <div class="col-xxl-7 col-xl-7 col-lg-7 col-md-7 col-sm-12 col-12 form_grid">
+                            <div class="col-xxl-7 col-xl-7 col-lg-7 col-md-7 col-sm-12 col-12 mt-5 mt-md-0">
                                 <h3 class="title_h2_2">We want to hear from you!</h3>
                                 <form name="contact-form" method="post" id="contact_form" novalidate="novalidate">
                                     <div id="pop_up"></div>
@@ -106,6 +109,7 @@ const ContactusForm = () => {
                     </div>
                 </div>
             </section>
+            <Footer/>
         </div>
     )
 }
