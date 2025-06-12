@@ -55,6 +55,7 @@ import PharmaPrescription from "./Pages/pharma-admin/component/PharmaPrescriptio
 import ScrollToTop from "./components/ScrollToTop";
 import AboutUs from "./Pages/footerLinksPages/AboutUs";
 import ContactusForm from "./Pages/footerLinksPages/ContactusForm";
+import PhotoGallery from "./Pages/footerLinksPages/PhotoGallery";
 
 
 
@@ -101,6 +102,7 @@ function App() {
         <Route path="/subcategory/:subCategoryName" element={<Fever />} />
         <Route path="/aboutus" element={<AboutUs />} />
         <Route path="/contactus" element={<ContactusForm />} />
+        <Route path="/photo" element={<PhotoGallery />} />
 
 
 

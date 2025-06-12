@@ -1,17 +1,28 @@
 import React from 'react'
 import Footer from '../../components/Footer/Footer'
 import Header from '../../components/Header/Header'
+import './linkDetail.css'
 
 const ContactusForm = () => {
     return (
         <div>
-            <Header/>
-            <section class="contact_page ">
-                <div class="container">
-                    <div class="contact_form_grid1">
-                        <div class="row">
-                            <div class="col-xxl-5 col-xl-5 col-lg-5 col-md-5 col-sm-12 col-12 contact_details">
-                                <h2 class="clrLogo font-bold">Contact Information</h2>
+            <Header />
+            <section className="heading_banner contactusBackground" >
+                <div className="container">
+                    <div className="row">
+                        <div className="col-xxl-12 col-xl-12 col-lg-12 col-md-12 col-sm-12 col-12 text-center">
+                            <h1 className="cat_title">UK German Pharmaceuticals</h1>
+                            <div className="clearfix"></div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+            <section className="contact_page ">
+                <div className="container">
+                    <div className="contact_form_grid1">
+                        <div className="row">
+                            <div className="col-xxl-5 col-xl-5 col-lg-5 col-md-5 col-sm-12 col-12 contact_details">
+                                <h2 className="clrLogo font-bold">Contact Information</h2>
                                 <p>Write to us or call us, get quick response powered by our advanced customer support team .</p>
 
                                 <div className='mb-2'><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
@@ -27,7 +38,7 @@ const ContactusForm = () => {
                                     <p>+91-911-591-5933 </p>
                                 </div>
 
-                                <h3 class="clrLogo mt-3">Get in Touch</h3>
+                                <h3 className="clrLogo mt-3">Get in Touch</h3>
                                 <div>
                                     <div className="mt-4"> <div className="contact-item">
                                         <span className="contact-icon">✉️</span>
@@ -51,55 +62,55 @@ const ContactusForm = () => {
                                     </div>
                                 </div>
                             </div>
-                            <div class="col-xxl-7 col-xl-7 col-lg-7 col-md-7 col-sm-12 col-12 mt-5 mt-md-0">
-                                <h3 class="title_h2_2">We want to hear from you!</h3>
+                            <div className="col-xxl-7 col-xl-7 col-lg-7 col-md-7 col-sm-12 col-12 mt-5 mt-md-0">
+                                <h3 className="title_h2_2">We want to hear from you!</h3>
                                 <form name="contact-form" method="post" id="contact_form" novalidate="novalidate">
                                     <div id="pop_up"></div>
 
-                                    <div class="row">
-                                        <div class="col-xxl-6 col-xl-6 col-lg-6 col-md-6 col-sm-6 col-12">
-                                            <div class="form-group">
-                                                <input class="form-control" type="text" name="name" placeholder="Full Name*" onkeyup="allowOnlyAlphabets(this)" value="" pattern="[a-zA-Z\s]+" required="" />
+                                    <div className="row">
+                                        <div className="col-xxl-6 col-xl-6 col-lg-6 col-md-6 col-sm-6 col-12">
+                                            <div className="form-group">
+                                                <input className="form-control" type="text" name="name" placeholder="Full Name*" onkeyup="allowOnlyAlphabets(this)" value="" pattern="[a-zA-Z\s]+" required="" />
                                             </div>
                                         </div>
-                                        <div class="col-xxl-6 col-xl-6 col-lg-6 col-md-6 col-sm-6 col-12">
-                                            <div class="form-group">
-                                                <input class="form-control" type="email" name="email" placeholder="Email ID*" required="" />
+                                        <div className="col-xxl-6 col-xl-6 col-lg-6 col-md-6 col-sm-6 col-12">
+                                            <div className="form-group">
+                                                <input className="form-control" type="email" name="email" placeholder="Email ID*" required="" />
                                             </div>
                                         </div>
-                                        <div class="col-xxl-6 col-xl-6 col-lg-6 col-md-6 col-sm-6 col-12">
-                                            <div class="form-group">
-                                                <input type="hidden" name="countryName" class="countryName" value="" />
-                                                <input type="hidden" name="code" class="code" value="" />
-                                                <input class="form-control" type="tel" value="" name="mobile" onkeyup="this.value=this.value.replace(/[^0-9]/g,'')" minlength="10" maxlength="10" placeholder="Phone No*" required="" />
+                                        <div className="col-xxl-6 col-xl-6 col-lg-6 col-md-6 col-sm-6 col-12">
+                                            <div className="form-group">
+                                                <input type="hidden" name="countryName" className="countryName" value="" />
+                                                <input type="hidden" name="code" className="code" value="" />
+                                                <input className="form-control" type="tel" value="" name="mobile" onkeyup="this.value=this.value.replace(/[^0-9]/g,'')" minlength="10" maxlength="10" placeholder="Phone No*" required="" />
                                             </div>
                                         </div>
-                                        <div class="col-xxl-6 col-xl-6 col-lg-6 col-md-6 col-sm-6 col-12">
-                                            <div class="form-group">
-                                                <input class="form-control" type="text" name="location" placeholder="Location*" required="" />
+                                        <div className="col-xxl-6 col-xl-6 col-lg-6 col-md-6 col-sm-6 col-12">
+                                            <div className="form-group">
+                                                <input className="form-control" type="text" name="location" placeholder="Location*" required="" />
                                             </div>
                                         </div>
-                                        <div class="col-xxl-12 col-xl-12 col-lg-12 col-md-12 col-sm-12 col-12">
-                                            <div class="form-group">
-                                                <textarea class="form-control" rows="5" placeholder="Comments Here*" required="" name="message"></textarea>
+                                        <div className="col-xxl-12 col-xl-12 col-lg-12 col-md-12 col-sm-12 col-12">
+                                            <div className="form-group">
+                                                <textarea className="form-control" rows="5" placeholder="Comments Here*" required="" name="message"></textarea>
                                             </div>
                                         </div>
-                                        <div class="col-xxl-12 col-xl-12 col-lg-12 col-md-12 col-sm-12 col-12">
-                                            <div class="form-group"
+                                        <div className="col-xxl-12 col-xl-12 col-lg-12 col-md-12 col-sm-12 col-12">
+                                            <div className="form-group"
                                             // style="margin-bottom: 0;"
                                             >
-                                                <div class="g-recaptcha" data-sitekey="6LfwTrIlAAAAAEmUGCNcpBf0Ob7huhJ8XwU217VG"><div
+                                                <div className="g-recaptcha" data-sitekey="6LfwTrIlAAAAAEmUGCNcpBf0Ob7huhJ8XwU217VG"><div
                                                 // style="width: 304px; height: 78px;"
                                                 ><div><iframe title="reCAPTCHA" width="304" height="78" role="presentation" name="a-l8q4ngk5olhz" frameborder="0" scrolling="no" sandbox="allow-forms allow-popups allow-same-origin allow-scripts allow-top-navigation allow-modals allow-popups-to-escape-sandbox allow-storage-access-by-user-activation" src="https://www.google.com/recaptcha/api2/anchor?ar=1&amp;k=6LfwTrIlAAAAAEmUGCNcpBf0Ob7huhJ8XwU217VG&amp;co=aHR0cHM6Ly93d3cudWtnZXJtYW5waGFybWFjZXV0aWNhbHMuY29tOjQ0Mw..&amp;hl=en&amp;v=GUGrl5YkSwpBsxsF3eY665Ye&amp;size=normal&amp;cb=ob8y1t4m9hss"></iframe></div>
-                                                    {/* <textarea id="g-recaptcha-response" name="g-recaptcha-response" class="g-recaptcha-response"
+                                                    {/* <textarea id="g-recaptcha-response" name="g-recaptcha-response" className="g-recaptcha-response"
                                                  style="width: 250px; height: 40px; border: 1px solid rgb(193, 193, 193); margin: 10px 25px; padding: 0px; resize: none; display: none;"
                                                  ></textarea> */}
                                                 </div></div>
                                             </div>
                                         </div>
-                                        <div class="col-lg-12 col-md-12 col-sm-12 col-xs-12">
-                                            <div class="form-group">
-                                                <button type="submit" class="read_more01" name="submit_contact">Submit</button>
+                                        <div className="col-lg-12 col-md-12 col-sm-12 col-xs-12">
+                                            <div className="form-group">
+                                                <button type="submit" className="read_more01" name="submit_contact">Submit</button>
                                             </div>
                                         </div>
                                     </div>
@@ -109,7 +120,7 @@ const ContactusForm = () => {
                     </div>
                 </div>
             </section>
-            <Footer/>
+            <Footer />
         </div>
     )
 }

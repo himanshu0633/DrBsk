@@ -172,10 +172,11 @@ const Footer = () => {
             <h4>Company</h4>
             <ul className="footer-links">
               <li><a href="/aboutus">About us</a></li>
-              <li><a href="#">Our Products</a></li>
-              <li><a href="#">Customer Speaks</a></li>
-              <li><a href="#">Career</a></li>
+              <li><a href="/fever">Our Products</a></li>
+              <li><a href="/testimonial">Customer Speaks</a></li>
+              {/* <li><a href="#">Career</a></li> */}
               <li><a href="/contactus">Contact</a></li>
+              <li><a href="/photo">Photo Gallery</a></li>
             </ul>
           </div>
 
