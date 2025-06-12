@@ -1,5 +1,6 @@
 import React from 'react'
 import Header from '../../components/Header/Header'
+import Footer from '../../components/Footer/Footer'
 import './linkDetail.css'
 import Slider from "react-slick";
 
@@ -161,7 +162,7 @@ const AboutUs = () => {
                         <div className="right_image1">
                             <div className="left_centered">
                                 <div className="image">
-                                    <img src="https://www.ukgermanpharmaceuticals.com/designer/images/about/abt3.jpg" alt="Infertility Treatment and Services in India" title="Infertility Treatment and Services in India" />
+                                    <img className='animalImgWidth' src="https://www.ukgermanpharmaceuticals.com/designer/images/about/abt3.jpg" alt="Infertility Treatment and Services in India" title="Infertility Treatment and Services in India" />
                                 </div>
                             </div>
                         </div>
@@ -253,9 +254,9 @@ const AboutUs = () => {
                             <div className="testimonials_block">
                                 <Slider {...settings}>
                                     {testimonialArr.map((item, index) => (
-                                        <div className=" cursor-pointer" key={index}>
-                                            <div className='testimony_card'>
-                                                <p className="category-title">{item.testimony}</p>
+                                        <div className="h-100 cursor-pointer" key={index}>
+                                            <div className='testimony_card '>
+                                                <p className="category-title lineClamp6">{item.testimony}</p>
                                                 <p className="clientFont clrLogo">{item.name}</p>
                                             </div>
                                         </div>
@@ -267,9 +268,13 @@ const AboutUs = () => {
 
 
                     </div>
+                    <div className="clearfix"></div>
                 </div>
             </div>
 
+            <div className='mt-5'>
+              
+            </div>
         </div >
     )
 }

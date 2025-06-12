@@ -175,7 +175,7 @@ const Footer = () => {
               <li><a href="#">Our Products</a></li>
               <li><a href="#">Customer Speaks</a></li>
               <li><a href="#">Career</a></li>
-              <li><a href="#">Contact</a></li>
+              <li><a href="/contactus">Contact</a></li>
             </ul>
           </div>
 

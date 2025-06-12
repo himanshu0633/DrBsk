@@ -54,6 +54,7 @@ import ProtectedRoute from "./Pages/pharma-admin/page/ProtectedRoute";
 import PharmaPrescription from "./Pages/pharma-admin/component/PharmaPrescription";
 import ScrollToTop from "./components/ScrollToTop";
 import AboutUs from "./Pages/footerLinksPages/AboutUs";
+import ContactusForm from "./Pages/footerLinksPages/ContactusForm";
 
 
 
@@ -99,6 +100,7 @@ function App() {
         <Route path="/Phone" element={<Phone />} />
         <Route path="/subcategory/:subCategoryName" element={<Fever />} />
         <Route path="/aboutus" element={<AboutUs />} />
+        <Route path="/contactus" element={<ContactusForm />} />
     
 
 
