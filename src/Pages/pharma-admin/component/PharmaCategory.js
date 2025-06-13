@@ -178,7 +178,8 @@ const PharmaCategory = () => {
             {/* Modal */}
             {showModal && (
                 <div className="modal-overlay">
-                    <div className="modal">
+                    <div className="modal-content">
+                        <span className="close-button" onClick={resetForm}>&times;</span>
                         <h3>{isEditing ? "Edit Category" : "Add New Category"}</h3>
                         <form onSubmit={handleSubmit}>
                             <select
@@ -187,7 +188,7 @@ const PharmaCategory = () => {
                                 onChange={handleInputChange}
                                 required
                             >
-                                <option value="selectVariety" >Select Variety</option>
+                                <option value="selectVariety">Select Variety</option>
                                 <option value="Human">Human</option>
                                 <option value="Veterinary">Veterinary</option>
                             </select>
@@ -214,13 +215,19 @@ const PharmaCategory = () => {
                                 onChange={handleInputChange}
                             />
                             <div className="modal-actions">
-                                <button type="submit" className="btn-save">{isEditing ? "Update" : "Save"}</button>
-                                <button type="button" className="btn-cancel" onClick={resetForm}>Cancel</button>
+                                <button type="submit" className="btn-save">
+                                    {isEditing ? "Update" : "Save"}
+                                </button>
+                                <button type="button" className="btn-cancel" onClick={resetForm}>
+                                    Cancel
+                                </button>
                             </div>
                         </form>
                     </div>
                 </div>
             )}
+
+
         </div>
     );
 };

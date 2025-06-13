@@ -95,7 +95,7 @@ const PhotoGallery = () => {
 
             {/* Modal */}
             {isModalOpen && (
-                <div className="modal-overlay" onClick={closeModal}>
+                <div className="modal-overlay1" onClick={closeModal}>
                     <div className="modal-content" onClick={(e) => e.stopPropagation()}>
                         <span className="modal-close" onClick={closeModal}>&times;</span>
                         <img src={modalImage} alt={modalTitle} />
