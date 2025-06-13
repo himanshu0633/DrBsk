@@ -58,12 +58,12 @@ const VideoGallery = () => {
                     </div>
                 </div>
             </section>
-            <section class="gallery_page">
-                <div class="container">
-                    <h2 class="clrLogo aboutTitle">Video Gallery</h2>
-                    <p class="text-center w-75 mx-auto"> Explore our diverse video gallery showcasing cutting-edge pharmaceutical solutions, innovative research, and our commitment to advancing healthcare excellence. </p>
-                    <div class="clearfix"></div>
-                    <div class="row">
+            <section className="gallery_page">
+                <div className="container">
+                    <h2 className="clrLogo aboutTitle">Video Gallery</h2>
+                    <p className="text-center w-75 mx-auto"> Explore our diverse video gallery showcasing cutting-edge pharmaceutical solutions, innovative research, and our commitment to advancing healthcare excellence. </p>
+                    <div className="clearfix"></div>
+                    <div className="row">
                         {videoArr.map((item, i) => {
                             return (
                                 <div key={i} className='col-12 col-md-4 col-lg-4'>

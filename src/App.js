@@ -58,6 +58,8 @@ import ContactusForm from "./Pages/footerLinksPages/ContactusForm";
 import PhotoGallery from "./Pages/footerLinksPages/PhotoGallery";
 import Testimonial from "./Pages/footerLinksPages/component/Testimonial";
 import VideoGallery from "./Pages/footerLinksPages/VideoGallery";
+import Blogs from "./Pages/footerLinksPages/Blogs";
+import BlogCardDetail from "./Pages/footerLinksPages/BlogCardDetail";
 
 
 
@@ -107,7 +109,8 @@ function App() {
         <Route path="/photo" element={<PhotoGallery />} />
         <Route path="/video" element={<VideoGallery />} />
         <Route path="/testimonial" element={<Testimonial />} />
-
+        <Route path="/blogs" element={<Blogs />} />
+        <Route path="/blogCardDetail" element={<BlogCardDetail />} />
 
 
         {/* {Admin Panel Routes} */}

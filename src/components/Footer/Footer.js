@@ -188,6 +188,9 @@ const Footer = () => {
                 <NavLink to='/video'>Video Gallery</NavLink>
               </li>
               <li>
+                <NavLink to='/blogs'>Blogs</NavLink>
+              </li>
+              <li>
                 <NavLink to='/contactus'>Contact us</NavLink>
               </li>
               {/* <li><a href="/aboutus">About us</a></li>
