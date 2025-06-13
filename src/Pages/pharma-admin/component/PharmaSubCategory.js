@@ -349,7 +349,7 @@ const PharmaSubCategory = () => {
 
             {showModal && (
                 <div className="modal-overlay">
-                    <div className="modal">
+                    <div className="modal-content">
                         <h3>{editingId ? "Edit Sub Category" : "Add New Sub Category"}</h3>
                         <form onSubmit={handleCreateOrUpdate}>
                             <select

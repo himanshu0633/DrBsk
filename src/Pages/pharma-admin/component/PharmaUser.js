@@ -256,7 +256,7 @@ const PharmaUser = () => {
 
             {showModal && (
                 <div className="modal-overlay">
-                    <div className="modal">
+                    <div className="modal-content">
                         <h3>Edit User</h3>
                         <form className='modalInput' onSubmit={handleUpdateUser}>
                             <input

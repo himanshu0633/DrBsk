@@ -87,7 +87,7 @@ const PharmaBanner = () => {
 
             {showModal && (
                 <div className="modal-overlay">
-                    <div className="modal">
+                    <div className="modal-content">
                         <h3>Add New Banner</h3>
                         <form onSubmit={handleBannerSubmit}>
                             <select
