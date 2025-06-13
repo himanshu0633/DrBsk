@@ -42,8 +42,6 @@ const VideoGallery = () => {
             backgroundImg: 'https://www.ukgermanpharmaceuticals.com/designer/images/PV8vZdgZ3HQ-SD.jpg',
             title: "UK German Pharmaceuticals Received Brand Empower's Global Excellence Award 2023",
         },
-
-
     ]
 
     return (
