@@ -1,6 +1,7 @@
 import React from 'react'
 import Header from '../../components/Header/Header'
 import Footer from '../../components/Footer/Footer'
+import Head from '../Head/Head'
 
 const VideoGallery = () => {
 
@@ -47,7 +48,9 @@ const VideoGallery = () => {
 
     return (
         <div>
-            <Header/>
+            <div>
+                <Head />
+            </div>
             <section className="heading_banner contactusBackground" >
                 <div className="container">
                     <div className="row">

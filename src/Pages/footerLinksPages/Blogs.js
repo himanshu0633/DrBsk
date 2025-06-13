@@ -1,10 +1,11 @@
 import React from 'react'
 import Header from '../../components/Header/Header'
+import Head from '../Head/Head'
 
 const Blogs = () => {
     return (
         <div>
-            <Header />
+            <Head />
             <section className="heading_banner contactusBackground" >
                 <div className="container">
                     <div className="row">

@@ -4,6 +4,7 @@ import Footer from '../../components/Footer/Footer'
 import './linkDetail.css'
 import Slider from "react-slick";
 import Testimonial from './component/Testimonial';
+import Head from '../Head/Head';
 
 const AboutUs = () => {
     const serviceCardArr = [
@@ -32,7 +33,7 @@ const AboutUs = () => {
 
     return (
         <div>
-            <Header />
+            <Head />
 
             <section className='animalBackground heading_banner'>
                 <div className="container">

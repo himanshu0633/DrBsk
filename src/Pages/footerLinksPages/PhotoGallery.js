@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import Header from '../../components/Header/Header';
 import Footer from '../../components/Footer/Footer';
 import Testimonial from './component/Testimonial';
+import Head from '../Head/Head';
 
 const PhotoGallery = () => {
     const [isModalOpen, setIsModalOpen] = useState(false);
@@ -51,7 +52,7 @@ const PhotoGallery = () => {
 
     return (
         <div>
-            <Header />
+            <Head />
 
             <section className="heading_banner contactusBackground" >
                 <div className="container">
