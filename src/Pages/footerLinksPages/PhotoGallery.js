@@ -103,9 +103,10 @@ const PhotoGallery = () => {
                 </div>
             )}
 
-            <Testimonial/>
+            <Testimonial />
 
-          
+            {/* <Footer /> */}
+
         </div>
     );
 };

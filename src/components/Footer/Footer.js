@@ -119,6 +119,7 @@ import React from 'react';
 
 import './Footer.css';
 import logo from "../../logo/logo1.jpg";
+import { NavLink } from 'react-router-dom';
 
 const Footer = () => {
   return (
@@ -171,12 +172,27 @@ const Footer = () => {
           <div className="foo ter-col footerLinkSec">
             <h4>Company</h4>
             <ul className="footer-links">
-              <li><a href="/aboutus">About us</a></li>
+              <li>
+                <NavLink to='/aboutus'>About us</NavLink>
+              </li>
+              <li>
+                <NavLink to='/fever'>Our Products</NavLink>
+              </li>
+              <li>
+                <NavLink to='/testimonial'>Customer Speaks</NavLink>
+              </li>
+              <li>
+                <NavLink to='/contactus'>Contact us</NavLink>
+              </li>
+              <li>
+                <NavLink to='/photo'>Photo Gallery</NavLink>
+              </li>
+              {/* <li><a href="/aboutus">About us</a></li>
               <li><a href="/fever">Our Products</a></li>
               <li><a href="/testimonial">Customer Speaks</a></li>
-              {/* <li><a href="#">Career</a></li> */}
+              <li><a href="#">Career</a></li>
               <li><a href="/contactus">Contact</a></li>
-              <li><a href="/photo">Photo Gallery</a></li>
+              <li><a href="/photo">Photo Gallery</a></li> */}
             </ul>
           </div>
 

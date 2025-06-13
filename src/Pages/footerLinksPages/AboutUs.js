@@ -184,6 +184,8 @@ const AboutUs = () => {
             {/* testimonials */}
             <Testimonial />
 
+            {/* <Footer /> */}
+
         </div >
     )
 }

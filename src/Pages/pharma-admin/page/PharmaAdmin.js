@@ -5,9 +5,6 @@ import '../pharma.css';
 
 const PharmaAdmin = () => {
 
-
-    
-
     return (
         <div className='pharmaAdminContainer'>
             <div className='pharmaSidebar'>

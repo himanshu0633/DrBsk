@@ -1,7 +1,9 @@
 import React from 'react'
+import { useNavigate } from 'react-router-dom';
 import Slider from "react-slick";
 
 const Testimonial = () => {
+  const navigate = useNavigate()
 
   const testimonialArr = [
     {
@@ -13,7 +15,6 @@ const Testimonial = () => {
       name: "Savita Prasad",
     },
   ]
-
 
   const settings = {
     dots: true,
@@ -54,8 +55,10 @@ const Testimonial = () => {
     ]
   };
 
+
   return (
     <div>
+      {/* <button onClick={() => (navigate('/'))}>Back</button> */}
       <div className="home_testimonials_webpulse">
         <div className="container">
           <div className="row">
