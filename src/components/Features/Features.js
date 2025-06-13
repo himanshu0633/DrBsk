@@ -16,7 +16,7 @@ const Features = () => {
 
 
   return (
-    <div className="container-fluid featurs py-5">
+    <div className="container-fluid featurs ">
       <div className="container py-5">
         <div className="featurs-row">
           {/* Feature Card */}

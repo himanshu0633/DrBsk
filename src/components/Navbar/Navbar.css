@@ -57,7 +57,7 @@
 
 .dropdown {
   display: none;
-  position: absolute;
+  position: absolute !important;
   top: 100%;
   left: 0;
   background-color: white;
