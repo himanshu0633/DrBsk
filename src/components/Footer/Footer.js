@@ -182,10 +182,13 @@ const Footer = () => {
                 <NavLink to='/testimonial'>Customer Speaks</NavLink>
               </li>
               <li>
-                <NavLink to='/contactus'>Contact us</NavLink>
+                <NavLink to='/photo'>Photo Gallery</NavLink>
               </li>
               <li>
-                <NavLink to='/photo'>Photo Gallery</NavLink>
+                <NavLink to='/video'>Video Gallery</NavLink>
+              </li>
+              <li>
+                <NavLink to='/contactus'>Contact us</NavLink>
               </li>
               {/* <li><a href="/aboutus">About us</a></li>
               <li><a href="/fever">Our Products</a></li>

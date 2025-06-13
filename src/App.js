@@ -57,6 +57,7 @@ import AboutUs from "./Pages/footerLinksPages/AboutUs";
 import ContactusForm from "./Pages/footerLinksPages/ContactusForm";
 import PhotoGallery from "./Pages/footerLinksPages/PhotoGallery";
 import Testimonial from "./Pages/footerLinksPages/component/Testimonial";
+import VideoGallery from "./Pages/footerLinksPages/VideoGallery";
 
 
 
@@ -104,6 +105,7 @@ function App() {
         <Route path="/aboutus" element={<AboutUs />} />
         <Route path="/contactus" element={<ContactusForm />} />
         <Route path="/photo" element={<PhotoGallery />} />
+        <Route path="/video" element={<VideoGallery />} />
         <Route path="/testimonial" element={<Testimonial />} />
 
 

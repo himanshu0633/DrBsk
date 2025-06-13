@@ -261,6 +261,104 @@ img {
     cursor: pointer;
 }
 
+.gallery_page {
+    float: left;
+    width: 100%;
+    margin: 0;
+    padding: 40px 0;
+    background: #eee;
+}
+
+.gallery_page .video-section {
+    background: #fff;
+    border-radius: 15px;
+    margin-bottom: 20px;
+    padding: 15px 15px 0px;
+    margin-top: 0px;
+}
+
+.video-section {
+    position: relative;
+    box-shadow: 0px 0px 5px 0px #ccc;
+    margin: 20px 0px;
+}
+
+.video-section .video-inner {
+    position: relative;
+    width: 100%;
+    /* padding: 110px 0px; */
+    background-size: cover;
+    background-repeat: no-repeat;
+    background-position: center;
+    max-height: 480px;
+    margin: 0;
+    border-radius: 10px;
+    transition: .5s ease-in-out;
+    /* background: url('https://img.youtube.com/vi/pcp7x-7f7Io/hqdefault.jpg'); */
+}
+
+.gallery_item_info {
+    text-align: center;
+    padding: 15px;
+}
+
+.gallery_item_info .featureTitle {
+    font-size: 16px;
+    font-weight: 500;
+    line-height: 24px;
+    color: #333;
+    line-height: 1.3;
+    font-family: 'Signika', sans-serif;
+}
+
+.video-section .video-inner::after {
+    position: absolute;
+    top: 0;
+    left: 0;
+    content: "";
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.1);
+    border-radius: 6px;
+    z-index: 1;
+}
+
+.pulse-button {
+    width: 45px;
+    height: 45px;
+    border: none;
+    box-shadow: 0 0 0 0 rgba(22, 28, 72, 0.7);
+    border-radius: 10px;
+    cursor: pointer;
+    -webkit-animation: pulse 1.25s infinite cubic-bezier(0.66, 0, 0, 1);
+    -moz-animation: pulse 1.25s infinite cubic-bezier(0.66, 0, 0, 1);
+    -ms-animation: pulse 1.25s infinite cubic-bezier(0.66, 0, 0, 1);
+    animation: pulse 1.25s infinite cubic-bezier(0.66, 0, 0, 1);
+    background-color: #68171b;
+    position: absolute;
+    margin: auto;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    left: 0;
+    color: #fff;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding-left: 2px;
+    z-index: 2;
+}
+
+@media (min-width: 1300px) {
+    .gallery_item_info {
+        text-align: center;
+        padding: 15px 0px;
+        height: 70px;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+    }
+}
 
 .heading_banner .cat_title {
     margin: 0 0 10px;
