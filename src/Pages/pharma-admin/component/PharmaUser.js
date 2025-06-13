@@ -243,7 +243,7 @@ const PharmaUser = () => {
                                             <span className="status-badge active">Active</span>
                                         )}
                                     </td>
-                                    <td className="actions-cell">
+                                    <td className="actions-cell d-flex">
                                         <button onClick={() => startEditingUser(user)} className="btn-action btn-edit">Edit</button>
                                         <button onClick={() => deleteUser(user._id)} className="btn-action btn-delete">Delete</button>
                                     </td>
