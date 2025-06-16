@@ -99,7 +99,6 @@ const PharmaCategory = () => {
         });
         setShowModal(true);
     };
-
     const resetForm = () => {
         setNewCategory({ name: '', image: null });
         setIsEditing(false);
