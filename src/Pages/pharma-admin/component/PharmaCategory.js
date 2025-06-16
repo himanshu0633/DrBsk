@@ -1,189 +1,29 @@
-// import React, { useEffect, useState } from 'react'
-// import axiosInstance from '../../../components/AxiosInstance';
-// import API_URL from '../../../config';
-
-// const PharmaCategory = () => {
-//     const [showModal, setShowModal] = useState(false);
-//     const [isSubmitted, setIsSubmitted] = useState(false);
-//     const [categoryList, setCategoryList] = useState([]);
-//     const [newCategory, setNewCategory] = useState({
-//         name: '',
-//         image: null,
-//     });
-
-//     const handleInputChange = (e) => {
-//         const { name, value, files } = e.target;
-//         setNewCategory((prev) => ({
-//             ...prev,
-//             [name]: files ? files[0] : value,
-//         }));
-//     };
-
-//     const handleSubmit = (e) => {
-//         e.preventDefault();
-//         console.log('Submitting category:', newCategory);
-//         setShowModal(false);
-//     };
-    // const handleCreateCategory = async (e) => {
-    //     e.preventDefault();
-
-    //     const formData = new FormData();
-    //     formData.append('name', newCategory.name);
-    //     formData.append('image', newCategory.image);
-
-    //     try {
-    //         const response = await axiosInstance.post(
-    //             '/user/createCategory',
-    //             formData
-    //         );
-
-    //         console.log("API Response:", response.data);
-    //         setShowModal(false);
-    //         fetchData(); // refresh the list
-    //     } catch (error) {
-    //         console.error("Error submitting category:", error);
-    //         setShowModal(false);
-    //         alert("There was an error submitting the category. Please try again.");
-    //     }
-    // };
-
-
-//     useEffect(() => {
-//         fetchData();
-//     }, [])
-
-//     const fetchData = async () => {
-//         try {
-//             const response = await axiosInstance.get('/user/allcategories');
-//             console.log("Fetched categories:", response.data);
-//             setCategoryList(response.data);
-//             setShowModal(false)
-//         } catch (error) {
-//             console.error("Error fetching categories:", error);
-//         }
-//     };
-//     const handleEditCategory = ((e) => {
-//         e.preventDefault();
-//         const response = axiosInstance.put('/updateCategory/:id');
-//     })
-//     const handleDeleteCategory = ((e) => {
-//         e.preventDefault();
-//         const response = axiosInstance.delete('/deleteCategory/:id');
-//     })
-
-
-//     return (
-//         <div>
-//             <div className="admin-page">
-//                 <div className="admin-header">
-//                     <h2>Category</h2>
-//                     <button className="btn-add" onClick={() => setShowModal(true)}>
-//                         Add Category
-//                     </button>
-//                 </div>
-
-//                 <table className="admin-table">
-//                     <thead>
-//                         <tr>
-//                             <th>Name</th>
-//                             <th>Description</th>
-//                             <th>Category ID</th>
-//                             <th>Image</th>
-//                             <th>Status</th>
-//                             <th>Actions</th>
-//                         </tr>
-//                     </thead>
-//                     <tbody>
-//                         {categoryList.map((user, index) => (
-//                             <tr key={index}>
-//                                 <td>{user.name}</td>
-//                                 <td>{user.description}</td>
-//                                 <td>{user.category_id}</td>
-//                                 <td>
-//                                     <img
-//                                         src={`${API_URL}/${user.image}`}
-//                                         alt={user.name}
-//                                         width="60"
-//                                         height="60"
-//                                         style={{ borderRadius: '6px' }}
-//                                     />
-
-//                                 </td>
-//                                 <td>
-//                                     {user.deleted_at ? (
-//                                         <span className="status-badge deleted">Deleted</span>
-//                                     ) : (
-//                                         <span className="status-badge active">Active</span>
-//                                     )}
-//                                 </td>
-//                                 <td>
-//                                     <button onClick={handleEditCategory} className="btn-edit">Edit</button>
-//                                     <button onClick={handleDeleteCategory} className="btn-delete">Delete</button>
-//                                 </td>
-//                             </tr>
-//                         ))}
-//                     </tbody>
-//                 </table>
-
-//                 {/* Modal */}
-//                 {showModal && (
-//                     <div className="modal-overlay">
-//                         <div className="modal">
-//                             <h3>Add New Category</h3>
-//                             <form onSubmit={handleSubmit}>
-//                                 <input
-//                                     type="text"
-//                                     name="name"
-//                                     placeholder="Category Name"
-//                                     value={newCategory.name}
-//                                     onChange={handleInputChange}
-//                                     required
-//                                 />
-//                                 <input
-//                                     type="file"
-//                                     name="image"
-//                                     accept="image/*"
-//                                     onChange={handleInputChange}
-//                                     required
-//                                 />
-//                                 <div className="modal-actions">
-//                                     <button onClick={handleCreateCategory} type="submit" className="btn-save">Save</button>
-//                                     <button type="button" className="btn-cancel" onClick={() => setShowModal(false)}>Cancel</button>
-//                                 </div>
-//                             </form>
-//                         </div>
-//                     </div>
-//                 )}
-//             </div>
-//         </div>
-//     )
-// }
-
-// export default PharmaCategory
-
-
-
 import React, { useEffect, useState } from 'react'
 import axiosInstance from '../../../components/AxiosInstance';
 import API_URL from '../../../config';
+import CustomLoader from '../../../components/CustomLoader';
 
 const PharmaCategory = () => {
     const [showModal, setShowModal] = useState(false);
     const [isEditing, setIsEditing] = useState(false);
     const [editingCategoryId, setEditingCategoryId] = useState(null);
     const [categoryList, setCategoryList] = useState([]);
+    const [loading, setLoading] = useState(true);
     const [newCategory, setNewCategory] = useState({
+          variety: "",
         name: '',
+        description: '',
         image: null,
     });
 
-    const handleInputChange = (e) => {
-        const { name, value, files } = e.target;
-        setNewCategory((prev) => ({
-            ...prev,
-            [name]: files ? files[0] : value,
-        }));
-    };
+  const handleInputChange = (e) => {
+    const { name, value, files } = e.target;
+    setNewCategory((prev) => ({
+        ...prev,
+        [name]: name === "image" ? files[0] : value,
+    }));
+};
+
 
     
     const handleSubmit = (e) => {
@@ -199,7 +39,9 @@ const PharmaCategory = () => {
         e.preventDefault();
 
         const formData = new FormData();
+        formData.append('variety', newCategory.variety);
         formData.append('name', newCategory.name);
+        formData.append('description', newCategory.description);
         formData.append('image', newCategory.image);
 
         try {
@@ -214,7 +56,10 @@ const PharmaCategory = () => {
 
     const handleUpdateCategory = async () => {
         const formData = new FormData();
+        formData.append('variety', newCategory.variety);
         formData.append('name', newCategory.name);
+        formData.append('description', newCategory.description);
+
         if (newCategory.image) {
             formData.append('image', newCategory.image);
         }
@@ -244,11 +89,15 @@ const PharmaCategory = () => {
         }
     };
 
-
-    const handleEditCategory = (category) => {
-        setNewCategory({ name: category.name, image: null });
-        setEditingCategoryId(category.category_id);
+    const startEditingCategory = (cat) => {
         setIsEditing(true);
+        setEditingCategoryId(cat._id);
+        setNewCategory({
+            variety: cat.variety || '',
+            name: cat.name || '',
+            description: cat.description || '',
+            image: null,
+        });
         setShowModal(true);
     };
 
@@ -266,11 +115,14 @@ const PharmaCategory = () => {
         } catch (error) {
             console.error("Error fetching categories:", error);
         }
+        setLoading(false);
     };
 
     useEffect(() => {
         fetchData();
     }, []);
+
+
 
     return (
         <div className="admin-page">
@@ -280,48 +132,49 @@ const PharmaCategory = () => {
                     Add Category
                 </button>
             </div>
-
-            <table className="admin-table">
-                <thead>
-                    <tr>
-                        <th>Name</th>
-                        <th>Description</th>
-                        <th>Category ID</th>
-                        <th>Image</th>
-                        <th>Status</th>
-                        <th>Actions</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {categoryList.map((cat, index) => (
-                        <tr key={index}>
-                            <td>{cat.name}</td>
-                            <td>{cat.description}</td>
-                            <td>{cat.category_id}</td>
-                            <td>
-                                <img
-                                    src={`${API_URL}/${cat.image}`}
-                                    alt={cat.name}
-                                    width="60"
-                                    height="60"
-                                    style={{ borderRadius: '6px' }}
-                                />
-                            </td>
-                            <td>
-                                {cat.deleted_at ? (
-                                    <span className="status-badge deleted">Deleted</span>
-                                ) : (
-                                    <span className="status-badge active">Active</span>
-                                )}
-                            </td>
-                            <td>
-                                <button onClick={() => handleEditCategory(cat)} className="btn-edit">Edit</button>
-                                <button onClick={() => handleDeleteCategory(cat.category_id)} className="btn-delete">Delete</button>
-                            </td>
+            {loading ? (<CustomLoader />) : (<div className='overflow_x_auto'>
+                <table className="admin-table w_970">
+                    <thead>
+                        <tr>
+                         <th>Variety</th>
+                            <th>Name</th>
+                            <th>Description</th>
+                            <th>Image</th>
+                            <th>Status</th>
+                            <th>Actions</th>
                         </tr>
-                    ))}
-                </tbody>
-            </table>
+                    </thead>
+                    <tbody>
+                        {categoryList.map((cat, index) => (
+                            <tr key={index}>
+                                 <td>{cat.variety}</td>
+                                <td>{cat.name}</td>
+                                <td>{cat.description}</td>
+                                <td>
+                                    <img
+                                        src={`${API_URL}/${cat.image}`}
+                                        alt={cat.name}
+                                        width="60"
+                                        height="60"
+                                        style={{ borderRadius: '6px' }}
+                                    />
+                                </td>
+                                <td>
+                                    {cat.deleted_at ? (
+                                        <span className="status-badge deleted">Deleted</span>
+                                    ) : (
+                                        <span className="status-badge active">Active</span>
+                                    )}
+                                </td>
+                                <td>
+                                    <button onClick={() => startEditingCategory(cat)} className="btn-edit">Edit</button>
+                                    <button onClick={() => handleDeleteCategory(cat._id)} className="btn-delete">Delete</button>
+                                </td>
+                            </tr>
+                        ))}
+                    </tbody>
+                </table>
+            </div>)}
 
             {/* Modal */}
             {showModal && (
@@ -329,11 +182,29 @@ const PharmaCategory = () => {
                     <div className="modal">
                         <h3>{isEditing ? "Edit Category" : "Add New Category"}</h3>
                         <form onSubmit={handleSubmit}>
+                         <select
+                name="variety"
+                value={newCategory.variety}
+                onChange={handleInputChange}
+                required
+            >
+                <option value="" disabled>Select Variety</option>
+                <option value="Human">Human</option>
+                <option value="Veterinary">Veterinary</option>
+            </select>
                             <input
                                 type="text"
                                 name="name"
                                 placeholder="Category Name"
                                 value={newCategory.name}
+                                onChange={handleInputChange}
+                                required
+                            />
+                            <input
+                                type="text"
+                                name="description"
+                                placeholder="Category Description"
+                                value={newCategory.description}
                                 onChange={handleInputChange}
                                 required
                             />
@@ -356,3 +227,5 @@ const PharmaCategory = () => {
 };
 
 export default PharmaCategory;
+
+

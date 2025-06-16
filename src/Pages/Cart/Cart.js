@@ -7,6 +7,7 @@ import Header from '../../components/Header/Header';
 import SignUpForm from '../../components/SignUp';
 import axiosInstance from '../../components/AxiosInstance';
 import WholesalePartnerForm from '../../components/wholeSale_signup';
+import { toast } from 'react-toastify';
 
 const Cart = () => {
   const [showPassword, setShowPassword] = useState(false);
@@ -43,8 +44,9 @@ const Cart = () => {
     setTimeout(() => {
       setOtpSent(true);
       setIsLoading(false);
-      alert(`OTP sent to +91${mobile}`);
+      toast.success(`OTP sent to +91${mobile}`);
     }, 1500);
+
   };
 
   const handleSubmit = async (e) => {
@@ -60,7 +62,7 @@ const Cart = () => {
       if (!otp) newErrors.otp = 'Please enter the OTP';
     } else {
       if (!validateEmail(email)) newErrors.email = 'Please enter a valid email address';
-      if (!password || password.length < 6) newErrors.password = 'Password must be at least 6 characters';
+      if (!password || password.length < 5) newErrors.password = 'Password must be at least 5 characters';
     }
 
     if (Object.keys(newErrors).length > 0) {
@@ -123,9 +125,11 @@ const Cart = () => {
 
                       <div className={`davaindia-form-group ${errors.password ? 'error' : ''}`}>
                         <label>Password</label>
-                        <div className="davaindia-input-container">
-                          <Lock size={18} className="davaindia-input-icon left" />
-                          <input type={showPassword ? 'text' : 'password'} value={password} onChange={(e) => setPassword(e.target.value)} placeholder="Enter your password" />
+                        <div className="davaindia-input-container justifyBetween">
+                          <div className='davaindia-input-container1'>
+                            <Lock size={18} className="davaindia-input-icon left" />
+                            <input type={showPassword ? 'text' : 'password'} value={password} onChange={(e) => setPassword(e.target.value)} placeholder="Enter your password" />
+                          </div>
                           <button type="button" onClick={togglePasswordVisibility}>
                             {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
                           </button>
@@ -168,14 +172,14 @@ const Cart = () => {
                     Sign up
                   </button>
                 </div>
-                 <div className="davaindia-form-footer">
+                <div className="davaindia-form-footer">
                   Want to be Our WholeSale Partner?{' '}
-                <button type="button" onClick={() => {
-  setShowSignUp(true);
-  setIsWholesalePartner(true);
-}} className="davaindia-link-button">
-  Sign up
-</button>
+                  <button type="button" onClick={() => {
+                    setShowSignUp(true);
+                    setIsWholesalePartner(true);
+                  }} className="davaindia-link-button">
+                    Sign up
+                  </button>
 
                 </div>
               </>

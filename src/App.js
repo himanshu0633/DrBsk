@@ -47,6 +47,11 @@ import PharmaUser from "./Pages/pharma-admin/component/PharmaUser";
 import PharmaSetting from "./Pages/pharma-admin/component/PharmaSetting";
 import PharmaSubCategory from "./Pages/pharma-admin/component/PharmaSubCategory";
 import PharmaOrder from "./Pages/pharma-admin/component/PharmaOrder";
+import MyChart from "./Pages/pharma-admin/component/Mychart";
+import PharmaWholeSale from "./Pages/pharma-admin/component/PharmaWholeSale";
+import PharmaAdminLogin from "./Pages/pharma-admin/page/PharmaAdminLogin";
+import ProtectedRoute from "./Pages/pharma-admin/page/ProtectedRoute";
+import PharmaPrescription from "./Pages/pharma-admin/component/PharmaPrescription";
 
 
 
@@ -69,6 +74,7 @@ function App() {
   //   useEffect(() => {
   //   toast.info('Test toast works!');
   // }, []);
+
   return (
     <Routes>
       <Route path="/" element={<Dashboard />} />
@@ -87,6 +93,8 @@ function App() {
       <Route path="/cart" element={<AddToCart />} />
       <Route path="/Prescription" element={<Prescription />} />
       <Route path="/Phone" element={<Phone />} />
+      <Route path="/subcategory/:subCategoryName" element={<Fever />} />
+
       {/* {Admin Panel Routes} */}
       {/* <Route path="/admin/AddProduct" element={<AddProduct />} />
       <Route path="/admin/Board" element={<Board />} />
@@ -103,18 +111,32 @@ function App() {
       {/* </Route> */}
 
       {/* pharma admin */}
-      <Route path="/pharma-admin" element={<PharmaAdmin />}>
-        <Route path="dashboard" element={<PharmaDashboard />} />
-        <Route path="category" element={<PharmaCategory />} />
-        <Route path="subCategory" element={<PharmaSubCategory />} />
-        <Route path="products" element={<PharmaProducts />} />
-        <Route path="orders" element={<PharmaOrder />} />
-        <Route path="addNewProduct" element={<AddNewProduct />} />
-        <Route path="banner" element={<PharmaBanner />} />
-        <Route path="user" element={<PharmaUser />} />
-        <Route path="settings" element={<PharmaSetting />} />
-      </Route>
+      <Route>
+        <Route path="/admin-login" element={<PharmaAdminLogin />} />
 
+        <Route
+          path="/pharma-admin"
+          element={
+            <ProtectedRoute>
+              <PharmaAdmin />
+            </ProtectedRoute>
+          }
+        >
+          <Route path="dashboard" element={<PharmaDashboard />} />
+          <Route path="category" element={<PharmaCategory />} />
+          <Route path="subCategory" element={<PharmaSubCategory />} />
+          <Route path="orders" element={<PharmaOrder />} />
+          <Route path="products" element={<PharmaProducts />} />
+          <Route path="addNewProduct" element={<AddNewProduct />} />
+          <Route path="addNewProduct/:id" element={<AddNewProduct />} />
+          <Route path="banner" element={<PharmaBanner />} />
+          <Route path="user" element={<PharmaUser />} />
+          <Route path="settings" element={<PharmaSetting />} />
+          <Route path="chart" element={<MyChart />} />
+          <Route path="wholesale" element={<PharmaWholeSale />} />
+          <Route path="prescriptions" element={<PharmaPrescription />} />
+        </Route>
+      </Route>
 
     </Routes>
   );

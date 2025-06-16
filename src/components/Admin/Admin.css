@@ -56,7 +56,7 @@ html, body, #root {
   background-color: var(--sidebar-bg);
   color: var(--sidebar-color);
   position: fixed;
-  left: -100%;
+  /* left: -100%; */
   top: 0;
   z-index: 1000;
   border-right: 1px solid var(--sidebar-border);

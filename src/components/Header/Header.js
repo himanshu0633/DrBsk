@@ -2,6 +2,8 @@ import React, { useState, useEffect, useRef } from 'react';
 import './Header.css';
 import '../../App.css'
 import logo from '../../logo/logo1.jpg';
+import { useSelector } from 'react-redux';
+
 
 const Header = () => {
   const [showDropdown, setShowDropdown] = useState(false);
@@ -12,6 +14,21 @@ const Header = () => {
   const [pincode, setPincode] = useState('');
   const [locationName, setLocationName] = useState('Bommanahalli (Bengaluru)');
   const [currentPincode, setCurrentPincode] = useState('560068');
+
+  // const cartItems = useSelector((state) => state?.cart?.items);
+  // const cartItems = useSelector((state) => state?.cart?.items || []);
+  const cartItems = useSelector((state) => state?.cart?.items || []);
+
+
+// const totalCartCount = cartItems?.reduce((total, item) => total + (item?.quantity || 1), 0);
+const totalCartCount = cartItems.reduce((total, item) => total + (item?.quantity || 1), 0);
+
+// const cartItems = useSelector((state) => {
+//   console.log("Redux state:", state);
+//   return state?.cart?.items || [];
+// });
+
+console.log("Total cart count:", totalCartCount);
 
   useEffect(() => {
     const handleResize = () => {
@@ -85,7 +102,8 @@ const Header = () => {
     setShowInput(false);
     setPincode('');
   };
-
+  const storedUser = sessionStorage.getItem('userData');
+  const userData = storedUser ? JSON.parse(storedUser) : null;
 
   return (
     <div className='container-manual'>
@@ -186,17 +204,23 @@ const Header = () => {
                 )}
               </div>
 
-              <a href="/Prescription" className="no-decoration order_5">
+              {userData?.type === "wholesalePartner" ? null : <a href="/Prescription" className="no-decoration order_5">
                 <div className="upload-box">
                   <span className="upload-icon">📄</span>
                   <span className="location-name">Upload Prescription</span>
                 </div>
-              </a>
+              </a>}
+
+
             </div>
             <div className='navbarIconFlex '>
-              <a href="/Cart" className="no-decoration">
-                <div className="cart-icon">🛒 Cart</div>
-              </a>
+             <a href="/Cart" className="no-decoration cart-wrapper">
+  <div className="cart-icon">
+    🛒 Cart
+    {totalCartCount > 0 && <span className="cart-badge">{totalCartCount}</span>}
+  </div>
+</a>
+
               <a href="/Notifications" className="no-decoration">
                 <div className="bell-icon">🔔</div>
               </a>

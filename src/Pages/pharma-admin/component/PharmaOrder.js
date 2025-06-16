@@ -1,8 +1,10 @@
 import React, { useEffect, useState } from 'react'
 import axiosInstance from '../../../components/AxiosInstance';
+import CustomLoader from '../../../components/CustomLoader';
 
 const PharmaOrder = () => {
     const [Order, setOrder] = useState([]);
+    const [loading, setLoading] = useState(true);
 
     useEffect(() => {
         const fetchData = async () => {
@@ -13,6 +15,7 @@ const PharmaOrder = () => {
             } catch (error) {
                 console.error("Error fetching data:", error);
             }
+            setLoading(false);
         };
         fetchData();
     }, []);
@@ -20,7 +23,7 @@ const PharmaOrder = () => {
     return (
         <div className="admin-page">
             <h1>Orders</h1>
-            <div className="table-responsive">
+            {loading ? <CustomLoader /> : <div className="table-responsive">
                 <table className="product-table">
                     <thead>
                         <tr>
@@ -41,14 +44,15 @@ const PharmaOrder = () => {
                                     <td data-label="Price">₹{item.price}</td>
                                     <td data-label="Stock">{item.quantity}</td>
                                     <td data-label="Payment">{order.paymentId} </td>
-                                    <td data-label="Status" className={`${order.status== 'Pending' ? 'clrOrange' : 'clrGreen'}`} >{order.status} </td>
+                                    <td data-label="Status" className={`${order.status == 'Pending' ? 'clrOrange' : 'clrGreen'}`} >{order.status} </td>
                                 </tr>
                             ))
                         })}
 
                     </tbody>
                 </table>
-            </div>
+            </div>}
+
         </div>
     )
 }

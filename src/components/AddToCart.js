@@ -13,6 +13,7 @@ const AddToCart = () => {
   const [isAuthenticated, setIsAuthenticated] = useState(null);
   const [showModal, setShowModal] = useState(false);
   const [addresses, setAddresses] = useState([]);
+  const [loading, setLoading] = useState(true);
   const [formData, setFormData] = useState({
     flat: '',
     landmark: '',
@@ -85,6 +86,7 @@ const AddToCart = () => {
       toast.error("Failed to update address");
       console.error("Address update error:", error);
     }
+    setLoading(false);
   };
 
   const loadRazorpayScript = () => {
@@ -98,66 +100,66 @@ const AddToCart = () => {
   };
 
   const handleCheckout = () => {
-  if (!formData.selectedAddress) {
-    toast.warn("Please select an address before checkout.");
-    return;
-  }
+    if (!formData.selectedAddress) {
+      toast.warn("Please select an address before checkout.");
+      return;
+    }
 
-  const options = {
-    key: "rzp_test_hgXU0UWRTSRoYM", // Replace with real Razorpay key
-    amount: totalPrice * 100, // In paise
-    currency: "INR",
-    name: "My Shop",
-    description: "Order Payment",
-  handler: async function (response) {
-  try {
-    toast.success("Payment successful!");
+    const options = {
+      key: "rzp_test_hgXU0UWRTSRoYM", // Replace with real Razorpay key
+      amount: totalPrice * 100, // In paise
+      currency: "INR",
+      name: "My Shop",
+      description: "Order Payment",
+      handler: async function (response) {
+        try {
+          toast.success("Payment successful!");
 
-    const userData = JSON.parse(sessionStorage.getItem('userData'));
-    const orderPayload = {
-      userId: userData?._id,
-      items: cartItems.map(item => ({
-        productId: item._id,
-        name: item.name,
-        quantity: item.quantity || 1,
-        price: parseFloat(item.consumer_price || item.price || 0),
-      })),
-      address: formData.selectedAddress,
-      phone: formData.phone || "9999999999",
-      totalAmount: totalPrice,
-      paymentId: response.razorpay_payment_id,
+          const userData = JSON.parse(sessionStorage.getItem('userData'));
+          const orderPayload = {
+            userId: userData?._id,
+            items: cartItems.map(item => ({
+              productId: item._id,
+              name: item.name,
+              quantity: item.quantity || 1,
+              price: parseFloat(item.consumer_price || item.price || 0),
+            })),
+            address: formData.selectedAddress,
+            phone: formData.phone || "9999999999",
+            totalAmount: totalPrice,
+            paymentId: response.razorpay_payment_id,
+          };
+
+          const res = await axiosInstance.post('/api/createOrder', orderPayload);
+
+          if (res.status === 201) {
+            dispatch(clearProducts());
+            navigate("/success");
+          } else {
+            toast.error("Failed to place order.");
+          }
+        } catch (error) {
+          console.error("Order creation error:", error);
+          toast.error("Something went wrong while placing the order.");
+        }
+      },
+
+      prefill: {
+        name: "Test User",
+        email: "test@example.com",
+        contact: formData.phone || "9999999999",
+      },
+      notes: {
+        address: formData.selectedAddress,
+      },
+      theme: {
+        color: "#3399cc",
+      },
     };
 
-    const res = await axiosInstance.post('/api/createOrder', orderPayload);
-
-    if (res.status === 201) {
-      dispatch(clearProducts());
-      navigate("/success");
-    } else {
-      toast.error("Failed to place order.");
-    }
-  } catch (error) {
-    console.error("Order creation error:", error);
-    toast.error("Something went wrong while placing the order.");
-  }
-},
-
-    prefill: {
-      name: "Test User",
-      email: "test@example.com",
-      contact: formData.phone || "9999999999",
-    },
-    notes: {
-      address: formData.selectedAddress,
-    },
-    theme: {
-      color: "#3399cc",
-    },
+    const razorpay = new window.Razorpay(options);
+    razorpay.open();
   };
-
-  const razorpay = new window.Razorpay(options);
-  razorpay.open();
-};
 
 
   return (
@@ -240,14 +242,16 @@ const AddToCart = () => {
                             onClick={() => handleQuantityChange(item._id, (item.quantity || 1) - 1)}
                             disabled={(item.quantity || 1) <= 1}
                           >
-                            <Minus size={16} />
+                            {/* <Minus size={24} /> */}
+                            <span>-</span>
                           </button>
                           <span className="quantity">{item.quantity || 1}</span>
                           <button
                             className="quantity-btn"
                             onClick={() => handleQuantityChange(item._id, (item.quantity || 1) + 1)}
                           >
-                            <Plus size={16} />
+                            {/* <Plus size={24} /> */}
+                            <span>+</span>
                           </button>
                         </div>
                         <button className="remove-btn" onClick={() => handleRemoveItem(item._id)}>
@@ -265,40 +269,40 @@ const AddToCart = () => {
                 <div className="summary-card">
                   <h3 className="summary-title">Order Summary</h3>
 
-                <button
-  className="enhanced-add-address-btn"
-  onClick={() => setShowModal(true)}
->
-  ➕ Add New Address
-</button>
-                {addresses.length > 0 ? (
-  <div className="saved-addresses">
-    <h4 className="section-subtitle">📍 Saved Addresses</h4>
-    <ul className="address-list">
-      {addresses.map((addr, index) => (
-        <li
-          key={index}
-          className={`address-card ${formData.selectedAddress === addr ? 'selected' : ''}`}
-        >
-          <label>
-            <input
-              type="radio"
-              name="selectedAddress"
-              value={addr}
-              checked={formData.selectedAddress === addr}
-              onChange={() =>
-                setFormData({ ...formData, selectedAddress: addr })
-              }
-            />
-            <span>{addr}</span>
-          </label>
-        </li>
-      ))}
-    </ul>
-  </div>
-) : (
-  <p className="no-address-text">No address saved yet. Please add one.</p>
-)}
+                  <button
+                    className="enhanced-add-address-btn"
+                    onClick={() => setShowModal(true)}
+                  >
+                    ➕ Add New Address
+                  </button>
+                  {addresses.length > 0 ? (
+                    <div className="saved-addresses">
+                      <h4 className="section-subtitle">📍 Saved Addresses</h4>
+                      <ul className="address-list">
+                        {addresses.map((addr, index) => (
+                          <li
+                            key={index}
+                            className={`address-card ${formData.selectedAddress === addr ? 'selected' : ''}`}
+                          >
+                            <label>
+                              <input
+                                type="radio"
+                                name="selectedAddress"
+                                value={addr}
+                                checked={formData.selectedAddress === addr}
+                                onChange={() =>
+                                  setFormData({ ...formData, selectedAddress: addr })
+                                }
+                              />
+                              <span>{addr}</span>
+                            </label>
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
+                  ) : (
+                    <p className="no-address-text">No address saved yet. Please add one.</p>
+                  )}
 
                   <div className="summary-details">
                     <div className="summary-row">
@@ -346,92 +350,92 @@ const AddToCart = () => {
         </div>
       </div>
 
-<Dialog
-  open={showModal}
-  onClose={() => setShowModal(false)}
-  fullWidth
-  maxWidth="sm"
->
-  <DialogTitle sx={{ fontWeight: 'bold' }}>Add New Address</DialogTitle>
-  <DialogContent sx={{ pt: 2, display: 'flex', flexDirection: 'column', gap: 2 }}>
-    <Grid container spacing={2}>
-      <Grid item xs={12} sm={6}>
-        <TextField
-          label="Flat / House"
-          fullWidth
-          variant="outlined"
-          size="small"
-          onChange={(e) => setFormData({ ...formData, flat: e.target.value })}
-        />
-      </Grid>
-      <Grid item xs={12} sm={6}>
-        <TextField
-          label="Landmark"
-          fullWidth
-          variant="outlined"
-          size="small"
-          onChange={(e) => setFormData({ ...formData, landmark: e.target.value })}
-        />
-      </Grid>
-      <Grid item xs={12} sm={6}>
-        <TextField
-          label="City"
-          fullWidth
-          variant="outlined"
-          size="small"
-          onChange={(e) => setFormData({ ...formData, city: e.target.value })}
-        />
-      </Grid>
-      <Grid item xs={12} sm={6}>
-        <TextField
-          label="State"
-          fullWidth
-          variant="outlined"
-          size="small"
-          onChange={(e) => setFormData({ ...formData, state: e.target.value })}
-        />
-      </Grid>
-      <Grid item xs={12} sm={6}>
-        <TextField
-          label="Country"
-          fullWidth
-          variant="outlined"
-          size="small"
-          onChange={(e) => setFormData({ ...formData, country: e.target.value })}
-        />
-      </Grid>
-      <Grid item xs={12} sm={6}>
-        <TextField
-          label="Phone Number"
-          fullWidth
-          variant="outlined"
-          size="small"
-          InputProps={{
-            startAdornment: <InputAdornment position="start">+91</InputAdornment>,
-          }}
-          onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
-        />
-      </Grid>
-    </Grid>
-  </DialogContent>
-  <DialogActions sx={{ px: 3, pb: 2 }}>
-    <Button
-      onClick={handleAddAddress}
-      color="primary"
-      variant="contained"
-      sx={{ fontWeight: 600 }}
-    >
-      Add Address
-    </Button>
-    <Button
-      onClick={() => setShowModal(false)}
-      color="secondary"
-      variant="outlined"
-    >
-      Cancel
-    </Button>
-  </DialogActions>
-</Dialog>
+      <Dialog
+        open={showModal}
+        onClose={() => setShowModal(false)}
+        fullWidth
+        maxWidth="sm"
+      >
+        <DialogTitle sx={{ fontWeight: 'bold' }}>Add New Address</DialogTitle>
+        <DialogContent sx={{ pt: 2, display: 'flex', flexDirection: 'column', gap: 2 }}>
+          <Grid container spacing={2}>
+            <Grid item xs={12} sm={6}>
+              <TextField
+                label="Flat / House"
+                fullWidth
+                variant="outlined"
+                size="small"
+                onChange={(e) => setFormData({ ...formData, flat: e.target.value })}
+              />
+            </Grid>
+            <Grid item xs={12} sm={6}>
+              <TextField
+                label="Landmark"
+                fullWidth
+                variant="outlined"
+                size="small"
+                onChange={(e) => setFormData({ ...formData, landmark: e.target.value })}
+              />
+            </Grid>
+            <Grid item xs={12} sm={6}>
+              <TextField
+                label="City"
+                fullWidth
+                variant="outlined"
+                size="small"
+                onChange={(e) => setFormData({ ...formData, city: e.target.value })}
+              />
+            </Grid>
+            <Grid item xs={12} sm={6}>
+              <TextField
+                label="State"
+                fullWidth
+                variant="outlined"
+                size="small"
+                onChange={(e) => setFormData({ ...formData, state: e.target.value })}
+              />
+            </Grid>
+            <Grid item xs={12} sm={6}>
+              <TextField
+                label="Country"
+                fullWidth
+                variant="outlined"
+                size="small"
+                onChange={(e) => setFormData({ ...formData, country: e.target.value })}
+              />
+            </Grid>
+            <Grid item xs={12} sm={6}>
+              <TextField
+                label="Phone Number"
+                fullWidth
+                variant="outlined"
+                size="small"
+                InputProps={{
+                  startAdornment: <InputAdornment position="start">+91</InputAdornment>,
+                }}
+                onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
+              />
+            </Grid>
+          </Grid>
+        </DialogContent>
+        <DialogActions sx={{ px: 3, pb: 2 }}>
+          <Button
+            onClick={handleAddAddress}
+            color="primary"
+            variant="contained"
+            sx={{ fontWeight: 600 }}
+          >
+            Add Address
+          </Button>
+          <Button
+            onClick={() => setShowModal(false)}
+            color="secondary"
+            variant="outlined"
+          >
+            Cancel
+          </Button>
+        </DialogActions>
+      </Dialog>
 
     </>
   );

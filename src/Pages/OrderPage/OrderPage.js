@@ -3,9 +3,11 @@ import './OrderPage.css';
 import Header from '../../components/Header/Header';
 import Footer from '../../components/Footer/Footer';
 import axiosInstance from '../../components/AxiosInstance';
+import CustomLoader from '../../components/CustomLoader';
 
 const OrderPage = () => {
   const [orders, setOrders] = useState([]);
+  const [loading, setLoading] = useState(true);
 
   // Get userId from sessionStorage
   const userData = JSON.parse(sessionStorage.getItem('userData'));
@@ -22,6 +24,7 @@ const OrderPage = () => {
     } catch (error) {
       console.error('Error fetching data:', error);
     }
+    setLoading(false);
   };
 
   return (
@@ -101,51 +104,51 @@ const OrderPage = () => {
                   </button>
                 </div>
               </div>
-
-              <div className="orders-table">
+              {loading ? <CustomLoader /> : (<div className="orders-table">
                 <table>
-                 <thead>
-  <tr>
-    <th>#</th>
-    <th>Order ID</th>
-    <th>Product(s)</th>
-    <th>Date</th>
-    <th>Status</th>
-    <th>Total</th>
-    <th>Phone</th>
-  </tr>
-</thead>
+                  <thead>
+                    <tr>
+                      <th>#</th>
+                      <th>Order ID</th>
+                      <th>Product(s)</th>
+                      <th>Date</th>
+                      <th>Status</th>
+                      <th>Total</th>
+                      <th>Phone</th>
+                    </tr>
+                  </thead>
 
-                <tbody>
-  {orders.map((order, index) => (
-    <tr key={order._id || index}>
-      <td>{index + 1}</td>
-      <td>{order._id}</td>
-      <td>
-        {order.items.map(item => item.name).join(', ')}
-      </td>
-      <td>{new Date(order.createdAt).toLocaleDateString()}</td>
-      <td>
-        <span className={`status-badge ${order.status.toLowerCase()}`}>
-          {order.status}
-        </span>
-      </td>
-      <td>₹{order.totalAmount}</td>
-<td>{order.phone}</td>
+                  <tbody>
+                    {orders.map((order, index) => (
+                      <tr key={order._id || index}>
+                        <td>{index + 1}</td>
+                        <td>{order._id}</td>
+                        <td>
+                          {order.items.map(item => item.name).join(', ')}
+                        </td>
+                        <td>{new Date(order.createdAt).toLocaleDateString()}</td>
+                        <td>
+                          <span className={`status-badge ${order.status.toLowerCase()}`}>
+                            {order.status}
+                          </span>
+                        </td>
+                        <td>₹{order.totalAmount}</td>
+                        <td>{order.phone}</td>
 
-    </tr>
-  ))}
-  {orders.length === 0 && (
-    <tr>
-      <td colSpan="5" style={{ textAlign: 'center' }}>
-        No orders found.
-      </td>
-    </tr>
-  )}
-</tbody>
+                      </tr>
+                    ))}
+                    {orders.length === 0 && (
+                      <tr>
+                        <td colSpan="5" style={{ textAlign: 'center' }}>
+                          No orders found.
+                        </td>
+                      </tr>
+                    )}
+                  </tbody>
 
                 </table>
-              </div>
+              </div>)}
+
             </div>
           </main>
         </div>
