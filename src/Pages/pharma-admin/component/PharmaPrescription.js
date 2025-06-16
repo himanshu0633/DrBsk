@@ -333,7 +333,7 @@ const PharmaPrescription = () => {
                                                     onClick={() => handleImageClick(item.image)}
                                                     style={{
                                                         width: '150px',
-                                                        height: 'auto',
+                                                        height: '100px',
                                                         borderRadius: 8,
                                                         cursor: 'pointer',
                                                         border: '1px solid #ccc',

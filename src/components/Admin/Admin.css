@@ -1,5 +1,5 @@
 :root {
-  --sidebar-width: 260px;
+  /* --sidebar-width: 260px; */
   --sidebar-bg: #1e293b;
   --sidebar-color: #e2e8f0;
   --sidebar-active-bg: #3b82f6;
@@ -51,12 +51,11 @@ html, body, #root {
 
 /* Sidebar */
 .admin-sidebar {
-  width: var(--sidebar-width);
+  width: 260px;
   height: 100vh;
   background-color: var(--sidebar-bg);
   color: var(--sidebar-color);
   position: fixed;
-  /* left: -100%; */
   top: 0;
   z-index: 1000;
   border-right: 1px solid var(--sidebar-border);
@@ -172,4 +171,6 @@ html, body, #root {
   .admin-nav-link {
     white-space: nowrap;
   }
+  .admin-sidebar {
+  width: 200px;}
 }
