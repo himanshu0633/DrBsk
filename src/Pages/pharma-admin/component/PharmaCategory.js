@@ -175,6 +175,7 @@ const PharmaCategory = () => {
                 </table>
             </div>)}
 
+
             {/* Modal */}
             {showModal && (
                 <div className="modal-overlay">
