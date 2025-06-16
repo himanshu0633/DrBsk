@@ -185,6 +185,7 @@ const PharmaCategory = () => {
         }));
     };
 
+    
     const handleSubmit = (e) => {
         e.preventDefault();
         if (isEditing) {
