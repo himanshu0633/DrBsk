@@ -364,7 +364,7 @@ const PharmaBanner = () => {
                 BackdropProps={{ timeout: 500 }}
             >
                 <Fade in={showModal}>
-                    <Box className="modal-content">
+                    <Box className="modal-content center_modal">
                         <h3>Add New Banner</h3>
                         <form onSubmit={handleBannerSubmit}>
                             <select

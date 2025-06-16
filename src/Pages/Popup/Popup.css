@@ -299,13 +299,21 @@
     height: 120px;
   }
 }
+.css-74d805-MuiButtonBase-root-MuiButton-root.Mui-disabled{
+  color:white;
+}
+.center_modal{
+      top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+}
 
 @media (max-width: 768px) {
   .herbal-form-container {
     margin-left: 0;
     width: 100%;
     padding: 15px;
-    margin-top: -850px!important;
+    /* margin-top: -850px!important; */
   }
   
   .herbal-form-group {

@@ -18,7 +18,7 @@
     "axios": "^1.9.0",
     "bootstrap": "^5.3.6",
     "canvas-confetti": "^1.9.3",
-    "chart.js": "^4.4.9",
+    "chart.js": "^4.5.0",
     "lucide-react": "^0.507.0",
     "razorpay": "^2.9.6",
     "react": "^19.1.0",

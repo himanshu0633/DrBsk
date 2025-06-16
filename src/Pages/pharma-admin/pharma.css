@@ -389,11 +389,22 @@ input:focus {
     padding: 24px;
     overflow-x: auto;
 }
+.stats-container1 {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 30px;
+  max-width: 1200px;
+  margin: 0 auto;
+}
 
 /* Hide sidebar on mobile by default */
 @media screen and (max-width: 768px) {
     .pharmaAdminContent {
         width: calc(100% - 230px);
+    }
+
+    .dashboard-container {
+        margin-top: 0 !important;
     }
 
     .pharmaSidebar {
