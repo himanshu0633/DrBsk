@@ -70,11 +70,12 @@ const Header = () => {
       const data = await res.json();
 
       if (data.length > 0) {
-        const location = data[0].address;
+        const location = data[0].display_name;
+        console.log("dkhfkwhdrsjjk",location);
         const placeName =
-          location.suburb || location.city || location.town || location.village || location.state || "Unknown location";
+ location.city || location.town || location.village || location.state || "Unknown location";
 
-        setLocationName(`${placeName}`);
+        setLocationName(`${location}`);
         setCurrentPincode(pincode);
       } else {
         setLocationName("Location not found");
