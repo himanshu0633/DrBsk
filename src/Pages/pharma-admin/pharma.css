@@ -6,6 +6,8 @@
 
 .pharmaSidebar {
     width: 260px;
+    transition: transform 0.3s ease;
+    z-index: 1000;
     /* background-color: red; */
 }
 
@@ -141,8 +143,9 @@ input:focus {
 .css-1orzuox-MuiTableCell-root {
     color: white !important;
 }
+
 .css-bmnu5q-MuiTableCell-root {
-       color: white !important;
+    color: white !important;
 }
 
 .bannerImg {
@@ -371,4 +374,75 @@ input:focus {
     cursor: pointer;
     font-weight: bold;
     color: #333;
+}
+
+/* Root container */
+.pharmaAdminContainer {
+    display: flex;
+    min-height: 100vh;
+    position: relative;
+}
+
+/* Main content area */
+.pharmaAdminContent {
+    flex-grow: 1;
+    padding: 24px;
+    overflow-x: auto;
+}
+
+/* Hide sidebar on mobile by default */
+@media screen and (max-width: 768px) {
+    .pharmaSidebar {
+        width: 230px;
+        position: fixed;
+        top: 0;
+        left: 0;
+        height: 100%;
+        transform: translateX(-100%);
+        box-shadow: 2px 0 5px rgba(0, 0, 0, 0.2);
+    }
+
+    .css-19kzrtu {
+        padding: 0px !important;
+    }
+
+    .sidebar-header-mobile {
+        display: flex;
+        justify-content: space-around;
+    }
+
+    .fontSize25sml{
+        font-size: 25px !important;
+    }
+
+    .pharmaSidebar.open {
+        transform: translateX(0);
+    }
+
+    .mobileHeader {
+        /* display: flex;
+        align-items: center;
+        background-color: #68171b; */
+        padding: 10px;
+        color: #68171b;
+        position: sticky;
+        top: 0;
+        z-index: 999;
+    }
+
+    .mobileTitle {
+        margin-left: 10px;
+        font-size: 18px;
+        font-weight: bold;
+    }
+
+    .pharmaAdminContent {
+        width: 100%;
+        padding: 10px;
+    }
+}
+@media (min-width:768px) {
+    .close-icon{
+        display: none;
+    }
 }

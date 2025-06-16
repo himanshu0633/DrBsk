@@ -289,6 +289,7 @@ const PharmaBanner = () => {
                 variant="h4"
                 gutterBottom
                 sx={{ fontWeight: 700, color: '#68171b', my: 4 }}
+                
             >
                 Banner Management
             </Typography>

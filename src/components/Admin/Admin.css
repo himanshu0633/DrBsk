@@ -9,7 +9,9 @@
   --sidebar-logo-color: #60a5fa;
 }
 
-html, body, #root {
+html,
+body,
+#root {
   margin: 0;
   padding: 0;
   height: 100%;
@@ -171,6 +173,8 @@ html, body, #root {
   .admin-nav-link {
     white-space: nowrap;
   }
+
   .admin-sidebar {
-  width: 200px;}
+    width: 230px;
+  }
 }
