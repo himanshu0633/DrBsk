@@ -45,6 +45,7 @@ const ProductPage = () => {
   const [product, setProduct] = useState(null);
   const [loading, setLoading] = useState(false);
   const [addedToCart, setAddedToCart] = useState(false);
+  const [selectedImageIndex, setSelectedImageIndex] = useState(0);
   const navigate = useNavigate();
 
 
@@ -146,7 +147,7 @@ const ProductPage = () => {
             {/* Product Image Section */}
             <div className="product-image-container">
               <div className="image-wrapper">
-                <img src={`${API_URL}${product.media[0]?.url}`} alt="Cough Drops Jar" className="product-image" />
+                <img src={`${API_URL}${product.media[selectedImageIndex]?.url}`} alt="Cough Drops Jar" className="product-image1" />
                 <div className="product-badge natural-badge">
                   <Leaf className="badge-icon" size={16} />
                   <span>100% Natural</span>
@@ -158,11 +159,23 @@ const ProductPage = () => {
               </div>
               <div className="image-thumbnails">
                 {product.media.map((mediaItem, index) => (
-                  <div key={index} className="thumbnail">
+                  <div
+                    key={index}
+                    className={`thumbnail ${selectedImageIndex === index ? 'active-thumbnail' : ''}`}
+                    onClick={() => setSelectedImageIndex(index)}
+                  >
                     <img src={`${API_URL}${mediaItem.url}`} alt={`Thumbnail ${index + 1}`} />
                   </div>
                 ))}
               </div>
+
+              {/* <div className="image-thumbnails">
+                {product.media.map((mediaItem, index) => (
+                  <div key={index} className="thumbnail">
+                    <img src={`${API_URL}${mediaItem.url}`} alt={`Thumbnail ${index + 1}`} />
+                  </div>
+                ))}
+              </div> */}
 
             </div>
 
@@ -374,12 +387,12 @@ const ProductPage = () => {
             >
               Directions
             </button>
-            <button
+            {/* <button
               className={`tab-btn ${activeTab === 'reviews' ? 'active' : ''}`}
               onClick={() => setActiveTab('reviews')}
             >
               Reviews (128)
-            </button>
+            </button> */}
           </div>
 
           <div className="tab-content">
@@ -597,7 +610,7 @@ const ProductPage = () => {
         </div>
 
         {/* Frequently Bought Together */}
-        <div className="frequently-bought">
+        {/* <div className="frequently-bought">
           <h2>Frequently Bought Together</h2>
           <div className="bought-together-container">
             <div className="bought-together-products">
@@ -640,13 +653,13 @@ const ProductPage = () => {
               <div className="savings">You save ₹50.00 with this combo</div>
             </div>
           </div>
-        </div>
+        </div> */}  
 
         {/* Related Products */}
-        <ProductCarousel title="You May Also Like" />
+        {/* <ProductCarousel title="You May Also Like" /> */}
 
         {/* Recently Viewed */}
-        <ProductCarousel title="Recently Viewed" />
+        {/* <ProductCarousel title="Recently Viewed" /> */}
       </div>
       <Footer />
     </>

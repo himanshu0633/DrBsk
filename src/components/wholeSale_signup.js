@@ -185,7 +185,7 @@ const WholesalePartnerForm = () => {
 
         <div style={styles.formGroup}>
           <label style={styles.label}>Country</label>
-          <input type="text" name="country" value={formData.country} onChange={handleChange} style={styles.input} />
+          <input type="text" name="country" value='India' style={styles.input} />
         </div>
 
         <div style={styles.formGroup}>

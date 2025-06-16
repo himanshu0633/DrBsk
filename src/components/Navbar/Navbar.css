@@ -24,7 +24,7 @@
 .nav-right {
   display: flex;
   align-items: center;
-  gap: 1.5rem;
+  gap: 10px;
 }
 
 .nav-item {
@@ -57,7 +57,7 @@
 
 .dropdown {
   display: none;
-  position: absolute;
+  position: absolute !important;
   top: 100%;
   left: 0;
   background-color: white;
@@ -92,7 +92,7 @@
    color: var(--primary-color);
   font-weight: 500;
   text-decoration: none; /* remove underline */
-  border: 2px solid #ffb347; /* light orange border */
+  border: 2px solid #68171b; /* light orange border */
   border-radius: 12px;
   padding: 6px 12px;
   transition: box-shadow 0.3s ease, color 0.3s ease;
@@ -110,8 +110,8 @@
 }
 
 .get-app {
-   color: #ff6b00;
-  box-shadow: 0 0 8px rgba(255, 107, 0, 0.6);
+   color: #68171b;
+  box-shadow: 0 0 8px rgba(116, 49, 2, 0.6);
 }
 
 .phone,
@@ -154,7 +154,7 @@
   }
 }
 
-@media (max-width: 768px) {
+@media (max-width: 1050px) {
   .top-nav {
     flex-wrap: wrap;
     padding: 0.8rem 1rem;

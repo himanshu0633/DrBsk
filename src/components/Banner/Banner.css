@@ -1,7 +1,8 @@
 /* Full-width carousel container */
 .banner-carousel-fullwidth {
     width: 100vw;
-    height: 300px; /* Adjust height as needed */
+    /* height: 300px; */
+    height: 400px;
     overflow: hidden;
     position: relative;
     margin: 0;
@@ -41,7 +42,7 @@
     height: 100%;
     padding-left:10px ;
     object-fit: cover;
-    object-position: center;
+    /* object-position: center; */
 }
 
 /* Navigation dots container */

@@ -143,8 +143,9 @@ body {
 .davaindia-form-title {
   font-size: 1.75rem;
   font-weight: 700;
-  margin-bottom: 0.5rem;
+  margin-bottom: 30px;
   color: var(--davaindia-text);
+  text-align: center;
 }
 
 .davaindia-form-subtitle {

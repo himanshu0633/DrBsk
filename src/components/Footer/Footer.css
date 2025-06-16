@@ -1,7 +1,7 @@
 /* Footer.css */
 .footer {
   background: #ffff;
-  padding: 60px 20px 0;
+  padding: 0px 20px 0;
   color: #333;
   position: relative;
   font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
@@ -76,6 +76,7 @@
   transition: all 0.3s ease;
   display: inline-block;
   position: relative;
+
 }
 
 .footer-links a:hover {
@@ -173,9 +174,9 @@ address {
 }
 
 .footer-bottom {
-  background: #2c3e50;
+  background: #68171b;
   padding: 20px 0;
-  margin-top: 40px;
+  /* margin-top: 40px; */
 }
 
 .footerLinkSec h4 {
@@ -224,8 +225,8 @@ address {
 }
 
 .footerLogo {
-  width: 200px;
-  height: 200px;
+  width: 150px;
+  height: 120px;
 }
 
 @media (max-width: 768px) {
@@ -268,6 +269,7 @@ address {
 .footer_flex1 {
   display: flex;
   justify-content: space-between;
+  align-items: center;
 }
 
 @media (max-width:670px) {
@@ -313,7 +315,7 @@ address {
 
   .footer-links li {
     margin-bottom: 12px;
-    font-size: 18px;
+    font-size: 14px;
   }
 
   .footer h4 {

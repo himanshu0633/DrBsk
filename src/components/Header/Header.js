@@ -3,32 +3,20 @@ import './Header.css';
 import '../../App.css'
 import logo from '../../logo/logo1.jpg';
 import { useSelector } from 'react-redux';
-
+import { ShoppingCart } from 'lucide-react';
+import { Link } from 'react-router-dom';
 
 const Header = () => {
+  const cartItems = useSelector((state) => state.app.data);
+  const cartCount = cartItems.length;
   const [showDropdown, setShowDropdown] = useState(false);
   const [selectedLanguage, setSelectedLanguage] = useState('English');
   const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
   const dropdownRef = useRef(null);
   const [showInput, setShowInput] = useState(false);
   const [pincode, setPincode] = useState('');
-  const [locationName, setLocationName] = useState('Bommanahalli (Bengaluru)');
-  const [currentPincode, setCurrentPincode] = useState('560068');
-
-  // const cartItems = useSelector((state) => state?.cart?.items);
-  // const cartItems = useSelector((state) => state?.cart?.items || []);
-  const cartItems = useSelector((state) => state?.cart?.items || []);
-
-
-// const totalCartCount = cartItems?.reduce((total, item) => total + (item?.quantity || 1), 0);
-const totalCartCount = cartItems.reduce((total, item) => total + (item?.quantity || 1), 0);
-
-// const cartItems = useSelector((state) => {
-//   console.log("Redux state:", state);
-//   return state?.cart?.items || [];
-// });
-
-console.log("Total cart count:", totalCartCount);
+  const [locationName, setLocationName] = useState('');
+  const [currentPincode, setCurrentPincode] = useState('');
 
   useEffect(() => {
     const handleResize = () => {
@@ -64,7 +52,6 @@ console.log("Total cart count:", totalCartCount);
     console.log('Logging out...');
     const userData = sessionStorage.clear('userData');
     window.location.href = '/login';
-
   };
 
   const handleDivClick = () => {
@@ -106,7 +93,7 @@ console.log("Total cart count:", totalCartCount);
   const userData = storedUser ? JSON.parse(storedUser) : null;
 
   return (
-    <div className='container-manual'>
+    <div >
       <header className="header-container">
         {/* <div className="header ">
           Left Section
@@ -214,30 +201,33 @@ console.log("Total cart count:", totalCartCount);
 
             </div>
             <div className='navbarIconFlex '>
-             <a href="/Cart" className="no-decoration cart-wrapper">
-  <div className="cart-icon">
-    🛒 Cart
-    {totalCartCount > 0 && <span className="cart-badge">{totalCartCount}</span>}
-  </div>
-</a>
+              {/* <a href="/Cart" className="no-decoration">
+                <div className="cart-icon">🛒 Cart</div>
+                 {cartCount > 0 && <span className="cart-badge">{cartCount}</span>}
+              </a> */}
 
-              <a href="/Notifications" className="no-decoration">
+              <Link to="/cart" className="cart-link">
+                <ShoppingCart size={30} />
+                {cartCount > 0 && <span className="cart-badge">{cartCount}</span>}
+              </Link>
+
+              {/* <a href="/Notifications" className="no-decoration">
                 <div className="bell-icon">🔔</div>
-              </a>
+              </a> */}
               <div className="signin-dropdown-wrapper" ref={dropdownRef}>
                 <div className="signin-btn" onClick={toggleDropdown}>
                   <div className="signin-icon">👤</div>
-                  <span>Sign In</span>
+                  {userData ? null : <span className='margin_left_8'>Sign In</span>}
                 </div>
                 {showDropdown && (
                   <div className="dropdown-menu">
                     <a className="dropdown-item" href="/EditProfile">
                       <span className="dropdown-icon">👤</span> My Profile
                     </a>
-                    <a className="dropdown-item" href="/orders">
+                    <a className="dropdown-item" href="/OrderPage">
                       <span className="dropdown-icon">📦</span> My Orders
                     </a>
-                    <a className="dropdown-item" href="/patients">
+                    {/* <a className="dropdown-item" href="/patients">
                       <span className="dropdown-icon">👩‍⚕️</span> Patients
                     </a>
                     <a className="dropdown-item" href="/notifications">
@@ -245,7 +235,7 @@ console.log("Total cart count:", totalCartCount);
                     </a>
                     <a className="dropdown-item" href="/consultations">
                       <span className="dropdown-icon">💬</span> Consultations
-                    </a>
+                    </a> */}
                     <a href="#" className="dropdown-item" onClick={handleLogout}>
                       <span className="dropdown-icon">🚪</span> Logout
                     </a>
@@ -257,8 +247,8 @@ console.log("Total cart count:", totalCartCount);
           <div className='headerLocationShowSmlScreen flexProp'>
             <div className="location-box order_4 ">
               <span className="location-icon">📍</span>
-              <span className="pincode">560068</span>
-              <span className="location-name">Bommanahalli (Bengaluru)</span>
+              <span className="pincode">{currentPincode}</span>
+              <span className="location-name">{locationName}</span>
               <span className="dropdown-icon">▼</span>
             </div>
             <a href="/Prescription" className="no-decoration order_5">
@@ -301,63 +291,4 @@ console.log("Total cart count:", totalCartCount);
 export default Header;
 
 
-// <div className="header  ">
-//         <a className='logo_size' href="/">
-//           <img src={logo} alt="Logo" className="logo" />
-//         </a>
 
-//         <div className='w_200 flexProp flex_wrap'>
-//           <div className="location-box order_4 ">
-//             <span className="location-icon">📍</span>
-//             <span className="pincode">560068</span>
-//             <span className="location-name">Bommanahalli (Bengaluru)</span>
-//             <span className="dropdown-icon">▼</span>
-//           </div>
-
-//           <a href="/Prescription" className="no-decoration order_5">
-//             <div className="upload-box">
-//               <span className="upload-icon">📄</span>
-//               <span className="location-name">Upload Prescription</span>
-//             </div>
-//           </a>
-
-//           <div className='navbarIconFlex '>
-//             <a href="/Cart" className="no-decoration">
-//               <div className="cart-icon">🛒 Cart</div>
-//             </a>
-
-//             <a href="/Notifications" className="no-decoration">
-//               <div className="bell-icon">🔔</div>
-//             </a>
-
-//             <div className="signin-dropdown-wrapper" ref={dropdownRef}>
-//               <div className="signin-btn" onClick={toggleDropdown}>
-//                 <div className="signin-icon">👤</div>
-//                 <span>Sign In</span>
-//               </div>
-//               {showDropdown && (
-//                 <div className="dropdown-menu">
-//                   <a className="dropdown-item" href="/EditProfile">
-//                     <span className="dropdown-icon">👤</span> My Profile
-//                   </a>
-//                   <a className="dropdown-item" href="/orders">
-//                     <span className="dropdown-icon">📦</span> My Orders
-//                   </a>
-//                   <a className="dropdown-item" href="/patients">
-//                     <span className="dropdown-icon">👩‍⚕️</span> Patients
-//                   </a>
-//                   <a className="dropdown-item" href="/notifications">
-//                     <span className="dropdown-icon">🔔</span> Notifications
-//                   </a>
-//                   <a className="dropdown-item" href="/consultations">
-//                     <span className="dropdown-icon">💬</span> Consultations
-//                   </a>
-//                   <a href="#" className="dropdown-item" onClick={handleLogout}>
-//                     <span className="dropdown-icon">🚪</span> Logout
-//                   </a>
-//                 </div>
-//               )}
-//             </div>
-//           </div>
-//         </div>
-//       </div>

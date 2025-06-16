@@ -47,14 +47,14 @@ const ProductCarousel = ({ title, backgroundColor }) => {
     cssEase: "linear",
     responsive: [
       {
-        breakpoint: 1024, 
+        breakpoint: 1024,
         settings: {
           slidesToShow: 2,
           slidesToScroll: 1,
         },
       },
       {
-        breakpoint: 568, 
+        breakpoint: 568,
         settings: {
           slidesToShow: 1.5,
           slidesToScroll: 1,
@@ -64,30 +64,32 @@ const ProductCarousel = ({ title, backgroundColor }) => {
   };
 
   return (
-    <div className="deal-section mt-5 py-4 pt_30" style={{ backgroundColor }}>
-      <div className="deal-header">
-        <h2>{title}</h2>
-        <a href="#">View All</a>
-      </div>
+    <div>
+      {/* <div className="deal-section mt-5 py-4 pt_30" style={{ backgroundColor }}>
+        <div className="deal-header">
+          <h2>{title}</h2>
+          <a href="#">View All</a>
+        </div>
 
-      <Slider {...settings}>
-        {allProducts.map((item, i) => {
-          return (
-            <div className='carousel' key={item.id}>
-              <div className="deal-card">
-                <span className="discount-tag">{item.discount}</span>
-                <img src="https://images.unsplash.com/photo-1631669969504-f35518bf96ba?w=500&auto=format&fit=crop&q=60&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxzZWFyY2h8OHx8bWVkaWNlbnxlbnwwfHwwfHx8MA%3D%3D" />
-                <div className="deal-title">{item.benefits}</div>
-                <div className="deal-pack">{item.quantity}</div>
-                <div className="deal-price">₹{item.mrp}</div>
-                <Link to={`/ProductPage/${item._id}`} className="add-btn ">🛒 Add to Cart</Link>
+        <Slider {...settings}>
+          {allProducts.map((item, i) => {
+            return (
+              <div className='carousel' key={item.id}>
+                <div className="deal-card">
+                  <span className="discount-tag">{item.discount}</span>
+                  <img src="https://images.unsplash.com/photo-1631669969504-f35518bf96ba?w=500&auto=format&fit=crop&q=60&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxzZWFyY2h8OHx8bWVkaWNlbnxlbnwwfHwwfHx8MA%3D%3D" />
+                  <div className="deal-title">{item.benefits}</div>
+                  <div className="deal-pack">{item.quantity}</div>
+                  <div className="deal-price">₹{item.mrp}</div>
+                  <Link to={`/ProductPage/${item._id}`} className="add-btn ">🛒 Add to Cart</Link>
+                </div>
               </div>
-            </div>
-          )
-        })}
-      </Slider>
-      <div>
-      </div>
+            )
+          })}
+        </Slider>
+        <div>
+        </div>
+      </div> */}
     </div>
   );
 };

@@ -56,7 +56,7 @@ const PharmaPrescription = () => {
                         <div key={i} className='bannerCard'>
                             <img
                                 className='bannerImg'
-                                src={`${API_URL}/${item.image.replace(/\\/g, '/')}`}
+                                src={`${API_URL}/${item?.image?.replace(/\\/g, '/')}`}
                                 alt={`Prescription ${i + 1}`}
                             />
                             {/* <p>User ID: {item.userId}</p> */}

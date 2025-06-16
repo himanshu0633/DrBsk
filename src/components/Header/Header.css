@@ -51,7 +51,7 @@
   left: 50%;
   transform: translateX(-50%);
   background-color: white;
-  width: 100%;
+  width: 300px;
   border: 1px solid #ddd;
   padding: 15px;
 }
@@ -204,9 +204,9 @@
 }
 
 .signin-btn {
-  background-color: #28a745;
+  background-color: #68171b;
   color: white;
-  padding: 8px 15px;
+  padding: 10px;
   border-radius: 50px;
   display: flex;
   align-items: center;
@@ -216,7 +216,6 @@
 }
 
 .signin-icon {
-  margin-right: 8px;
   background-color: white;
   color: #28a745;
   width: 25px;
@@ -226,6 +225,9 @@
   align-items: center;
   justify-content: center;
   font-size: 14px;
+}
+.margin_left_8{
+  margin-left: 8px;
 }
 
 .signin-dropdown-wrapper {
@@ -397,3 +399,28 @@
     display: none;
   }
 } */
+
+.cart-container {
+  position: relative;
+  margin-left: 20px;
+}
+
+.cart-link {
+  position: relative;
+  display: flex;
+  align-items: center;
+  text-decoration: none;
+  color: inherit;
+}
+
+.cart-badge {
+  position: absolute;
+  top: -6px;
+  right: -10px;
+  background-color: red;
+  color: white;
+  font-size: 12px;
+  padding: 2px 6px;
+  border-radius: 50%;
+}
+/* just a comment */

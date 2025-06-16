@@ -42,12 +42,12 @@ const Navbar = () => {
 
         {/* Left Section - Categories with Subcategories */}
         <div className="nav-left">
-          {categoryName?.map((category) => (
+          {categoryName?.slice(0, 5).map((category) => (
             <div className="nav-item" key={category._id}>
               <span>
                 {category.name} <ChevronDown size={14} className="dropdown-icon" />
               </span>
-              
+
               <div className="dropdown">
                 {subcategoryName
                   .filter(sub => sub.category_id?._id === category._id)
@@ -71,11 +71,11 @@ const Navbar = () => {
           </a>
           <div className="phone">
             <Phone size={16} className="icon" />
-            <span>+91 1234567890</span>
+            <span>+91-911-551-3759</span>
           </div>
           <div className="email">
             <Mail size={16} className="icon" />
-            <span>support@example.com</span>
+            <span>ukgermanpharmaceutical@gmail.com</span>
           </div>
         </div>
       </div>
