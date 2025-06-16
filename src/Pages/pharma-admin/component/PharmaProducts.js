@@ -1,148 +1,355 @@
 import React, { useEffect, useState } from 'react';
-import { Link, Navigate, useNavigate } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import axiosInstance from '../../../components/AxiosInstance';
-import CustomLoader from '../../../components/CustomLoader';
 import API_URL from '../../../config';
+import {
+  Box,
+  Button,
+  Container,
+  Dialog,
+  DialogActions,
+  DialogContent,
+  DialogTitle,
+  Paper,
+  Table,
+  TableBody,
+  TableCell,
+  TableContainer,
+  TableHead,
+  TableRow,
+  IconButton,
+  Typography,
+  Avatar,
+  Card,
+  CardHeader,
+  CardContent,
+  CircularProgress,
+  Chip,
+  Divider,
+  Grid
+} from '@mui/material';
+import { Add, Edit, Delete, Close, Visibility } from '@mui/icons-material';
+import { styled } from '@mui/material/styles';
+
+const StyledTableContainer = styled(TableContainer)(({ theme }) => ({
+  marginTop: theme.spacing(3),
+  boxShadow: theme.shadows[3],
+  borderRadius: theme.shape.borderRadius,
+}));
+
+const StatusChip = styled(Chip)(({ theme, status }) => ({
+  fontWeight: 600,
+  backgroundColor: status === 'active' 
+    ? theme.palette.success.light 
+    : theme.palette.error.light,
+  color: status === 'active' 
+    ? theme.palette.success.dark 
+    : theme.palette.error.dark,
+}));
+
+const ProductImage = styled(Avatar)(({ theme }) => ({
+  width: theme.spacing(10),
+  height: theme.spacing(10),
+  marginRight: theme.spacing(2),
+}));
 
 const PharmaProducts = () => {
-    const [products, setProducts] = useState([]);
-    const [loading, setLoading] = useState(true);
-    const [selectedProduct, setSelectedProduct] = useState(null);
-    const [showModal, setShowModal] = useState(false);
-    const navigate = useNavigate();
+  const [products, setProducts] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [selectedProduct, setSelectedProduct] = useState(null);
+  const [openModal, setOpenModal] = useState(false);
+  const navigate = useNavigate();
 
+  const fetchData = async () => {
+    setLoading(true);
+    try {
+      const response = await axiosInstance.get('/user/allproducts');
+      setProducts(response.data);
+    } catch (error) {
+      console.error("Error fetching data:", error);
+    }
+    setLoading(false);
+  };
 
-    const fetchData = async () => {
-        setLoading(true);
-        try {
-            const response = await axiosInstance.get('/user/allproducts');
-            setProducts(response.data);
-        } catch (error) {
-            console.error("Error fetching data:", error);
-        }
-        setLoading(false);
-    };
+  useEffect(() => {
+    fetchData();
+  }, []);
 
-    useEffect(() => {
+  const handleDelete = async (id) => {
+    if (window.confirm("Are you sure you want to delete this product?")) {
+      try {
+        await axiosInstance.delete(`/user/deleteProduct/${id}`);
         fetchData();
-    }, []);
+      } catch (error) {
+        console.error("Delete error:", error);
+      }
+    }
+  };
 
-    const handleDelete = async (id) => {
-        if (window.confirm("Are you sure you want to delete this product?")) {
-            try {
-                await axiosInstance.delete(`/user/deleteProduct/${id}`);
-                fetchData(); // Refresh list after delete
-            } catch (error) {
-                console.error("Delete error:", error);
-            }
-        }
-    };
+  const handleEdit = (id) => {
+    navigate(`/pharma-admin/addNewProduct/${id}`);
+  };
 
-    // const handleEdit = async (id) => {
-    //     navigate(`/pharma-admin/addNewProduct/${id}`);
-    //     try {
-    //         await axiosInstance.put(`/user/updateProduct/${id}`);
-    //         fetchData();
-    //     } catch (error) {
-    //         console.error("Edit error:", error);
-    //     }
-    // };
+  const handleView = (product) => {
+    setSelectedProduct(product);
+    setOpenModal(true);
+  };
 
-    const handleEdit = (id) => {
-        navigate(`/pharma-admin/addNewProduct/${id}`);
-    };
+  const handleCloseModal = () => {
+    setOpenModal(false);
+    setSelectedProduct(null);
+  };
 
+  return (
+    <Container maxWidth="xl">
+      <Box sx={{ my: 4 }}>
+        <Box sx={{ 
+          display: 'flex', 
+          justifyContent: 'space-between', 
+          alignItems: 'center',
+          mb: 3
+        }}>
+          <Typography variant="h4" component="h1" gutterBottom>
+            Pharma Products
+          </Typography>
+          <Button
+            variant="contained"
+            color="primary"
+            startIcon={<Add />}
+            component={Link}
+            to="/pharma-admin/addNewProduct"
+          >
+            Add New Product
+          </Button>
+        </Box>
 
-    const handleView = (product) => {
-        setSelectedProduct(product);
-        setShowModal(true);
-    };
+        {loading ? (
+          <Box sx={{ display: 'flex', justifyContent: 'center', mt: 4 }}>
+            <CircularProgress />
+          </Box>
+        ) : (
+          <StyledTableContainer component={Paper}>
+            <Table>
+              <TableHead>
+                <TableRow sx={{ backgroundColor: (theme) => theme.palette.primary.main }}>
+                  <TableCell sx={{ color: 'white', fontWeight: 'bold' }}>Image</TableCell>
+                  <TableCell sx={{ color: 'white', fontWeight: 'bold' }}>Name</TableCell>
+                  <TableCell sx={{ color: 'white', fontWeight: 'bold' }}>Category</TableCell>
+                  <TableCell sx={{ color: 'white', fontWeight: 'bold' }}>Price (Retail)</TableCell>
+                  <TableCell sx={{ color: 'white', fontWeight: 'bold' }}>Stock</TableCell>
+                  <TableCell sx={{ color: 'white', fontWeight: 'bold' }}>Status</TableCell>
+                  <TableCell sx={{ color: 'white', fontWeight: 'bold' }}>Actions</TableCell>
+                </TableRow>
+              </TableHead>
+              <TableBody>
+                {products.map(product => (
+                  <TableRow key={product._id} hover>
+                    <TableCell>
+                      {product.media && product.media.length > 0 ? (
+                        <ProductImage 
+                          src={`${API_URL}${product.media[0].url}`} 
+                          alt={product.name}
+                          variant="rounded"
+                        />
+                      ) : (
+                        <ProductImage variant="rounded">
+                          <Typography variant="caption">No Image</Typography>
+                        </ProductImage>
+                      )}
+                    </TableCell>
+                    <TableCell>
+                      <Typography fontWeight="medium">{product.name}</Typography>
+                      <Typography variant="body2" color="textSecondary">
+                        {product._id}
+                      </Typography>
+                    </TableCell>
+                    <TableCell>
+                      <Typography>{product.category}</Typography>
+                      <Typography variant="body2" color="textSecondary">
+                        {product.sub_category}
+                      </Typography>
+                    </TableCell>
+                    <TableCell>
+                      <Typography fontWeight="medium">
+                        ₹{product.retail_price}
+                      </Typography>
+                      {product.discount > 0 && (
+                        <Typography variant="body2" color="error">
+                          {product.discount}% off
+                        </Typography>
+                      )}
+                    </TableCell>
+                    <TableCell>
+                      <Typography 
+                        color={product.quantity > 0 ? 'success.main' : 'error.main'}
+                        fontWeight="medium"
+                      >
+                        {product.quantity}
+                      </Typography>
+                    </TableCell>
+                    <TableCell>
+                      <StatusChip
+                        label={product.deleted_at ? 'Inactive' : 'Active'}
+                        status={product.deleted_at ? 'inactive' : 'active'}
+                      />
+                    </TableCell>
+                    <TableCell>
+                      <IconButton 
+                        color="info" 
+                        onClick={() => handleView(product)}
+                        disabled={!!product.deleted_at}
+                      >
+                        <Visibility />
+                      </IconButton>
+                      <IconButton 
+                        color="primary" 
+                        onClick={() => handleEdit(product._id)}
+                        disabled={!!product.deleted_at}
+                      >
+                        <Edit />
+                      </IconButton>
+                      <IconButton 
+                        color="error" 
+                        onClick={() => handleDelete(product._id)}
+                      >
+                        <Delete />
+                      </IconButton>
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          </StyledTableContainer>
+        )}
+      </Box>
 
-    const closeModal = () => {
-        setShowModal(false);
-        setSelectedProduct(null);
-    };
-
-    return (
-        <div className="admin-page">
-            <div className="admin-header">
-                <h2>Products</h2>
-                <Link to="/pharma-admin/addNewProduct">
-                    <button className="btn-add">Add New Product</button>
-                </Link>
-            </div>
-
-            {loading ? (
-                <CustomLoader />
-            ) : (
-                <div className=" overflow_x_auto">
-                    <table className="product-table w_970">
-                        <thead>
-                            <tr>
-                                <th>ID</th>
-                                <th>Name</th>
-                                <th>Price (Retail)</th>
-                                <th>Stock</th>
-                                <th>Actions</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {products.map(product => (
-                                <tr key={product._id}>
-                                    <td>{product._id}</td>
-                                    <td>{product.name}</td>
-                                    <td>₹{product.retail_price}</td>
-                                    <td>{product.quantity}</td>
-                                    <td>
-                                        <button className="btn-view" onClick={() => handleView(product)}>View</button>
-                                        <button className="btn-edit" onClick={() => handleEdit(product._id)}>Edit</button>
-                                        <button className="btn-delete" onClick={() => handleDelete(product._id)}>Delete</button>
-                                    </td>
-                                </tr>
-                            ))}
-                        </tbody>
-                    </table>
-                </div>
-            )}
-
-            {/* View Modal */}
-            {showModal && selectedProduct && (
-                <div className="modal-overlay" onClick={closeModal}>
-                    <div className="modal-content" onClick={(e) => e.stopPropagation()}>
-                        <span className="close-button" onClick={closeModal}>×</span>
-                        <h3>Product Details</h3>
-                        {selectedProduct.media && selectedProduct.media.length > 0 ? (
-                            <img
-                                src={`${API_URL}${selectedProduct.media[0].url}`}
-                                alt={selectedProduct.name}
-                                className="modal-image"
-                            />
-                        ) : (
-                            <p>No image available</p>
-                        )}
-                        <p><strong>Name:</strong> {selectedProduct.name}</p>
-                        <p><strong>Description:</strong> {selectedProduct.description}</p>
-                        <p><strong>Category:</strong> {selectedProduct.category}</p>
-                        <p><strong>Sub-category:</strong> {selectedProduct.sub_category}</p>
-                        <p><strong>Retail Price:</strong> ₹{selectedProduct.retail_price}</p>
-                        <p><strong>Consumer Price:</strong> ₹{selectedProduct.consumer_price}</p>
-                        <p><strong>MRP:</strong> ₹{selectedProduct.mrp}</p>
-                        <p><strong>Discount:</strong> {selectedProduct.discount}%</p>
-                        <p><strong>Quantity:</strong> {selectedProduct.quantity}</p>
-                        <p><strong>Prescription:</strong> {selectedProduct.prescription}</p>
-                        <p><strong>Benefits:</strong> {selectedProduct.benefits}</p>
-                        <p><strong>Dosage:</strong> {selectedProduct.dosage}</p>
-                        <p><strong>Side Effects:</strong> {selectedProduct.side_effects}</p>
-                        <p><strong>Suitable For:</strong> {selectedProduct.suitable_for}</p>
-                        <p><strong>Expires On:</strong> {new Date(selectedProduct.expires_on).toDateString()}</p>
-                    </div>
-                </div>
-            )}
-        </div>
-    );
+      {/* Product Details Dialog */}
+      <Dialog 
+        open={openModal} 
+        onClose={handleCloseModal} 
+        maxWidth="md" 
+        fullWidth
+        scroll="paper"
+      >
+        <DialogTitle>
+          Product Details
+          <IconButton
+            aria-label="close"
+            onClick={handleCloseModal}
+            sx={{
+              position: 'absolute',
+              right: 8,
+              top: 8,
+              color: (theme) => theme.palette.grey[500],
+            }}
+          >
+            <Close />
+          </IconButton>
+        </DialogTitle>
+        <DialogContent dividers>
+          {selectedProduct && (
+            <Grid container spacing={3}>
+              <Grid item xs={12} md={4}>
+                <Box sx={{ display: 'flex', justifyContent: 'center' }}>
+                  {selectedProduct.media && selectedProduct.media.length > 0 ? (
+                    <Avatar
+                      src={`${API_URL}${selectedProduct.media[0].url}`}
+                      alt={selectedProduct.name}
+                      sx={{ width: 200, height: 200 }}
+                      variant="rounded"
+                    />
+                  ) : (
+                    <Avatar
+                      sx={{ width: 200, height: 200 }}
+                      variant="rounded"
+                    >
+                      No Image
+                    </Avatar>
+                  )}
+                </Box>
+              </Grid>
+              <Grid item xs={12} md={8}>
+                <Typography variant="h5" gutterBottom>
+                  {selectedProduct.name}
+                </Typography>
+                <Typography variant="body1" color="textSecondary" gutterBottom>
+                  {selectedProduct.description}
+                </Typography>
+                
+                <Divider sx={{ my: 2 }} />
+                
+                <Grid container spacing={2}>
+                  <Grid item xs={6}>
+                    <Typography variant="subtitle2">Category:</Typography>
+                    <Typography>{selectedProduct.category}</Typography>
+                  </Grid>
+                  <Grid item xs={6}>
+                    <Typography variant="subtitle2">Sub-category:</Typography>
+                    <Typography>{selectedProduct.sub_category}</Typography>
+                  </Grid>
+                  <Grid item xs={6}>
+                    <Typography variant="subtitle2">Retail Price:</Typography>
+                    <Typography>₹{selectedProduct.retail_price}</Typography>
+                  </Grid>
+                  <Grid item xs={6}>
+                    <Typography variant="subtitle2">Consumer Price:</Typography>
+                    <Typography>₹{selectedProduct.consumer_price}</Typography>
+                  </Grid>
+                  <Grid item xs={6}>
+                    <Typography variant="subtitle2">MRP:</Typography>
+                    <Typography>₹{selectedProduct.mrp}</Typography>
+                  </Grid>
+                  <Grid item xs={6}>
+                    <Typography variant="subtitle2">Discount:</Typography>
+                    <Typography>{selectedProduct.discount}%</Typography>
+                  </Grid>
+                  <Grid item xs={6}>
+                    <Typography variant="subtitle2">Quantity:</Typography>
+                    <Typography 
+                      color={selectedProduct.quantity > 0 ? 'success.main' : 'error.main'}
+                    >
+                      {selectedProduct.quantity}
+                    </Typography>
+                  </Grid>
+                  <Grid item xs={6}>
+                    <Typography variant="subtitle2">Prescription:</Typography>
+                    <Typography>{selectedProduct.prescription}</Typography>
+                  </Grid>
+                  <Grid item xs={12}>
+                    <Typography variant="subtitle2">Benefits:</Typography>
+                    <Typography>{selectedProduct.benefits}</Typography>
+                  </Grid>
+                  <Grid item xs={12}>
+                    <Typography variant="subtitle2">Dosage:</Typography>
+                    <Typography>{selectedProduct.dosage}</Typography>
+                  </Grid>
+                  <Grid item xs={12}>
+                    <Typography variant="subtitle2">Side Effects:</Typography>
+                    <Typography>{selectedProduct.side_effects}</Typography>
+                  </Grid>
+                  <Grid item xs={12}>
+                    <Typography variant="subtitle2">Suitable For:</Typography>
+                    <Typography>{selectedProduct.suitable_for}</Typography>
+                  </Grid>
+                  <Grid item xs={12}>
+                    <Typography variant="subtitle2">Expires On:</Typography>
+                    <Typography>
+                      {new Date(selectedProduct.expires_on).toLocaleDateString()}
+                    </Typography>
+                  </Grid>
+                </Grid>
+              </Grid>
+            </Grid>
+          )}
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={handleCloseModal} color="primary">
+            Close
+          </Button>
+        </DialogActions>
+      </Dialog>
+    </Container>
+  );
 };
 
 export default PharmaProducts;
-
-
-
