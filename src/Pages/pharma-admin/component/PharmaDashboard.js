@@ -47,7 +47,7 @@ const PharmaDashboard = () => {
   return (
     <div className="dashboard-container">
       {loading ? <CustomLoader /> : (<div>
-        <h2>Dashboard</h2>
+        <h2 className='fontSize25sml'>Dashboard</h2>
         <div className="stats-container">
           <div className="stat-card">
             <h3>Total Users</h3>

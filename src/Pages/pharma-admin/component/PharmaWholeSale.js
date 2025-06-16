@@ -100,7 +100,7 @@ const PharmaWholeSale = () => {
   return (
     <Box sx={{ p: 3 }}>
       <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
-        <Typography variant="h4" component="h1">
+        <Typography variant="h4" component="h1" className='fontSize25sml'>
           Wholesale Users
         </Typography>
       </Box>
@@ -131,10 +131,10 @@ const PharmaWholeSale = () => {
                       <TableCell>{user.companyName}</TableCell>
                       <TableCell>
                         {user.website ? (
-                          <a href={user.website.startsWith('http') ? user.website : `https://${user.website}`} 
-                             target="_blank" 
-                             rel="noopener noreferrer"
-                             style={{ color: '#1976d2', textDecoration: 'none' }}>
+                          <a href={user.website.startsWith('http') ? user.website : `https://${user.website}`}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            style={{ color: '#1976d2', textDecoration: 'none' }}>
                             {user.website}
                           </a>
                         ) : 'N/A'}
@@ -147,8 +147,8 @@ const PharmaWholeSale = () => {
                         {[user.city, user.state].filter(Boolean).join(', ') || 'N/A'}
                       </TableCell>
                       <TableCell>
-                        <Chip 
-                          label={user.status} 
+                        <Chip
+                          label={user.status}
                           color={getStatusColor(user.status)}
                           size="small"
                         />
@@ -210,9 +210,9 @@ const PharmaWholeSale = () => {
         </DialogContent>
         <DialogActions>
           <Button onClick={handleCancel}>Cancel</Button>
-          <Button 
-            onClick={handleStatusUpdate} 
-            variant="contained" 
+          <Button
+            onClick={handleStatusUpdate}
+            variant="contained"
             color="primary"
             disabled={!pendingStatus}
           >

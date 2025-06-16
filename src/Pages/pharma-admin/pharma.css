@@ -392,6 +392,10 @@ input:focus {
 
 /* Hide sidebar on mobile by default */
 @media screen and (max-width: 768px) {
+    .pharmaAdminContent {
+        width: calc(100% - 230px);
+    }
+
     .pharmaSidebar {
         width: 230px;
         position: fixed;
@@ -400,6 +404,10 @@ input:focus {
         height: 100%;
         transform: translateX(-100%);
         box-shadow: 2px 0 5px rgba(0, 0, 0, 0.2);
+    }
+
+    .admin-sidebar {
+        width: 230px;
     }
 
     .css-19kzrtu {
@@ -411,7 +419,7 @@ input:focus {
         justify-content: space-around;
     }
 
-    .fontSize25sml{
+    .fontSize25sml {
         font-size: 25px !important;
     }
 
@@ -441,8 +449,17 @@ input:focus {
         padding: 10px;
     }
 }
+
 @media (min-width:768px) {
-    .close-icon{
+    .close-icon {
         display: none;
+    }
+
+    .admin-sidebar::-webkit-scrollbar {
+        display: none;
+    }
+
+    .mobileHeader {
+        display: none !important;
     }
 }
