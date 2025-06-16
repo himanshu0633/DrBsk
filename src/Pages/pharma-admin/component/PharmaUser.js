@@ -269,13 +269,13 @@ const PharmaUser = () => {
                       <TableCell>{user.name}</TableCell>
                       <TableCell>{user.email}</TableCell>
                       <TableCell>
-                        <Chip 
-                          label={user.role} 
+                        <Chip
+                          label={user.role}
                           color={
-                            user.role === 'admin' ? 'primary' : 
-                            user.role === 'manager' ? 'secondary' : 
-                            'default'
-                          } 
+                            user.role === 'admin' ? 'primary' :
+                              user.role === 'manager' ? 'secondary' :
+                                'default'
+                          }
                           size="small"
                         />
                       </TableCell>
@@ -285,19 +285,20 @@ const PharmaUser = () => {
                         {user.deleted_at ? (
                           <Chip label="Deleted" color="error" size="small" />
                         ) : (
-                          <Chip label="Active" color="success" size="small" />
+                          <Chip label="Active" color="success" size="small" onClick={() => { }} />
                         )}
+
                       </TableCell>
                       <TableCell align="center">
-                        <IconButton 
-                          color="primary" 
+                        <IconButton
+                          color="primary"
                           onClick={() => startEditingUser(user)}
                           aria-label="edit"
                         >
                           <EditIcon />
                         </IconButton>
-                        <IconButton 
-                          color="error" 
+                        <IconButton
+                          color="error"
                           onClick={() => deleteUser(user._id)}
                           aria-label="delete"
                         >
@@ -350,7 +351,7 @@ const PharmaUser = () => {
               onChange={handleInputChange}
               required
             />
-            <FormControl fullWidth margin="normal">
+            {/* <FormControl fullWidth margin="normal">
               <InputLabel>Role</InputLabel>
               <Select
                 name="role"
@@ -365,7 +366,7 @@ const PharmaUser = () => {
                   </MenuItem>
                 ))}
               </Select>
-            </FormControl>
+            </FormControl> */}
             <TextField
               margin="normal"
               fullWidth

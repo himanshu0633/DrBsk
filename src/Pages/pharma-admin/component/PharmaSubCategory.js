@@ -240,11 +240,11 @@ const StyledTableContainer = styled(TableContainer)(({ theme }) => ({
 
 const StatusChip = styled(Chip)(({ theme, status }) => ({
   fontWeight: 600,
-  backgroundColor: status === 'active' 
-    ? theme.palette.success.light 
+  backgroundColor: status === 'active'
+    ? theme.palette.success.light
     : theme.palette.error.light,
-  color: status === 'active' 
-    ? theme.palette.success.dark 
+  color: status === 'active'
+    ? theme.palette.success.dark
     : theme.palette.error.dark,
 }));
 
@@ -375,12 +375,12 @@ const PharmaSubCategory = () => {
   };
 
   const resetForm = () => {
-    setFormData({ 
-      name: '', 
-      description: '', 
-      image: null, 
-      category_id: '', 
-      subCategoryvariety: '' 
+    setFormData({
+      name: '',
+      description: '',
+      image: null,
+      category_id: '',
+      subCategoryvariety: ''
     });
     setImagePreview(null);
     setEditingId(null);
@@ -412,15 +412,15 @@ const PharmaSubCategory = () => {
   return (
     <Container maxWidth="lg">
       <Box sx={{ my: 4 }}>
-        <Box sx={{ 
-          display: 'flex', 
-          justifyContent: 'space-between', 
-          alignItems: 'center',
-          mb: 3
-        }}>
-          <Typography variant="h4" component="h1" gutterBottom>
+         <Typography variant="h4" component="h1" gutterBottom>
             Pharma Sub-Categories
           </Typography>
+        <Box sx={{
+          display: 'flex',
+          justifyContent: 'end',
+          alignItems: 'center',
+          my: 3
+        }}>
           <Button
             variant="contained"
             color="primary"
@@ -468,18 +468,20 @@ const PharmaSubCategory = () => {
                       <StatusChip
                         label={item.deleted_at ? 'Deleted' : 'Active'}
                         status={item.deleted_at ? 'inactive' : 'active'}
+                        sx={{ pointerEvents: 'none' }}
+                      // onClick={() => { }}
                       />
                     </TableCell>
                     <TableCell>
-                      <IconButton 
-                        color="primary" 
+                      <IconButton
+                        color="primary"
                         onClick={() => startEditingSubCategory(item)}
                         disabled={!!item.deleted_at}
                       >
                         <Edit />
                       </IconButton>
-                      <IconButton 
-                        color="error" 
+                      <IconButton
+                        color="error"
                         onClick={() => handleDeleteSubCategory(item._id)}
                         disabled={!!item.deleted_at}
                       >
@@ -608,9 +610,9 @@ const PharmaSubCategory = () => {
           <Button onClick={handleCloseModal} color="secondary">
             Cancel
           </Button>
-          <Button 
-            onClick={handleCreateOrUpdate} 
-            color="primary" 
+          <Button
+            onClick={handleCreateOrUpdate}
+            color="primary"
             variant="contained"
             disabled={!formData.name || !formData.description || !formData.category_id || !formData.subCategoryvariety || (!formData.image && !editingId)}
           >

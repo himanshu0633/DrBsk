@@ -107,19 +107,22 @@ input:focus {
 
 
 .bannerCard {
-    width: 32%;
-    background-color: white;
+    /* width: 32%; */
+    background-color: #68171b;
     padding: 10px;
-    border: 1px solid #ccc;
+}
+
+.bannerCard p {
+    color: white;
+    text-align: center;
+    margin-top: 10px;
 }
 
 .bannerFlex {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 16px;
     padding: 10px;
-    flex-wrap: wrap;
-    gap: 10px;
 }
 
 .clrOrange {
@@ -128,6 +131,17 @@ input:focus {
 
 .clrGreen {
     color: green;
+}
+
+.css-1a7iywq-MuiTableHead-root {
+    background: #68171b !important;
+}
+
+.css-1orzuox-MuiTableCell-root {
+    color: white !important;
+}
+.css-bmnu5q-MuiTableCell-root {
+       color: white !important;
 }
 
 .bannerImg {
@@ -163,6 +177,59 @@ input:focus {
     cursor: pointer;
     border-radius: 4px;
     font-weight: bold;
+}
+
+.css-w76bbz-MuiSelect-select-MuiInputBase-input-MuiOutlinedInput-input.css-w76bbz-MuiSelect-select-MuiInputBase-input-MuiOutlinedInput-input.css-w76bbz-MuiSelect-select-MuiInputBase-input-MuiOutlinedInput-input {
+    width: 50px !important;
+}
+
+.herbal-form-header h2 {
+    font-weight: 600;
+    font-size: 30px;
+}
+
+.bannerTitlesize {
+    /* font-size: 30px; */
+    font-size: 2.125rem !important;
+}
+
+.BannerbtnFlex {
+    display: flex;
+    justify-content: end;
+    margin: 16px;
+}
+
+.admin-nav-link.active {
+    background-color: #68171b;
+}
+
+.logo-part {
+    color: #68171b;
+}
+
+.css-1sa5nso-MuiTableRow-root {
+    background-color: #68171b !important;
+}
+
+.css-74d805-MuiButtonBase-root-MuiButton-root {
+    background-color: #68171b !important;
+}
+
+.css-d3mwg2-MuiButtonBase-root-MuiIconButton-root {
+    color: #68171b !important;
+}
+
+.css-1svfwy9-MuiButtonBase-root-MuiIconButton-root {
+    color: #17b808 !important;
+}
+
+
+.css-zjhuaj-MuiGrid-root {
+    --Grid-rowSpacing: 25px;
+}
+
+.css-zjhuaj-MuiGrid-root {
+    justify-content: space-between;
 }
 
 .btn-add {
@@ -272,7 +339,7 @@ input:focus {
 }
 
 .btn-save {
-    background-color: #007bff;
+    background-color: #68171b;
     color: white;
     padding: 8px 16px;
     border-radius: 4px;

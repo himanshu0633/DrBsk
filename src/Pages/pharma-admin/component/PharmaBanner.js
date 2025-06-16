@@ -46,14 +46,14 @@ const PharmaBanner = () => {
             toast.success("Banner uploaded successfully!");
             setFormData({ image: '', category_id: '' });
             setShowModal(false);
-            fetchData(); // Refresh the banner list after submission
+            fetchData(); 
 
         } catch (error) {
             console.error("Error submitting banner:", error);
             alert("There was an error submitting the banner. Please try again.");
             toast.error("There was an error submitting the banner. Please try again.");
         }
-       
+
     };
 
     const fetchData = async () => {
@@ -74,16 +74,31 @@ const PharmaBanner = () => {
     return (
         <div className="admin-page">
             <div className="admin-header">
-                <h2>Banner Management</h2>
+                <h2 className='bannerTitlesize'>Banner Management</h2>
             </div>
 
-            <button
-                type="button"
-                className="btn-save"
-                onClick={() => setShowModal(true)}
-            >
-                Add Banner
-            </button>
+            <div className='BannerbtnFlex'>
+                <div>
+                    <button
+                        type="button"
+                        className="btn-save"
+                        onClick={() => setShowModal(true)}
+                    >
+                        Add Banner
+                    </button>
+                </div>
+            </div>
+
+            {loading ? <CustomLoader /> : (<div className='bannerFlex'>
+                {banners.map((item, i) => {
+                    return (
+                        <div key={i} className='bannerCard'>
+                            <img className='bannerImg' src={`${API_URL}/${item.slider_image}`} alt={`Banner ${i + 1}`} />
+                            <p>{item.type}</p>
+                        </div>
+                    )
+                })}
+            </div>)}
 
             {showModal && (
                 <div className="modal-overlay">
@@ -127,17 +142,6 @@ const PharmaBanner = () => {
                     </div>
                 </div>
             )}
-
-            {loading ? <CustomLoader /> : (<div className='bannerFlex'>
-                {banners.map((item, i) => {
-                    return (
-                        <div key={i} className='bannerCard'>
-                            <img className='bannerImg' src={`${API_URL}/${item.slider_image}`} alt={`Banner ${i + 1}`} />
-                            <p>{item.type}</p>
-                        </div>
-                    )
-                })}
-            </div>)}
 
 
         </div>

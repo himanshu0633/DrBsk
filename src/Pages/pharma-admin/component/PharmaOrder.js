@@ -132,6 +132,7 @@ const PharmaOrder = () => {
                           icon={getStatusIcon(order.status)}
                           label={order.status}
                           status={order.status}
+                          onClick={()=>{}}
                         />
                       </TableCell>
                     </TableRow>

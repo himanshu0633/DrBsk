@@ -39,11 +39,11 @@ const StyledTableContainer = styled(TableContainer)(({ theme }) => ({
 
 const StatusChip = styled(Chip)(({ theme, status }) => ({
   fontWeight: 600,
-  backgroundColor: status === 'active' 
-    ? theme.palette.success.light 
+  backgroundColor: status === 'active'
+    ? theme.palette.success.light
     : theme.palette.error.light,
-  color: status === 'active' 
-    ? theme.palette.success.dark 
+  color: status === 'active'
+    ? theme.palette.success.dark
     : theme.palette.error.dark,
 }));
 
@@ -103,15 +103,15 @@ const PharmaProducts = () => {
   return (
     <Container maxWidth="xl">
       <Box sx={{ my: 4 }}>
-        <Box sx={{ 
-          display: 'flex', 
-          justifyContent: 'space-between', 
-          alignItems: 'center',
-          mb: 3
-        }}>
           <Typography variant="h4" component="h1" gutterBottom>
             Pharma Products
           </Typography>
+        <Box sx={{
+          display: 'flex',
+          justifyContent: 'end',
+          alignItems: 'center',
+          my: 3
+        }}>
           <Button
             variant="contained"
             color="primary"
@@ -146,8 +146,8 @@ const PharmaProducts = () => {
                   <TableRow key={product._id} hover>
                     <TableCell>
                       {product.media && product.media.length > 0 ? (
-                        <ProductImage 
-                          src={`${API_URL}${product.media[0].url}`} 
+                        <ProductImage
+                          src={`${API_URL}${product.media[0].url}`}
                           alt={product.name}
                           variant="rounded"
                         />
@@ -180,7 +180,7 @@ const PharmaProducts = () => {
                       )}
                     </TableCell>
                     <TableCell>
-                      <Typography 
+                      <Typography
                         color={product.quantity > 0 ? 'success.main' : 'error.main'}
                         fontWeight="medium"
                       >
@@ -191,25 +191,27 @@ const PharmaProducts = () => {
                       <StatusChip
                         label={product.deleted_at ? 'Inactive' : 'Active'}
                         status={product.deleted_at ? 'inactive' : 'active'}
+                        sx={{ pointerEvents: 'none' }}
+                      // onClick={() => { }}
                       />
                     </TableCell>
                     <TableCell>
-                      <IconButton 
-                        color="info" 
+                      <IconButton
+                        color="info"
                         onClick={() => handleView(product)}
                         disabled={!!product.deleted_at}
                       >
                         <Visibility />
                       </IconButton>
-                      <IconButton 
-                        color="primary" 
+                      <IconButton
+                        color="primary"
                         onClick={() => handleEdit(product._id)}
                         disabled={!!product.deleted_at}
                       >
                         <Edit />
                       </IconButton>
-                      <IconButton 
-                        color="error" 
+                      <IconButton
+                        color="error"
                         onClick={() => handleDelete(product._id)}
                       >
                         <Delete />
@@ -224,10 +226,10 @@ const PharmaProducts = () => {
       </Box>
 
       {/* Product Details Dialog */}
-      <Dialog 
-        open={openModal} 
-        onClose={handleCloseModal} 
-        maxWidth="md" 
+      <Dialog
+        open={openModal}
+        onClose={handleCloseModal}
+        maxWidth="md"
         fullWidth
         scroll="paper"
       >
@@ -275,9 +277,9 @@ const PharmaProducts = () => {
                 <Typography variant="body1" color="textSecondary" gutterBottom>
                   {selectedProduct.description}
                 </Typography>
-                
+
                 <Divider sx={{ my: 2 }} />
-                
+
                 <Grid container spacing={2}>
                   <Grid item xs={6}>
                     <Typography variant="subtitle2">Category:</Typography>
@@ -305,7 +307,7 @@ const PharmaProducts = () => {
                   </Grid>
                   <Grid item xs={6}>
                     <Typography variant="subtitle2">Quantity:</Typography>
-                    <Typography 
+                    <Typography
                       color={selectedProduct.quantity > 0 ? 'success.main' : 'error.main'}
                     >
                       {selectedProduct.quantity}
