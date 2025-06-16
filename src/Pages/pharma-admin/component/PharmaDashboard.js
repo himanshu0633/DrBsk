@@ -185,14 +185,16 @@ const PharmaDashboard = () => {
             <div className="stat-card"><h3>Total Orders</h3><p>{totalOrders.totalOrders}</p></div>
           </div>
 
-          <div className='d-flex justify-content-between flex-wrap'>
-            <div style={{ maxWidth: '500px', marginTop: '40px' }}>
-              <h3>User Signup Over Time</h3>
-              <Line data={lineChartData} />
-            </div>
-            <div style={{ maxWidth: '500px', marginTop: '40px' }}>
-              <h3>Total Comparison</h3>
-              <Bar data={barChartData} />
+          <div className='overflow-x-auto'>
+            <div className='d-flex justify-content-between flex-wrap smlWidth500 '>
+              <div style={{ maxWidth: '600px', marginTop: '40px' }}>
+                <h3>User Signup Over Time</h3>
+                <Line data={lineChartData} className='chartWidth' />
+              </div>
+              <div style={{ maxWidth: '600px', marginTop: '40px' }}>
+                <h3>Total Comparison</h3>
+                <Bar data={barChartData} className='chartWidth' />
+              </div>
             </div>
           </div>
         </div>

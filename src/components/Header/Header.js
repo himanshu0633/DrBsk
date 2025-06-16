@@ -71,9 +71,9 @@ const Header = () => {
 
       if (data.length > 0) {
         const location = data[0].display_name;
-        console.log("dkhfkwhdrsjjk",location);
+        console.log("dkhfkwhdrsjjk", location);
         const placeName =
- location.city || location.town || location.village || location.state || "Unknown location";
+          location.city || location.town || location.village || location.state || "Unknown location";
 
         setLocationName(`${location}`);
         setCurrentPincode(pincode);
