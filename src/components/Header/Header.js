@@ -10,7 +10,6 @@ const Header = () => {
   const cartItems = useSelector((state) => state.app.data);
   const cartCount = cartItems.length;
   const [showDropdown, setShowDropdown] = useState(false);
-  const [selectedLanguage, setSelectedLanguage] = useState('English');
   const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
   const dropdownRef = useRef(null);
   const [showInput, setShowInput] = useState(false);
@@ -50,7 +49,6 @@ const Header = () => {
   const handleLogout = (e) => {
     e.preventDefault();
     console.log('Logging out...');
-    const userData = sessionStorage.clear('userData');
     window.location.href = '/login';
   };
 
@@ -69,11 +67,17 @@ const Header = () => {
       const res = await fetch(`https://nominatim.openstreetmap.org/search?postalcode=${pincode}&country=India&format=json`);
       const data = await res.json();
 
+<<<<<<< HEAD
       if (data?.length > 0) {
         const location = data[0]?.display_name;
         // console.log("dkhfkwhdrsjjk", location);
         const placeName =
           location?.city || location?.town || location?.village || location?.state || "Unknown location";
+=======
+      if (data.length > 0) {
+        const location = data[0].display_name;
+        console.log("dkhfkwhdrsjjk", location);
+>>>>>>> 29fcdc50225955c1a19df89f5c62634891c71480
 
         setLocationName(`${location}`);
         setCurrentPincode(pincode);

@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import './Navbar.css';
 import { Phone, Mail, Smartphone, ChevronDown, Menu } from 'lucide-react';
 import axiosInstance from '../AxiosInstance';
-import { Link, NavLink } from 'react-router-dom';
+import { Link } from 'react-router-dom';
 
 const Navbar = () => {
   const [categoryName, setCategoryName] = useState([]);
