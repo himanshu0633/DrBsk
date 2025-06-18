@@ -265,7 +265,7 @@ const PharmaPrescription = () => {
 
     // Pagination state
     const [page, setPage] = useState(0);
-    const [rowsPerPage, setRowsPerPage] = useState(5);
+    const [rowsPerPage, setRowsPerPage] = useState(10);
 
     const theme = useTheme();
     const isSmall = useMediaQuery(theme.breakpoints.down('sm'));
@@ -414,7 +414,7 @@ const PharmaPrescription = () => {
                             </TableBody>
                         </Table>
                         <TablePagination
-                            rowsPerPageOptions={[5, 10, 25]}
+                            rowsPerPageOptions={[10, 20, 30]}
                             component="div"
                             count={prescriptions.length}
                             rowsPerPage={rowsPerPage}
