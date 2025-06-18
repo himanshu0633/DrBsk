@@ -19,6 +19,7 @@ import {
     TableRow,
     Paper,
     Button,
+    TablePagination,
 } from '@mui/material';
 import CloseIcon from '@mui/icons-material/Close';
 import { Add, Delete } from '@mui/icons-material';
@@ -29,6 +30,8 @@ const PharmaBanner = () => {
     const [banners, setBanners] = useState([]);
     const [loading, setLoading] = useState(true);
     const [selectedImage, setSelectedImage] = useState(null);
+    const [page, setPage] = useState(0);
+    const [rowsPerPage, setRowsPerPage] = useState(10);
 
     const bannerList = [
         { id: 1, title: "main" },
@@ -105,6 +108,22 @@ const PharmaBanner = () => {
             }
         }
     };
+
+    // Pagination handlers
+    const handleChangePage = (event, newPage) => {
+        setPage(newPage);
+    };
+
+    const handleChangeRowsPerPage = (event) => {
+        setRowsPerPage(parseInt(event.target.value, 10));
+        setPage(0);
+    };
+
+    const currentBanners = banners.slice(
+        page * rowsPerPage,
+        page * rowsPerPage + rowsPerPage
+    );
+
     return (
         <Container maxWidth="lg" sx={{ mt: 5 }}>
             <Typography
@@ -152,7 +171,7 @@ const PharmaBanner = () => {
                                 </TableRow>
                             </TableHead>
                             <TableBody>
-                                {banners.map((item, i) => (
+                                {currentBanners.map((item, i) => (
                                     <TableRow key={i}>
                                         <TableCell>{item.type}</TableCell>
                                         <TableCell>
@@ -176,9 +195,25 @@ const PharmaBanner = () => {
                                 ))}
                             </TableBody>
                         </Table>
+                        <TablePagination
+                            rowsPerPageOptions={[10, 20, 30]}
+                            component="div"
+                            count={banners.length}
+                            rowsPerPage={rowsPerPage}
+                            page={page}
+                            onPageChange={handleChangePage}
+                            onRowsPerPageChange={handleChangeRowsPerPage}
+                            sx={{
+                                backgroundColor: '#f5f5f5',
+                                borderBottomLeftRadius: '8px',
+                                borderBottomRightRadius: '8px',
+                            }}
+                        />
                     </TableContainer>
                 </Box>
             )}
+
+
 
             {/* Add Banner Modal */}
             <Modal
