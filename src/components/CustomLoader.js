@@ -10,14 +10,14 @@ const LoaderContainer = styled('div')({
   display: 'flex',
   justifyContent: 'center',
   alignItems: 'center',
-  backgroundColor: 'rgba(0, 0, 0, 0.3)', 
-  zIndex: 9999, 
+  backgroundColor: 'rgba(0, 0, 0, 0.3)',
+  zIndex: 9999,
 });
 
 const CustomLoader = ({ size = 40, ...props }) => {
   return (
     <LoaderContainer>
-      <CircularProgress size={size} color="primary" {...props} />
+      <CircularProgress size={size} color="#68171b" {...props} />
     </LoaderContainer>
   );
 };
