@@ -26,29 +26,6 @@ const Header = () => {
     return () => window.removeEventListener('resize', handleResize);
   }, []);
 
-  // useEffect(() => {
-  //   const handleClickOutside = (event) => {
-  //     if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
-  //       setShowDropdown(false);
-  //     }
-  //   };
-
-  //   if (showDropdown) {
-  //     document.addEventListener('mousedown', handleClickOutside);
-  //   }
-
-  //   return () => {
-  //     document.removeEventListener('mousedown', handleClickOutside);
-  //   };
-  // }, [showDropdown]);
-
-  // const toggleDropdown = (e) => {
-  //   e.stopPropagation();
-  //   console.log("Current state:", showDropdown);
-  //   setShowDropdown(!showDropdown);
-  // };
-
-
   useEffect(() => {
     const handleClickOutside = (event) => {
       if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
@@ -56,20 +33,20 @@ const Header = () => {
       }
     };
 
-    document.addEventListener('mousedown', handleClickOutside);
+    if (showDropdown) {
+      document.addEventListener('mousedown', handleClickOutside);
+    }
+
     return () => {
       document.removeEventListener('mousedown', handleClickOutside);
     };
-  }, []);
-
+  }, [showDropdown]);
 
   const toggleDropdown = (e) => {
     e.stopPropagation();
-    e.preventDefault();
     console.log("Current state:", showDropdown);
-    setShowDropdown(prev => !prev);
+    setShowDropdown(!showDropdown);
   };
-
 
   const handleLogout = (e) => {
     e.preventDefault();
