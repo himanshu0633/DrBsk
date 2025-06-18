@@ -28,7 +28,8 @@ import {
     IconButton,
     Chip,
     CircularProgress,
-    Avatar
+    Avatar,
+    TablePagination
 } from '@mui/material';
 import { Add, Edit, Delete, Close, CloudUpload } from '@mui/icons-material';
 import { styled } from '@mui/material/styles';
@@ -67,6 +68,23 @@ const PharmaCategory = () => {
         image: null,
     });
     const [imagePreview, setImagePreview] = useState(null);
+    const [page, setPage] = useState(0);
+    const [rowsPerPage, setRowsPerPage] = useState(10);
+
+    // Pagination handlers
+    const handleChangePage = (event, newPage) => {
+        setPage(newPage);
+    };
+
+    const handleChangeRowsPerPage = (event) => {
+        setRowsPerPage(parseInt(event.target.value, 10));
+        setPage(0);
+    };
+
+    const currentCategoryList = categoryList.slice(
+        page * rowsPerPage,
+        page * rowsPerPage + rowsPerPage
+    );
 
     const handleInputChange = (e) => {
         const { name, value, files } = e.target;
@@ -240,7 +258,7 @@ const PharmaCategory = () => {
                                 </TableRow>
                             </TableHead>
                             <TableBody>
-                                {categoryList.map((cat) => (
+                                {currentCategoryList.map((cat) => (
                                     <TableRow key={cat._id} hover>
                                         <TableCell>{cat.variety}</TableCell>
                                         <TableCell>{cat.name}</TableCell>
@@ -281,6 +299,20 @@ const PharmaCategory = () => {
                                 ))}
                             </TableBody>
                         </Table>
+                        <TablePagination
+                            rowsPerPageOptions={[10, 20, 30]}
+                            component="div"
+                            count={categoryList.length}
+                            rowsPerPage={rowsPerPage}
+                            page={page}
+                            onPageChange={handleChangePage}
+                            onRowsPerPageChange={handleChangeRowsPerPage}
+                            sx={{
+                                backgroundColor: '#f5f5f5',
+                                borderBottomLeftRadius: '8px',
+                                borderBottomRightRadius: '8px',
+                            }}
+                        />
                     </StyledTableContainer>
                 )}
             </Box>

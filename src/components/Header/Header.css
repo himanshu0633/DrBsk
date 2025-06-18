@@ -226,12 +226,14 @@
   justify-content: center;
   font-size: 14px;
 }
-.margin_left_8{
+
+.margin_left_8 {
   margin-left: 8px;
 }
 
 .signin-dropdown-wrapper {
   position: relative;
+  z-index: 100;
 }
 
 .dropdown-menu {
@@ -242,9 +244,20 @@
   border: 1px solid #ddd;
   border-radius: 5px;
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-  z-index: 1000;
   min-width: 200px;
+  z-index: 1000;
+  border: 3px solid red;
+  padding: 10px;
 }
+
+
+
+.dropdown-menu {
+  display: block !important;
+  visibility: visible !important;
+  opacity: 1 !important;
+}
+
 
 .dropdown-item {
   display: flex;
@@ -423,4 +436,3 @@
   padding: 2px 6px;
   border-radius: 50%;
 }
-/* just a comment */

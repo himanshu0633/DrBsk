@@ -24,7 +24,8 @@ import {
   TableContainer,
   TableHead,
   TableRow,
-  Typography
+  Typography,
+  TablePagination
 } from '@mui/material';
 import EditIcon from '@mui/icons-material/Edit';
 import CloseIcon from '@mui/icons-material/Close';
@@ -35,6 +36,23 @@ const PharmaWholeSale = () => {
   const [showActionModal, setShowActionModal] = useState(false);
   const [pendingStatus, setPendingStatus] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [page, setPage] = useState(0);
+  const [rowsPerPage, setRowsPerPage] = useState(10);
+
+  // Pagination handlers
+  const handleChangePage = (event, newPage) => {
+    setPage(newPage);
+  };
+
+  const handleChangeRowsPerPage = (event) => {
+    setRowsPerPage(parseInt(event.target.value, 10));
+    setPage(0);
+  };
+
+  const currentWholeSaleUsers = wholeSaleUsers.slice(
+    page * rowsPerPage,
+    page * rowsPerPage + rowsPerPage
+  );
 
   const fetchData = async () => {
     try {
@@ -126,7 +144,7 @@ const PharmaWholeSale = () => {
                   </TableRow>
                 </TableHead>
                 <TableBody>
-                  {wholeSaleUsers.map((user) => (
+                  {currentWholeSaleUsers.map((user) => (
                     <TableRow key={user._id} hover>
                       <TableCell>{user.companyName}</TableCell>
                       <TableCell>
@@ -169,6 +187,20 @@ const PharmaWholeSale = () => {
                   ))}
                 </TableBody>
               </Table>
+              <TablePagination
+                rowsPerPageOptions={[10, 20, 30]}
+                component="div"
+                count={wholeSaleUsers.length}
+                rowsPerPage={rowsPerPage}
+                page={page}
+                onPageChange={handleChangePage}
+                onRowsPerPageChange={handleChangeRowsPerPage}
+                sx={{
+                  backgroundColor: '#f5f5f5',
+                  borderBottomLeftRadius: '8px',
+                  borderBottomRightRadius: '8px',
+                }}
+              />
             </TableContainer>
           )}
         </CardContent>

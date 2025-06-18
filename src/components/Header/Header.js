@@ -26,6 +26,29 @@ const Header = () => {
     return () => window.removeEventListener('resize', handleResize);
   }, []);
 
+  // useEffect(() => {
+  //   const handleClickOutside = (event) => {
+  //     if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
+  //       setShowDropdown(false);
+  //     }
+  //   };
+
+  //   if (showDropdown) {
+  //     document.addEventListener('mousedown', handleClickOutside);
+  //   }
+
+  //   return () => {
+  //     document.removeEventListener('mousedown', handleClickOutside);
+  //   };
+  // }, [showDropdown]);
+
+  // const toggleDropdown = (e) => {
+  //   e.stopPropagation();
+  //   console.log("Current state:", showDropdown);
+  //   setShowDropdown(!showDropdown);
+  // };
+
+
   useEffect(() => {
     const handleClickOutside = (event) => {
       if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
@@ -33,18 +56,20 @@ const Header = () => {
       }
     };
 
-    if (showDropdown) {
-      document.addEventListener('mousedown', handleClickOutside);
-    }
-
+    document.addEventListener('mousedown', handleClickOutside);
     return () => {
       document.removeEventListener('mousedown', handleClickOutside);
     };
-  }, [showDropdown]);
+  }, []);
 
-  const toggleDropdown = () => {
-    setShowDropdown(!showDropdown);
+
+  const toggleDropdown = (e) => {
+    e.stopPropagation();
+    e.preventDefault();
+    console.log("Current state:", showDropdown);
+    setShowDropdown(prev => !prev);
   };
+
 
   const handleLogout = (e) => {
     e.preventDefault();
@@ -92,71 +117,6 @@ const Header = () => {
   return (
     <div >
       <header className="header-container">
-        {/* <div className="header ">
-          Left Section
-          <div className="left-section">
-            <a className='logo_size' href="/">
-              <img src={logo} alt="Logo" className="logo" />
-            </a>
-
-            {!isMobile && (
-              <div className="location-box order_buttons ">
-                <span className="location-icon">📍</span>
-                <span className="pincode">560068</span>
-                <span className="location-name">Bommanahalli (Bengaluru)</span>
-                <span className="dropdown-icon">▼</span>
-              </div>
-            )}
-          </div>
-          Right Section
-          <div className="right-section">
-            <a href="/Prescription" className="no-decoration">
-              {!isMobile && (
-                <div className="upload-box">
-                  <span className="upload-icon">📄</span>
-                  <span>Upload Prescription</span>
-                </div>
-              )}
-            </a>
-            <a href="/Cart" className="no-decoration">
-              {!isMobile && <div className="cart-icon">🛒 Cart</div>}
-            </a>
-            {!isMobile && (
-              <a href="/Notifications" className="no-decoration">
-                <div className="bell-icon">🔔</div>
-              </a>
-            )}
-            <div className="signin-dropdown-wrapper" ref={dropdownRef}>
-              <div className="signin-btn" onClick={toggleDropdown}>
-                <div className="signin-icon">👤</div>
-                {!isMobile && <span>Sign In</span>}
-              </div>
-              {showDropdown && (
-                <div className="dropdown-menu">
-                  <a className="dropdown-item" href="/EditProfile">
-                    <span className="dropdown-icon">👤</span> My Profile
-                  </a>
-                  <a className="dropdown-item" href="/orders">
-                    <span className="dropdown-icon">📦</span> My Orders
-                  </a>
-                  <a className="dropdown-item" href="/patients">
-                    <span className="dropdown-icon">👩‍⚕️</span> Patients
-                  </a>
-                  <a className="dropdown-item" href="/notifications">
-                    <span className="dropdown-icon">🔔</span> Notifications
-                  </a>
-                  <a className="dropdown-item" href="/consultations">
-                    <span className="dropdown-icon">💬</span> Consultations
-                  </a>
-                  <a href="#" className="dropdown-item" onClick={handleLogout}>
-                    <span className="dropdown-icon">🚪</span> Logout
-                  </a>
-                </div>
-              )}
-            </div>
-          </div>
-        </div> */}
-
         <div className=" ">
           <div className='header1'>
             <a className='logo_size' href="/">
@@ -256,30 +216,6 @@ const Header = () => {
             </a>
           </div>
         </div>
-
-
-
-        {/* Mobile only elements */}
-        {/* {isMobile && (
-          <div className="mobile-bottom-bar">
-            <a href="/" className="mobile-icon">
-              <span>📍</span>
-              <span className="mobile-label">Location</span>
-            </a>
-            <a href="/Prescription" className="mobile-icon">
-              <span>📄</span>
-              <span className="mobile-label">Upload</span>
-            </a>
-            <a href="/Cart" className="mobile-icon">
-              <span>🛒</span>
-              <span className="mobile-label">Cart</span>
-            </a>
-            <a href="/Notifications" className="mobile-icon">
-              <span>🔔</span>
-              <span className="mobile-label">Alerts</span>
-            </a>
-          </div>
-        )} */}
       </header>
     </div>
   );
