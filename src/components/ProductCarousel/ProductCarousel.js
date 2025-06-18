@@ -1,20 +1,12 @@
-import React, { useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import './ProductCarousel.css';
-import logo from "../../logo/1.jpg";
-import logo2 from "../../logo/2.jpg";
-import logo3 from "../../logo/3.jpg";
-import logo4 from "../../logo/4.jpg";
-import logo5 from "../../logo/5.jpg";
-import logo6 from "../../logo/6.jpg";
 import axiosInstance from '../AxiosInstance';
-import { Link } from 'react-router-dom';
 import "slick-carousel/slick/slick.css";
 import "slick-carousel/slick/slick-theme.css";
-import Slider from "react-slick";
 
 const ProductCarousel = ({ title, backgroundColor }) => {
-  const [products, setProducts] = useState([]);
-  const [allProducts, setAllProducts] = useState([]);
+  // const [products, setProducts] = useState([]);
+  // const [allProducts, setAllProducts] = useState([]);
   useEffect(() => {
     fetchData();
   }, []);
@@ -30,38 +22,38 @@ const ProductCarousel = ({ title, backgroundColor }) => {
       }));
 
       console.log("ksdjflskdjflk", fetchedProducts);
-      setAllProducts(fetchedProducts);
-      setProducts(fetchedProducts);
+      // setAllProducts(fetchedProducts);
+      // setProducts(fetchedProducts);
     } catch (error) {
       console.error("Error fetching data:", error);
     }
   };
-  var settings = {
-    dots: true,
-    infinite: true,
-    slidesToShow: 3,
-    slidesToScroll: 1,
-    autoplay: true,
-    speed: 2000,
-    autoplaySpeed: 2000,
-    cssEase: "linear",
-    responsive: [
-      {
-        breakpoint: 1024,
-        settings: {
-          slidesToShow: 2,
-          slidesToScroll: 1,
-        },
-      },
-      {
-        breakpoint: 568,
-        settings: {
-          slidesToShow: 1.5,
-          slidesToScroll: 1,
-        },
-      },
-    ],
-  };
+  // var settings = {
+  //   dots: true,
+  //   infinite: true,
+  //   slidesToShow: 3,
+  //   slidesToScroll: 1,
+  //   autoplay: true,
+  //   speed: 2000,
+  //   autoplaySpeed: 2000,
+  //   cssEase: "linear",
+  //   responsive: [
+  //     {
+  //       breakpoint: 1024,
+  //       settings: {
+  //         slidesToShow: 2,
+  //         slidesToScroll: 1,
+  //       },
+  //     },
+  //     {
+  //       breakpoint: 568,
+  //       settings: {
+  //         slidesToShow: 1.5,
+  //         slidesToScroll: 1,
+  //       },
+  //     },
+  //   ],
+  // };
 
   return (
     <div>
