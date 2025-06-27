@@ -1,18 +1,13 @@
 import React, { useState } from 'react';
 import './ProductPage.css';
 import ProductCarousel from '../../components/ProductCarousel/ProductCarousel';
-import logo from "../../logo/1.jpg";
 import Footer from '../../components/Footer/Footer';
 import Header from '../../components/Header/Header';
 import Navbar from '../../components/Navbar/Navbar';
 import { useLocation, useNavigate, useParams } from 'react-router-dom';
 import { useEffect } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
-import { addData } from '../../store/Action'; // Adjust path if needed
-
-
-
-// import axios from 'axios'; // If you're not using a custom axios instance
+import { addData } from '../../store/Action'; 
 
 import {
   Leaf,

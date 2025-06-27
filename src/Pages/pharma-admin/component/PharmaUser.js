@@ -1,124 +1,3 @@
-// import React, { useEffect, useState } from 'react'
-// import axiosInstance from '../../../components/AxiosInstance';
-// import CustomLoader from '../../../components/CustomLoader';
-
-// const PharmaUser = () => {
-//     const [users, setUsers] = useState([]);
-//     const [loading, setloading] = useState(true);
-//     const [showModal, setShowModal] = useState(false);
-
-
-//     useEffect(() => {
-//         const fetchData = async () => {
-//             try {
-//                 const response = await axiosInstance.get('/admin/readallAdmins');
-//                 console.log("Fetched users:", response.data);
-//                 setUsers(response.data.data);
-//             } catch (error) {
-//                 console.error("Error fetching data:", error);
-//             }
-//         };
-//         fetchData();
-//         setloading(false);
-//     }, []);
-
-//     function startEditingUser(user) {
-//         console.log("Editing user:", user);
-
-//         setShowModal(true);
-//     }
-//     function deleteUser() {
-
-//     }
-
-
-//     return (
-//         <div className="user-content">
-//             <div className="user-header">
-//                 <h2>Users</h2>
-//             </div>
-
-//             <div className="user-table-container">
-//                 <table className="user-table">
-//                     <thead>
-//                         <tr>
-//                             <th>Name</th>
-//                             <th>Email</th>
-//                             <th>Role</th>
-//                             <th>Address</th>
-//                             <th>Status</th>
-//                             <th>Actions</th>
-//                         </tr>
-//                     </thead>
-//                     {loading ? (<CustomLoader />) : (<tbody>
-//                         {users.map((user, index) => (
-//                             <tr key={index}>
-//                                 <td data-label="Name">{user.name}</td>
-//                                 <td data-label="Email">{user.email}</td>
-//                                 <td data-label="Role">{user.role}</td>
-//                                 <td data-label="Address">{user.address || 'N/A'}</td>
-//                                 <td data-label="Status">
-//                                     {user.deleted_at ? (
-//                                         <span className="status-badge deleted">Deleted</span>
-//                                     ) : (
-//                                         <span className="status-badge active">Active</span>
-//                                     )}
-//                                 </td>
-//                                 <td data-label="Actions" className="actions-cell">
-//                                     <button onClick={() => startEditingUser(user)} className="btn-action btn-edit">Edit</button>
-//                                     <button onClick={() => deleteUser(user._id)} className="btn-action btn-delete">Delete</button>
-//                                 </td>
-//                             </tr>
-//                         ))}
-//                     </tbody>)}
-
-//                 </table>
-//             </div>
-
-//             {showModal && (
-//                 <div className="modal-overlay">
-//                     <div className="modal">
-//                         <h3>{isEditing ? "Edit Category" : "Add New Category"}</h3>
-//                         <form onSubmit={handleSubmit}>
-//                             <input
-//                                 type="text"
-//                                 name="name"
-//                                 placeholder="Category Name"
-//                                 value={newCategory.name}
-//                                 onChange={handleInputChange}
-//                                 required
-//                             />
-//                             <input
-//                                 type="text"
-//                                 name="description"
-//                                 placeholder="Category Description"
-//                                 value={newCategory.description}
-//                                 onChange={handleInputChange}
-//                                 required
-//                             />
-//                             <input
-//                                 type="file"
-//                                 name="image"
-//                                 accept="image/*"
-//                                 onChange={handleInputChange}
-//                             />
-//                             <div className="modal-actions">
-//                                 <button type="submit" className="btn-save">{isEditing ? "Update" : "Save"}</button>
-//                                 <button type="button" className="btn-cancel" onClick={resetForm}>Cancel</button>
-//                             </div>
-//                         </form>
-//                     </div>
-//                 </div>
-//             )}
-
-//         </div>
-//     )
-// }
-
-// export default PharmaUser
-
-
-
 import React, { useEffect, useState } from 'react';
 import axiosInstance from '../../../components/AxiosInstance';
 import CustomLoader from '../../../components/CustomLoader';
@@ -146,7 +25,8 @@ import {
   Typography,
   Paper,
   Chip,
-  IconButton
+  IconButton,
+  TablePagination
 } from '@mui/material';
 import EditIcon from '@mui/icons-material/Edit';
 import DeleteIcon from '@mui/icons-material/Delete';
@@ -166,6 +46,24 @@ const PharmaUser = () => {
   });
 
   const roles = ['admin', 'manager', 'staff', 'pharmacist'];
+
+  const [page, setPage] = useState(0);
+  const [rowsPerPage, setRowsPerPage] = useState(10);
+
+  // Pagination handlers
+  const handleChangePage = (event, newPage) => {
+    setPage(newPage);
+  };
+
+  const handleChangeRowsPerPage = (event) => {
+    setRowsPerPage(parseInt(event.target.value, 10));
+    setPage(0);
+  };
+
+  const currentUsers = users.slice(
+    page * rowsPerPage,
+    page * rowsPerPage + rowsPerPage
+  );
 
   const fetchUsers = async () => {
     try {
@@ -264,7 +162,7 @@ const PharmaUser = () => {
                   </TableRow>
                 </TableHead>
                 <TableBody>
-                  {users.map((user) => (
+                  {currentUsers.map((user) => (
                     <TableRow key={user._id}>
                       <TableCell>{user.name}</TableCell>
                       <TableCell>{user.email}</TableCell>
@@ -309,6 +207,20 @@ const PharmaUser = () => {
                   ))}
                 </TableBody>
               </Table>
+              <TablePagination
+                rowsPerPageOptions={[10, 20, 30]}
+                component="div"
+                count={users.length}
+                rowsPerPage={rowsPerPage}
+                page={page}
+                onPageChange={handleChangePage}
+                onRowsPerPageChange={handleChangeRowsPerPage}
+                sx={{
+                  backgroundColor: '#f5f5f5',
+                  borderBottomLeftRadius: '8px',
+                  borderBottomRightRadius: '8px',
+                }}
+              />
             </TableContainer>
           )}
         </CardContent>

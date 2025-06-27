@@ -1,200 +1,3 @@
-// import React, { useState, useEffect } from 'react';
-// import axiosInstance from '../../../components/AxiosInstance';
-// import API_URL from '../../../config';
-// import CustomLoader from '../../../components/CustomLoader';
-
-
-// const PharmaSubCategory = () => {
-//     const [formData, setFormData] = useState({
-//         name: '',
-//         description: '',
-//         image: '',
-//         subcategory_id: '',
-//         deleted_at: ''
-//     });
-
-//     const [subCategories, setSubCategories] = useState([]);
-//     const [categories, setCategories] = useState([]);
-//     const [showModal, setShowModal] = useState(false);
-//     const [subCategoryList, setSubCategoryList] = useState([]);
-//     const [loading, setLoading] = useState(true);
-//     const [newCategory, setNewCategory] = useState({
-//         name: '',
-//         image: null,
-//         category_id: '',
-//     });
-
-//     const fetchData = async () => {
-//         try {
-//             const response = await axiosInstance.get('/user/allcategories');
-//             setCategories(response.data)
-//         } catch (error) {
-//             console.error("Error fetching categories:", error);
-//         }
-//         setLoading(false);
-//     };
-
-//     useEffect(() => {
-//         fetchData();
-//     }, []);
-
-
-//     const handleInputChange = (e) => {
-//         const { name, value, files } = e.target;
-//         setNewCategory((prev) => ({
-//             ...prev,
-//             [name]: files ? files[0] : value,
-//         }));
-//     };
-
-//     const handleCreateSubCategory = async (e) => {
-//         e.preventDefault();
-
-//         const formData = new FormData();
-//         formData.append('name', newCategory.name);
-//         formData.append('image', newCategory.image);
-//         formData.append('category_id', newCategory.category_id);
-
-//         try {
-//             const response = await axiosInstance.post(
-//                 '/user/createSubCategory',
-//                 formData
-//             );
-
-//             console.log("API Response:", response.data);
-//             setShowModal(false);
-//             fetchData();
-
-//         } catch (error) {
-//             console.error("Error submitting category:", error);
-//             setShowModal(false);
-//             alert("There was an error submitting the category. Please try again.");
-//         }
-//     };
-
-//     const fetchSubCategories = async () => {
-//         try {
-//             const response = await axiosInstance.get('/user/allSubcategories');
-//             console.log("Subcategories fetched:", response.data);
-//             setSubCategoryList(response.data);
-//         }
-//         catch (error) {
-//             console.error("Error fetching subcategories:", error);
-//             alert("There was an error fetching subcategories. Please try again.");
-//         }
-//     }
-//     useEffect(() => {
-//         fetchSubCategories();
-//     }, []);
-
-
-//     return (
-//         <>
-//             <div className="admin-page">
-//                 <div className="admin-header">
-//                     <h2>Sub Category</h2>
-//                     <button className="btn-add"
-//                         onClick={() => setShowModal(true)}
-//                     >Add New Sub Category</button>
-//                 </div>
-
-//                 {showModal && (
-//                     <div className="modal-overlay">
-//                         <div className="modal">
-//                             <h3>Add New Category</h3>
-//                             <form >
-//                                 <select
-//                                     name="category_id"
-//                                     value={newCategory.category_id}
-//                                     onChange={handleInputChange}
-//                                     required
-//                                     className='selectCss'
-//                                 >
-//                                     <option value="">Select Category</option>
-//                                     {categories.map(cat => (
-//                                         <option key={cat._id} value={cat._id}>{cat.name}</option>
-//                                     ))}
-//                                 </select>
-
-
-//                                 <input
-//                                     type="text"
-//                                     name="name"
-//                                     placeholder="Category Name"
-//                                     value={newCategory.name}
-//                                     onChange={handleInputChange}
-//                                     required
-//                                 />
-//                                 <input
-//                                     type="file"
-//                                     name="image"
-//                                     accept="image/*"
-//                                     onChange={handleInputChange}
-//                                     required
-//                                 />
-//                                 <div className="modal-actions">
-//                                     <button
-//                                         onClick={handleCreateSubCategory}
-//                                         type="submit" className="btn-save">Save</button>
-//                                     <button type="button" className="btn-cancel" onClick={() => setShowModal(false)}>Cancel</button>
-//                                 </div>
-//                             </form>
-//                         </div>
-//                     </div>
-//                 )}
-
-//                 {loading ? (<CustomLoader />) : (<div>
-//                     <table className="admin-table">
-//                         <thead>
-//                             <tr>
-//                                 <th>Name</th>
-//                                 <th>Description</th>
-//                                 <th>Image</th>
-//                                 <th>Sub Category</th>
-//                                 <th>Status</th>
-//                                 <th>Action</th>
-//                             </tr>
-//                         </thead>
-//                         <tbody>
-
-//                             {subCategoryList.map((item, i) => {
-//                                 // console.log("Image URL:", item.category_id?.image);
-//                                 return (
-//                                     <tr key={i}>
-//                                         <td>{item.category_id?.name || 'Unknown'}</td>
-//                                         <td>{item.description}</td>
-//                                         <td>
-//                                             <img
-//                                                 // src={`${API_URL}/${item.category_id?.image}`}
-//                                                 src={item.category_id?.image}
-//                                                 alt={item.name} width="60" height="60" style={{ borderRadius: '6px' }} />
-//                                         </td>
-//                                         <td>{item.name}</td>
-//                                         <td>
-//                                             {item.deleted_at ? (
-//                                                 <span className="status-badge deleted">Deleted</span>
-//                                             ) : (
-//                                                 <span className="status-badge active">Active</span>
-//                                             )}
-//                                         </td>
-//                                         <td>
-//                                             <button onClick={() => startEditingSubCategory(item)} className="btn-edit">Edit</button>
-//                                             <button onClick={() => handleDeleteSubCategory(item._id)} className="btn-delete">Delete</button>
-//                                         </td>
-//                                     </tr>
-//                                 );
-//                             })}
-//                         </tbody>
-//                     </table>
-//                 </div>)}
-
-
-//             </div>
-//         </>
-//     );
-// };
-
-// export default PharmaSubCategory;
 import React, { useState, useEffect } from 'react';
 import axiosInstance from '../../../components/AxiosInstance';
 import API_URL from '../../../config';
@@ -227,7 +30,8 @@ import {
   Avatar,
   Card,
   CardHeader,
-  CardContent
+  CardContent,
+  TablePagination
 } from '@mui/material';
 import { Add, Edit, Delete, Close, CloudUpload } from '@mui/icons-material';
 import { styled } from '@mui/material/styles';
@@ -268,6 +72,23 @@ const PharmaSubCategory = () => {
   const [openModal, setOpenModal] = useState(false);
   const [loading, setLoading] = useState(true);
   const [imagePreview, setImagePreview] = useState(null);
+  const [page, setPage] = useState(0);
+  const [rowsPerPage, setRowsPerPage] = useState(10);
+
+  // Pagination handlers
+  const handleChangePage = (event, newPage) => {
+    setPage(newPage);
+  };
+
+  const handleChangeRowsPerPage = (event) => {
+    setRowsPerPage(parseInt(event.target.value, 10));
+    setPage(0);
+  };
+
+  const currentSubCategory = subCategoryList.slice(
+    page * rowsPerPage,
+    page * rowsPerPage + rowsPerPage
+  );
 
   const fetchData = async () => {
     try {
@@ -412,9 +233,9 @@ const PharmaSubCategory = () => {
   return (
     <Container maxWidth="lg">
       <Box sx={{ my: 4 }}>
-         <Typography variant="h4" component="h1" gutterBottom className='fontSize25sml'>
-            Pharma Sub-Categories
-          </Typography>
+        <Typography variant="h4" component="h1" gutterBottom className='fontSize25sml'>
+          Pharma Sub-Categories
+        </Typography>
         <Box sx={{
           display: 'flex',
           justifyContent: 'end',
@@ -450,7 +271,7 @@ const PharmaSubCategory = () => {
                 </TableRow>
               </TableHead>
               <TableBody>
-                {subCategoryList.map((item) => (
+                {currentSubCategory.map((item) => (
                   <TableRow key={item._id} hover>
                     <TableCell>{item.subCategoryvariety || 'Unknown'}</TableCell>
                     <TableCell>{item.name || 'Unknown'}</TableCell>
@@ -492,6 +313,20 @@ const PharmaSubCategory = () => {
                 ))}
               </TableBody>
             </Table>
+            <TablePagination
+              rowsPerPageOptions={[10, 20, 30]}
+              component="div"
+              count={subCategoryList .length}
+              rowsPerPage={rowsPerPage}
+              page={page}
+              onPageChange={handleChangePage}
+              onRowsPerPageChange={handleChangeRowsPerPage}
+              sx={{
+                backgroundColor: '#f5f5f5',
+                borderBottomLeftRadius: '8px',
+                borderBottomRightRadius: '8px',
+              }}
+            />
           </StyledTableContainer>
         )}
       </Box>

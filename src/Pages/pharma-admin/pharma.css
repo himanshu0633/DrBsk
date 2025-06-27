@@ -402,10 +402,8 @@ input:focus {
     width: 450px;
 }
 
-
-
 /* Hide sidebar on mobile by default */
-@media screen and (max-width: 768px) {
+@media screen and (max-width: 760px) {
     .pharmaAdminContent {
         width: calc(100% - 230px);
     }

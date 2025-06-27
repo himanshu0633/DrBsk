@@ -26,7 +26,8 @@ import {
   CircularProgress,
   Chip,
   Divider,
-  Grid
+  Grid,
+  TablePagination
 } from '@mui/material';
 import { Add, Edit, Delete, Close, Visibility } from '@mui/icons-material';
 import { styled } from '@mui/material/styles';
@@ -59,6 +60,24 @@ const PharmaProducts = () => {
   const [selectedProduct, setSelectedProduct] = useState(null);
   const [openModal, setOpenModal] = useState(false);
   const navigate = useNavigate();
+
+  const [page, setPage] = useState(0);
+  const [rowsPerPage, setRowsPerPage] = useState(10);
+
+  // Pagination handlers
+  const handleChangePage = (event, newPage) => {
+    setPage(newPage);
+  };
+
+  const handleChangeRowsPerPage = (event) => {
+    setRowsPerPage(parseInt(event.target.value, 10));
+    setPage(0);
+  };
+
+  const currentProducts = products.slice(
+    page * rowsPerPage,
+    page * rowsPerPage + rowsPerPage
+  );
 
   const fetchData = async () => {
     setLoading(true);
@@ -103,9 +122,9 @@ const PharmaProducts = () => {
   return (
     <Container maxWidth="xl">
       <Box sx={{ my: 4 }}>
-          <Typography variant="h4" component="h1" gutterBottom className='fontSize25sml'>
-            Pharma Products
-          </Typography>
+        <Typography variant="h4" component="h1" gutterBottom className='fontSize25sml'>
+          Pharma Products
+        </Typography>
         <Box sx={{
           display: 'flex',
           justifyContent: 'end',
@@ -142,7 +161,7 @@ const PharmaProducts = () => {
                 </TableRow>
               </TableHead>
               <TableBody>
-                {products.map(product => (
+                {currentProducts.map(product => (
                   <TableRow key={product._id} hover>
                     <TableCell>
                       {product.media && product.media.length > 0 ? (
@@ -221,6 +240,20 @@ const PharmaProducts = () => {
                 ))}
               </TableBody>
             </Table>
+            <TablePagination
+              rowsPerPageOptions={[10, 20, 30]}
+              component="div"
+              count={products.length}
+              rowsPerPage={rowsPerPage}
+              page={page}
+              onPageChange={handleChangePage}
+              onRowsPerPageChange={handleChangeRowsPerPage}
+              sx={{
+                backgroundColor: '#f5f5f5',
+                borderBottomLeftRadius: '8px',
+                borderBottomRightRadius: '8px',
+              }}
+            />
           </StyledTableContainer>
         )}
       </Box>

@@ -245,6 +245,28 @@ const PharmaDashboard = () => {
     }]
   };
 
+  const chartOptions = {
+    responsive: true,
+    maintainAspectRatio: false, // This is important to prevent overflow
+    plugins: {
+      legend: {
+        position: 'top',
+      },
+      title: {
+        display: false,
+      },
+    },
+    scales: {
+      x: {
+        ticks: { autoSkip: true, maxTicksLimit: 10 },
+      },
+      y: {
+        beginAtZero: true,
+      },
+    },
+  };
+
+
   const StatCard = ({ icon, title, value, color }) => (
     <Paper elevation={4} sx={{ display: 'flex', alignItems: 'center', p: 2, borderLeft: `6px solid ${color}`, height: '100%' }}>
       <Box mr={2}>{icon}</Box>
@@ -256,11 +278,11 @@ const PharmaDashboard = () => {
   );
 
   return (
-    <Container maxWidth="lg" sx={{ py: 5, backgroundColor: '#f9f9fb', borderRadius: 2 }}>
+    <>
       {loading ? (
         <CustomLoader />
       ) : (
-        <>
+        <Container maxWidth="xl" sx={{ p: { xs: 0, lg: 3 } }}>
           <Typography
             variant="h4"
             gutterBottom
@@ -302,27 +324,60 @@ const PharmaDashboard = () => {
             </Grid>
           </Grid>
 
+
           {/* Charts */}
-          <Grid container spacing={4}>
-            <Grid item xs={12}>
-              <Paper elevation={3} sx={{ p: 3 }}>
-                <Typography variant="h6" gutterBottom sx={{ fontWeight: 500 }}>User Signups Over Time</Typography>
+          {/* <Box sx={{ display: 'flex', justifyContent: 'space-between', flexWrap: 'wrap', gap: 3 }}>
+            <Box sx={{ width: { xs: '100%', lg: '48%', }, height: { sm: '250px', md: '100%' } }}>
+              <Paper elevation={4} sx={{ p: 2, height: { sm: '100%' } }}>
+                <Typography variant="h6" gutterBottom sx={{ fontWeight: 500 }}>
+                  User Signups Over Time
+                </Typography>
                 <Divider sx={{ mb: 2 }} />
                 <Line data={lineChartData} />
               </Paper>
-            </Grid>
-            <Grid item xs={12}>
-              <Paper elevation={3} sx={{ p: 3 }}>
-                <Typography variant="h6" gutterBottom sx={{ fontWeight: 500 }}>Total Comparison</Typography>
+            </Box>
+            <Box sx={{ width: { xs: '100%', lg: '48%', }, height: { sm: '250px', md: '100%' } }}>
+              <Paper elevation={4} sx={{ p: 2, height: { sm: '100%' } }}>
+                <Typography variant="h6" gutterBottom sx={{ fontWeight: 500 }}>
+                  Total Comparison
+                </Typography>
                 <Divider sx={{ mb: 2 }} />
                 <Bar data={barChartData} />
               </Paper>
-            </Grid>
-          </Grid>
-        </>
+            </Box>
+          </Box> */}
+
+          <Box sx={{ display: 'flex', justifyContent: 'space-between', flexWrap: 'wrap', gap: 3 }}>
+            <Box sx={{ width: { xs: '100%', lg: '48%' } }}>
+              <Paper elevation={4} sx={{ p: { xs: 1, sm: 2 } }}>
+                <Typography variant="h6" gutterBottom sx={{ fontWeight: 500 }}>
+                  User Signups Over Time
+                </Typography>
+                <Divider sx={{ mb: 2 }} />
+                <Box sx={{ height: 250, position: 'relative' }}>
+                  <Line data={lineChartData} options={chartOptions} />
+                </Box>
+              </Paper>
+            </Box>
+
+            <Box sx={{ width: { xs: '100%', lg: '48%' } }}>
+              <Paper elevation={4} sx={{ p: { xs: 1, sm: 2 } }}>
+                <Typography variant="h6" gutterBottom sx={{ fontWeight: 500 }}>
+                  Total Comparison
+                </Typography>
+                <Divider sx={{ mb: 2 }} />
+                <Box sx={{ height: 250, position: 'relative' }}>
+                  <Bar data={barChartData} options={chartOptions} />
+                </Box>
+              </Paper>
+            </Box>
+          </Box>
+
+        </Container>
       )}
-    </Container>
+    </>
   );
+
 };
 
 export default PharmaDashboard;

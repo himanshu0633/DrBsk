@@ -20,7 +20,8 @@ import {
   DialogContent,
   DialogActions,
   Divider,
-  Grid
+  Grid,
+  TablePagination
 } from '@mui/material';
 import {
   Receipt,
@@ -40,17 +41,18 @@ const StyledTableContainer = styled(TableContainer)(({ theme }) => ({
 
 const StatusChip = styled(Chip)(({ theme, status }) => ({
   fontWeight: 600,
-  backgroundColor: 
+  backgroundColor:
     status === 'Delivered' ? theme.palette.success.light :
-    status === 'Pending' ? theme.palette.warning.light :
-    status === 'Cancelled' ? theme.palette.error.light :
-    theme.palette.info.light,
-  color: 
+      status === 'Pending' ? theme.palette.warning.light :
+        status === 'Cancelled' ? theme.palette.error.light :
+          theme.palette.info.light,
+  color:
     status === 'Delivered' ? theme.palette.success.dark :
-    status === 'Pending' ? theme.palette.warning.dark :
-    status === 'Cancelled' ? theme.palette.error.dark :
-    theme.palette.info.dark,
+      status === 'Pending' ? theme.palette.warning.dark :
+        status === 'Cancelled' ? theme.palette.error.dark :
+          theme.palette.info.dark,
 }));
+
 
 const PharmaOrder = () => {
   const [orders, setOrders] = useState([]);
@@ -93,6 +95,23 @@ const PharmaOrder = () => {
         return <LocalShipping />;
     }
   };
+  const [page, setPage] = useState(0);
+  const [rowsPerPage, setRowsPerPage] = useState(10);
+
+  // Pagination handlers
+  const handleChangePage = (event, newPage) => {
+    setPage(newPage);
+  };
+
+  const handleChangeRowsPerPage = (event) => {
+    setRowsPerPage(parseInt(event.target.value, 10));
+    setPage(0);
+  };
+
+  const currentOrders = orders.slice(
+    page * rowsPerPage,
+    page * rowsPerPage + rowsPerPage
+  );
 
   return (
     <Container maxWidth="xl">
@@ -100,7 +119,7 @@ const PharmaOrder = () => {
         <Typography variant="h4" component="h1" className='fontSize25sml' gutterBottom sx={{ fontWeight: 'bold' }}>
           Orders
         </Typography>
-        
+
         {loading ? (
           <Box sx={{ display: 'flex', justifyContent: 'center', mt: 4 }}>
             <CircularProgress />
@@ -119,7 +138,7 @@ const PharmaOrder = () => {
                 </TableRow>
               </TableHead>
               <TableBody>
-                {orders.map((order) => (
+                {currentOrders.map((order) => (
                   order.items.map((item) => (
                     <TableRow key={`${order._id}-${item.productId}`} hover>
                       <TableCell>{item.productId}</TableCell>
@@ -132,7 +151,7 @@ const PharmaOrder = () => {
                           icon={getStatusIcon(order.status)}
                           label={order.status}
                           status={order.status}
-                          onClick={()=>{}}
+                          onClick={() => { }}
                         />
                       </TableCell>
                     </TableRow>
@@ -140,14 +159,28 @@ const PharmaOrder = () => {
                 ))}
               </TableBody>
             </Table>
+            <TablePagination
+              rowsPerPageOptions={[10, 20, 30]}
+              component="div"
+              count={orders.length}
+              rowsPerPage={rowsPerPage}
+              page={page}
+              onPageChange={handleChangePage}
+              onRowsPerPageChange={handleChangeRowsPerPage}
+              sx={{
+                backgroundColor: '#f5f5f5',
+                borderBottomLeftRadius: '8px',
+                borderBottomRightRadius: '8px',
+              }}
+            />
           </StyledTableContainer>
         )}
       </Box>
 
       {/* Order Details Dialog - Simplified to match your data structure */}
-      <Dialog 
-        open={openDialog} 
-        onClose={handleCloseDialog} 
+      <Dialog
+        open={openDialog}
+        onClose={handleCloseDialog}
         maxWidth="sm"
         fullWidth
       >
@@ -163,17 +196,17 @@ const PharmaOrder = () => {
                     Order Information
                   </Typography>
                   <Divider sx={{ mb: 2 }} />
-                  <Typography><strong>Status:</strong> 
-                    <StatusChip 
-                      label={selectedOrder.status} 
-                      status={selectedOrder.status} 
-                      size="small" 
+                  <Typography><strong>Status:</strong>
+                    <StatusChip
+                      label={selectedOrder.status}
+                      status={selectedOrder.status}
+                      size="small"
                       sx={{ ml: 1 }}
                     />
                   </Typography>
                   <Typography><strong>Payment ID:</strong> {selectedOrder.paymentId || 'N/A'}</Typography>
                 </Grid>
-                
+
                 <Grid item xs={12}>
                   <Typography variant="subtitle1" gutterBottom sx={{ fontWeight: 'bold' }}>
                     Items in this Order

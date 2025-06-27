@@ -5,9 +5,6 @@
 //     Box,
 //     Typography,
 //     CircularProgress,
-//     ImageList,
-//     ImageListItem,
-//     ImageListItemBar,
 //     Avatar,
 //     useMediaQuery,
 //     useTheme,
@@ -17,8 +14,18 @@
 //     Backdrop,
 //     Fade,
 //     IconButton,
+//     Table,
+//     TableBody,
+//     TableCell,
+//     TableContainer,
+//     TableHead,
+//     TableRow,
+//     Paper,
 // } from '@mui/material';
 // import CloseIcon from '@mui/icons-material/Close';
+// import { Delete } from 'lucide-react';
+// import { toast } from 'react-toastify';
+// import { DeleteOutlineRounded } from '@mui/icons-material';
 
 // const PharmaPrescription = () => {
 //     const [prescriptions, setPrescriptions] = useState([]);
@@ -28,7 +35,6 @@
 
 //     const theme = useTheme();
 //     const isSmall = useMediaQuery(theme.breakpoints.down('sm'));
-//     const isMedium = useMediaQuery(theme.breakpoints.between('sm', 'md'));
 
 //     const fetchData = async () => {
 //         try {
@@ -59,12 +65,6 @@
 //         fetchData();
 //     }, []);
 
-//     const getColumns = () => {
-//         if (isSmall) return 1;
-//         if (isMedium) return 2;
-//         return 3;
-//     };
-
 //     const handleImageClick = (imagePath) => {
 //         setSelectedImage(`${API_URL}/${imagePath.replace(/\\/g, '/')}`);
 //     };
@@ -73,15 +73,27 @@
 //         setSelectedImage(null);
 //     };
 
+//     const handleDeletePrescription = async (id) => {
+//         if (window.confirm("Are you sure you want to delete this Prescription?")) {
+//             try {
+//                 await axiosInstance.delete(`/user/deletePrescription/${id}`);
+//                 fetchData();
+//                 toast.success("Prescription deleted successfully");
+//             } catch (error) {
+//                 console.error("Error deleting Prescription:", error);
+//                 toast.error("Failed to delete Prescription. Please try again.");
+//             }
+//         }
+//     };
 //     return (
 //         <Container maxWidth="lg" sx={{ mt: 5 }}>
 //             <Typography
 //                 variant="h4"
 //                 gutterBottom
+//                 className='fontSize25sml'
 //                 sx={{
 //                     fontWeight: 700,
-//                     // textAlign: 'center',
-//                     color: '#68171b',
+//                     color: 'black',
 //                     mb: 4,
 //                 }}
 //             >
@@ -93,58 +105,68 @@
 //                     <CircularProgress />
 //                 </Box>
 //             ) : (
-//                 <ImageList variant="masonry" cols={getColumns()} gap={20}>
-//                     {prescriptions.map((item, i) => {
-//                         const user = users[item.userId];
-//                         return (
-//                             <ImageListItem
-//                                 key={i}
-//                                 sx={{
-//                                     borderRadius: 3,
-//                                     overflow: 'hidden',
-//                                     boxShadow: 4,
-//                                     transition: 'transform 0.3s ease',
-//                                     '&:hover': {
-//                                         transform: 'scale(1.03)',
-//                                         boxShadow: 8,
-//                                     },
-//                                 }}
-//                             >
-//                                 <img
-//                                     src={`${API_URL}/${item.image?.replace(/\\/g, '/')}`}
-//                                     alt={`Prescription ${i + 1}`}
-//                                     loading="lazy"
-//                                     style={{
-//                                         width: '100%',
-//                                         height: '300px',
-//                                         borderRadius: '10px',
-//                                         display: 'block',
-//                                         cursor: 'pointer',
-//                                     }}
-//                                     onClick={() => handleImageClick(item.image)}
-//                                 />
-//                                 <ImageListItemBar
-//                                     title={user?.name || 'Loading...'}
-//                                     subtitle={user?.email || ''}
-//                                     actionIcon={
-//                                         <Tooltip title={user?.name || ''}>
-//                                             <Avatar
-//                                                 alt={user?.name}
-//                                                 src={`https://api.dicebear.com/6.x/initials/svg?seed=${user?.name || 'U'}`}
-//                                                 sx={{ width: 40, height: 40, mr: 1 }}
-//                                             />
-//                                         </Tooltip>
-//                                     }
-//                                     sx={{
-//                                         background: 'rgba(0, 0, 0, 0.6)',
-//                                         color: '#fff',
-//                                     }}
-//                                 />
-//                             </ImageListItem>
-//                         );
-//                     })}
-//                 </ImageList>
+//                 <Box sx={{ overflow: 'auto' }}>
+//                     <TableContainer component={Paper} sx={{ borderRadius: 2, minWidth: '900px' }}>
+//                         <Table>
+//                             <TableHead sx={{ backgroundColor: '#68171b' }}>
+//                                 <TableRow>
+//                                     <TableCell><strong>User</strong></TableCell>
+//                                     <TableCell><strong>Email</strong></TableCell>
+//                                     <TableCell><strong>Prescription Image</strong></TableCell>
+//                                     <TableCell><strong>Actions</strong></TableCell>
+//                                 </TableRow>
+//                             </TableHead>
+//                             <TableBody>
+//                                 {prescriptions.map((item, i) => {
+//                                     const user = users[item.userId];
+//                                     return (
+//                                         <TableRow key={i}>
+//                                             <TableCell>
+//                                                 <Box sx={{ display: 'flex', alignItems: 'center' }}>
+//                                                     <Tooltip title={user?.name || ''}>
+//                                                         <Avatar
+//                                                             alt={user?.name}
+//                                                             src={`https://api.dicebear.com/6.x/initials/svg?seed=${user?.name || 'U'}`}
+//                                                             sx={{ mr: 2 }}
+//                                                         />
+//                                                     </Tooltip>
+//                                                     {user?.name || 'Loading...'}
+//                                                 </Box>
+//                                             </TableCell>
+//                                             <TableCell>{user?.email || ''}</TableCell>
+//                                             <TableCell>
+//                                                 <img
+//                                                     src={`${API_URL}/${item.image?.replace(/\\/g, '/')}`}
+//                                                     alt={`Prescription ${i + 1}`}
+//                                                     onClick={() => handleImageClick(item.image)}
+//                                                     style={{
+//                                                         width: '150px',
+//                                                         height: '100px',
+//                                                         borderRadius: 8,
+//                                                         cursor: 'pointer',
+//                                                         border: '1px solid #ccc',
+//                                                     }}
+//                                                 />
+//                                             </TableCell>
+//                                             <TableCell>
+//                                                 <IconButton
+//                                                     color="error"
+//                                                     onClick={() => handleDeletePrescription(item._id)}
+//                                                     disabled={!!item.deleted_at}
+//                                                 >
+//                                                     {/* <Delete /> */}
+//                                                     <DeleteOutlineRounded/>
+//                                                 </IconButton>
+//                                             </TableCell>
+//                                         </TableRow>
+//                                     );
+//                                 })}
+//                             </TableBody>
+//                         </Table>
+//                     </TableContainer>
+//                 </Box>
 //             )}
+
 
 //             {/* Modal for full image view */}
 //             <Modal
@@ -189,8 +211,8 @@
 //                             src={selectedImage}
 //                             alt="Full Prescription"
 //                             style={{
-//                                 height: '500px',
-//                                 width: '1000px',
+//                                 height: '400px',
+//                                 width: '800px',
 //                                 borderRadius: 12,
 //                                 display: 'block',
 //                             }}
@@ -203,7 +225,6 @@
 // };
 
 // export default PharmaPrescription;
-
 
 
 
@@ -230,14 +251,21 @@ import {
     TableHead,
     TableRow,
     Paper,
+    TablePagination,
 } from '@mui/material';
 import CloseIcon from '@mui/icons-material/Close';
+import { toast } from 'react-toastify';
+import { DeleteOutlineRounded } from '@mui/icons-material';
 
 const PharmaPrescription = () => {
     const [prescriptions, setPrescriptions] = useState([]);
     const [users, setUsers] = useState({});
     const [loading, setLoading] = useState(true);
     const [selectedImage, setSelectedImage] = useState(null);
+
+    // Pagination state
+    const [page, setPage] = useState(0);
+    const [rowsPerPage, setRowsPerPage] = useState(10);
 
     const theme = useTheme();
     const isSmall = useMediaQuery(theme.breakpoints.down('sm'));
@@ -279,6 +307,35 @@ const PharmaPrescription = () => {
         setSelectedImage(null);
     };
 
+    const handleDeletePrescription = async (id) => {
+        if (window.confirm("Are you sure you want to delete this Prescription?")) {
+            try {
+                await axiosInstance.delete(`/user/deletePrescription/${id}`);
+                fetchData();
+                toast.success("Prescription deleted successfully");
+            } catch (error) {
+                console.error("Error deleting Prescription:", error);
+                toast.error("Failed to delete Prescription. Please try again.");
+            }
+        }
+    };
+
+    // Pagination handlers
+    const handleChangePage = (event, newPage) => {
+        setPage(newPage);
+    };
+
+    const handleChangeRowsPerPage = (event) => {
+        setRowsPerPage(parseInt(event.target.value, 10));
+        setPage(0);
+    };
+
+    // Calculate the current prescriptions to display
+    const currentPrescriptions = prescriptions.slice(
+        page * rowsPerPage,
+        page * rowsPerPage + rowsPerPage
+    );
+
     return (
         <Container maxWidth="lg" sx={{ mt: 5 }}>
             <Typography
@@ -300,17 +357,18 @@ const PharmaPrescription = () => {
                 </Box>
             ) : (
                 <Box sx={{ overflow: 'auto' }}>
-                    <TableContainer component={Paper} sx={{ borderRadius: 2, minWidth: '900px'}}>
+                    <TableContainer component={Paper} sx={{ borderRadius: 2, minWidth: '900px' }}>
                         <Table>
                             <TableHead sx={{ backgroundColor: '#68171b' }}>
                                 <TableRow>
                                     <TableCell><strong>User</strong></TableCell>
                                     <TableCell><strong>Email</strong></TableCell>
                                     <TableCell><strong>Prescription Image</strong></TableCell>
+                                    <TableCell><strong>Actions</strong></TableCell>
                                 </TableRow>
                             </TableHead>
                             <TableBody>
-                                {prescriptions.map((item, i) => {
+                                {currentPrescriptions.map((item, i) => {
                                     const user = users[item.userId];
                                     return (
                                         <TableRow key={i}>
@@ -341,15 +399,37 @@ const PharmaPrescription = () => {
                                                     }}
                                                 />
                                             </TableCell>
+                                            <TableCell>
+                                                <IconButton
+                                                    color="error"
+                                                    onClick={() => handleDeletePrescription(item._id)}
+                                                    disabled={!!item.deleted_at}
+                                                >
+                                                    <DeleteOutlineRounded />
+                                                </IconButton>
+                                            </TableCell>
                                         </TableRow>
                                     );
                                 })}
                             </TableBody>
                         </Table>
+                        <TablePagination
+                            rowsPerPageOptions={[10, 20, 30]}
+                            component="div"
+                            count={prescriptions.length}
+                            rowsPerPage={rowsPerPage}
+                            page={page}
+                            onPageChange={handleChangePage}
+                            onRowsPerPageChange={handleChangeRowsPerPage}
+                            sx={{
+                                backgroundColor: '#f5f5f5',
+                                borderBottomLeftRadius: '8px',
+                                borderBottomRightRadius: '8px',
+                            }}
+                        />
                     </TableContainer>
                 </Box>
             )}
-
 
             {/* Modal for full image view */}
             <Modal
@@ -408,8 +488,4 @@ const PharmaPrescription = () => {
 };
 
 export default PharmaPrescription;
-
-
-
-
 
