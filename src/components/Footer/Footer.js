@@ -265,7 +265,7 @@ const Footer = () => {
                 {/* <a href="#">Offers and Coupons</a> */}
               </li>
               <li>
-                <a href="/faq">FAQs</a>
+                {/* <a href="/faq">FAQs</a> */}
               </li>
               <li>
                 {/* <a href="#">Store Locator</a> */}
