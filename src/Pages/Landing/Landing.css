@@ -1427,7 +1427,7 @@ select {
   }
 
   .about-image {
-    min-height: 300px;
+    /* min-height: 300px; */
     width: 100%;
   }
 

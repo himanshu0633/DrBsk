@@ -150,7 +150,7 @@ const Landing = () => {
         <NavLink to="/contactus">Contact</NavLink>
 
         <div className="mobile-buttons">
-          <a href="franchisee-enquiry.html"><ClipboardList size={16} /> Franchise Inquiry</a>
+          <a href="franchisee-enquiry.html"><ClipboardList size={16} /> WholeSale Inquiry</a>
           <NavLink
             to="/homepage"
             onClick={() => {
@@ -177,7 +177,7 @@ const Landing = () => {
           <p className="description animate__animated animate__fadeInUp">
             <strong>India's largest</strong> private generic pharmacy retail chain offering high-quality medicines at affordable prices.
           </p>
-          <a href="" className="cta-button animate__animated animate__fadeInUp">Shop Now</a>
+          <a href="/homepage" className="cta-button animate__animated animate__fadeInUp">Shop Now</a>
           <p className="tc animate__animated animate__fadeInUp">* Terms and conditions apply</p>
           <div className="social-icons">
             {/* Social Icons here */}
@@ -201,7 +201,7 @@ const Landing = () => {
           </div>
         </div>
         <div className="banner-image animate__animated animate__fadeInRight">
-          <img src={kapidev} alt="Brand Ambassador" />
+          <img src='https://www.ukgermanpharmaceuticals.com/uploaded-files/gallery/photos/thumbs/APJ-Abdul-Kalam-Inspiration-Award-20244-thumbs-800X600.jpg' alt="Brand Ambassador" />
         </div>
       </section>
 
