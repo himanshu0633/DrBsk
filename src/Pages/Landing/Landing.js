@@ -15,7 +15,7 @@ import teamMember from '../../logo/team-member.jpg';
 import phoneMap from '../../logo/phone-map.jpg';
 import Footer from '../../components/Footer/Footer';
 import Head from '../Head/Head';
-import { NavLink } from 'react-router-dom';
+import { Link, NavLink } from 'react-router-dom';
 
 const Landing = () => {
   const [mobileMenuActive, setMobileMenuActive] = useState(false);
@@ -150,7 +150,8 @@ const Landing = () => {
         <NavLink to="/contactus">Contact</NavLink>
 
         <div className="mobile-buttons">
-          <a href="FranchiseBanner"><ClipboardList size={16} /> WholeSale Inquiry</a>
+          {/* <a href="FranchiseBanner"><ClipboardList size={16} /> WholeSale Inquiry</a> */}
+          <NavLink to='/FranchiseBanner'><ClipboardList size={16} /> WholeSale Inquiry</NavLink>
           <NavLink
             to="/homepage"
             onClick={() => {
@@ -177,7 +178,10 @@ const Landing = () => {
           <p className="description animate__animated animate__fadeInUp">
             <strong>India's largest</strong> private generic pharmacy retail chain offering high-quality medicines at affordable prices.
           </p>
-          <a href="/homepage" className="cta-button animate__animated animate__fadeInUp">Shop Now</a>
+          {/* <a href="/homepage" className="cta-button animate__animated animate__fadeInUp">Shop Now</a> */}
+          <Link to='/homePage' className="cta-button animate__animated animate__fadeInUp">
+            Shop Now
+          </Link>
           <p className="tc animate__animated animate__fadeInUp">* Terms and conditions apply</p>
           <div className="social-icons">
             {/* Social Icons here */}
@@ -249,7 +253,8 @@ const Landing = () => {
           <div className="about-content animated">
             <h2>About Us</h2>
             <p>UK German Pharmaceuticals – Established in 1991, we are one of India’s most trusted animal healthcare companies...</p>
-            <a href="#" className="about-btn">Learn More</a>
+            {/* <a href="#" className="about-btn">Learn More</a> */}
+            <Link to='/aboutus' className='about-btn'>Learn More</Link>
           </div>
         </div>
       </section>

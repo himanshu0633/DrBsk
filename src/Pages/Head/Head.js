@@ -35,9 +35,7 @@ const Head = () => {
         </div>
 
         <div className="header-buttons">
-          <a href="FranchiseBanner">
-            <ClipboardList size={16} /> WholeSale Inquiry
-          </a>
+          <NavLink to='FranchiseBanner'><ClipboardList size={16} /> WholeSale Inquiry</NavLink>
           <NavLink
             to="/homepage"
             onClick={() => {
