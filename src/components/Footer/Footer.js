@@ -1,4 +1,4 @@
-import React from 'react';
+import React from "react";
 // import './Footer.css';
 // import logo from "../../logo/logo1.jpg";
 
@@ -116,10 +116,9 @@ import React from 'react';
 
 // export default Footer;
 
-
-import './Footer.css';
+import "./Footer.css";
 import logo from "../../logo/logo1.jpg";
-import { NavLink } from 'react-router-dom';
+import { NavLink } from "react-router-dom";
 
 const Footer = () => {
   return (
@@ -129,7 +128,7 @@ const Footer = () => {
         {/* Column 1: Logo */}
         <div className="foot er-col footerLogoSec ">
           <div className=" footerLogo">
-            <img src={logo} alt="Logo" className='logo' />
+            <img src={logo} alt="Logo" className="logo" />
             <p className="company-tagline">Your Health, Our Priority</p>
           </div>
           <div>
@@ -148,50 +147,78 @@ const Footer = () => {
               </div>
             </div>
             <div className="social-icons">
-              <a href="https://www.facebook.com/people/Dr-BSKs/61576600531948/" target='blank' aria-label="Facebook">
-                <img src="https://cdn-icons-png.flaticon.com/512/2111/2111392.png" alt="Facebook" />
+              <a
+                href="https://www.facebook.com/people/Dr-BSKs/61576600531948/"
+                target="blank"
+                aria-label="Facebook"
+              >
+                <img
+                  src="https://cdn-icons-png.flaticon.com/512/2111/2111392.png"
+                  alt="Facebook"
+                />
               </a>
-              <a href="https://www.instagram.com/drbsk_humanhealth?utm_source=ig_web_button_share_sheet&igsh=ZDNlZDc0MzIxNw==" target='blank' aria-label="Instagram">
-                <img src="https://cdn-icons-png.flaticon.com/512/2111/2111463.png" alt="Instagram" />
+              <a
+                href="https://www.instagram.com/drbsk_humanhealth?utm_source=ig_web_button_share_sheet&igsh=ZDNlZDc0MzIxNw=="
+                target="blank"
+                aria-label="Instagram"
+              >
+                <img
+                  src="https://cdn-icons-png.flaticon.com/512/2111/2111463.png"
+                  alt="Instagram"
+                />
               </a>
-              <a href="https://www.youtube.com/@Dr.BSKsURUMEED-w4o" target='blank' aria-label="YouTube">
-                <img src="https://cdn-icons-png.flaticon.com/512/1384/1384060.png" alt="YouTube" />
+              <a
+                href="https://www.youtube.com/@Dr.BSKsURUMEED-w4o"
+                target="blank"
+                aria-label="YouTube"
+              >
+                <img
+                  src="https://cdn-icons-png.flaticon.com/512/1384/1384060.png"
+                  alt="YouTube"
+                />
               </a>
               {/* <a href="#" aria-label="Twitter">
                 <img src="https://cdn-icons-png.flaticon.com/512/3670/3670151.png" alt="Twitter" />
               </a> */}
-              <a href="https://www.linkedin.com/company/dr-bsk-s/" target='blank' aria-label="LinkedIn">
-                <img src="https://cdn-icons-png.flaticon.com/512/3536/3536505.png" alt="LinkedIn" />
+              <a
+                href="https://www.linkedin.com/company/dr-bsk-s/"
+                target="blank"
+                aria-label="LinkedIn"
+              >
+                <img
+                  src="https://cdn-icons-png.flaticon.com/512/3536/3536505.png"
+                  alt="LinkedIn"
+                />
               </a>
             </div>
           </div>
         </div>
 
-        <div className='footer_flex'>
+        <div className="footer_flex">
           {/* Column 2: Company */}
           <div className="foo ter-col footerLinkSec">
             <h4>Company</h4>
             <ul className="footer-links">
               <li>
-                <NavLink to='/aboutus'>About us</NavLink>
+                <NavLink to="/aboutus">About us</NavLink>
               </li>
               <li>
-                <NavLink to='/fever'>Our Products</NavLink>
+                <NavLink to="/fever">Our Products</NavLink>
               </li>
               <li>
-                <NavLink to='/testimonial'>Customer Speaks</NavLink>
+                <NavLink to="/testimonial">Customer Speaks</NavLink>
               </li>
               <li>
-                <NavLink to='/photo'>Photo Gallery</NavLink>
+                <NavLink to="/photo">Photo Gallery</NavLink>
               </li>
               <li>
-                <NavLink to='/video'>Video Gallery</NavLink>
+                <NavLink to="/video">Video Gallery</NavLink>
               </li>
               <li>
-                <NavLink to='/blogs'>Blogs</NavLink>
+                <NavLink to="/blogs">Blogs</NavLink>
               </li>
               <li>
-                <NavLink to='/contactus'>Contact us</NavLink>
+                <NavLink to="/contactus">Contact us</NavLink>
               </li>
               {/* <li><a href="/aboutus">About us</a></li>
               <li><a href="/fever">Our Products</a></li>
@@ -206,12 +233,24 @@ const Footer = () => {
           <div className="foo ter-col footerLinkSec">
             <h4>Our Policies</h4>
             <ul className="footer-links">
-              <li><a href="#">Terms and Conditions</a></li>
-              <li><a href="#">Privacy Policy</a></li>
-              <li><a href="#">Grievance Redressal Policy</a></li>
-              <li><a href="#">Shipping and Delivery Policy</a></li>
-              <li><a href="#">Return, Refund and Cancellation Policy</a></li>
-              <li><a href="#">IP Policy</a></li>
+              <li>
+                <a href="#">Terms and Conditions</a>
+              </li>
+              <li>
+                <a href="#">Privacy Policy</a>
+              </li>
+              <li>
+                <a href="#">Grievance Redressal Policy</a>
+              </li>
+              <li>
+                <a href="#">Shipping and Delivery Policy</a>
+              </li>
+              <li>
+                <a href="#">Return, Refund and Cancellation Policy</a>
+              </li>
+              <li>
+                <a href="#">IP Policy</a>
+              </li>
             </ul>
           </div>
 
@@ -219,11 +258,26 @@ const Footer = () => {
           <div className="foo ter-col footerLinkSec">
             <h4>Shopping</h4>
             <ul className="footer-links">
-              <li><a href="#">Health Articles</a></li>
-              <li><a href="#">Offers and Coupons</a></li>
-              <li><a href="#">FAQs</a></li>
-              <li><a href="#">Store Locator</a></li>
-              <li><a href="#">Gift Cards</a></li>
+              <li>
+                <a href="#">Health Articles</a>
+              </li>
+              <li>
+                <a href="#">Offers and Coupons</a>
+              </li>
+              <li>
+                <a href="#">FAQs</a>
+              </li>
+              <li>
+                <a href="#">Store Locator</a>
+              </li>
+              <li>
+                {/* <a href="">Gift Cards</a> */}
+                <NavLink to="/pharma-admin">Gift Cards</NavLink>
+              </li>
+               <li>
+                {/* <a href="">Gift Cards</a> */}
+                <NavLink to="/pharma-admin">Admin Panel</NavLink>
+              </li>
             </ul>
           </div>
 
@@ -231,8 +285,12 @@ const Footer = () => {
           <div className="foo ter-col footerLinkSec">
             <h4>Registered Office</h4>
             <address>
-              UK German Pharmaceuticals,<br /> Akal Academy Road,<br />
-              Opp. Malwa Gramin Bank,<br /> Cheema Mandi -148029,<br />
+              UK German Pharmaceuticals,
+              <br /> Akal Academy Road,
+              <br />
+              Opp. Malwa Gramin Bank,
+              <br /> Cheema Mandi -148029,
+              <br />
               Distt. Sangrur (Punjab) India
             </address>
 
@@ -280,10 +338,22 @@ const Footer = () => {
         <div className="footer-bottom-container">
           <p>© {new Date().getFullYear()} Dr.BSK's. All Rights Reserved.</p>
           <div className="payment-methods">
-            <img src="https://cdn-icons-png.flaticon.com/512/196/196578.png" alt="Visa" />
-            <img src="https://cdn-icons-png.flaticon.com/512/196/196561.png" alt="Mastercard" />
-            <img src="https://cdn-icons-png.flaticon.com/512/196/196566.png" alt="PayPal" />
-            <img src="https://cdn-icons-png.flaticon.com/512/825/825454.png" alt="UPI" />
+            <img
+              src="https://cdn-icons-png.flaticon.com/512/196/196578.png"
+              alt="Visa"
+            />
+            <img
+              src="https://cdn-icons-png.flaticon.com/512/196/196561.png"
+              alt="Mastercard"
+            />
+            <img
+              src="https://cdn-icons-png.flaticon.com/512/196/196566.png"
+              alt="PayPal"
+            />
+            <img
+              src="https://cdn-icons-png.flaticon.com/512/825/825454.png"
+              alt="UPI"
+            />
           </div>
         </div>
       </div>
