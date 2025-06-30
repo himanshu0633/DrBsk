@@ -150,7 +150,7 @@ const Landing = () => {
         <NavLink to="/contactus">Contact</NavLink>
 
         <div className="mobile-buttons">
-          <a href="franchisee-enquiry.html"><ClipboardList size={16} /> WholeSale Inquiry</a>
+          <a href="FranchiseBanner"><ClipboardList size={16} /> WholeSale Inquiry</a>
           <NavLink
             to="/homepage"
             onClick={() => {

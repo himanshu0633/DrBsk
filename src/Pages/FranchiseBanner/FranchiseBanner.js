@@ -12,11 +12,11 @@ const FranchiseBanner = () => {
       <div className="banner-container">
         <div className="banner">
           <div className="left-content">
-            <img 
+            {/* <img
               src={logo}
-              alt="Logo" 
+              alt="Logo"
               className="logo"
-            />
+            /> */}
             <h2 className="banner-title">
               Enjoy "90% subsidy" on your investment, begin your<br />
               Healthcare Business with BSK pharma now!<br />
@@ -28,11 +28,11 @@ const FranchiseBanner = () => {
             </ul>
             <div className="terms">T&C apply</div>
           </div>
-          
+
           <div className="right-content">
-            <img 
-              src="https://davaindia.com/franchisee-enquiry/images/kapil-dev.png" 
-              alt="Person" 
+            <img
+              src="https://www.ukgermanpharmaceuticals.com/uploaded-files/gallery/photos/thumbs/APJ-Abdul-Kalam-Inspiration-Award-20244-thumbs-800X600.jpg"
+              alt="Person"
               className="person-image"
             />
           </div>
@@ -42,12 +42,12 @@ const FranchiseBanner = () => {
       {/* Questionnaire Sections */}
       <div className="questionnaire-container">
         <div className="questionnaire">
-          <QuestionBox 
+          <QuestionBox
             title="Are you a healthcare professional?"
             yesText="Yes"
             noText="No"
           />
-          <QuestionBox 
+          <QuestionBox
             title="Do you have the required 250 sqft space to open the store?"
             yesText="Yes"
             noText="No"
@@ -57,12 +57,12 @@ const FranchiseBanner = () => {
 
       <div className="questionnaire-container">
         <div className="questionnaire">
-          <QuestionBox 
+          <QuestionBox
             title="Do you have investment ready to open the store?"
             yesText="Yes"
             noText="No"
           />
-          <QuestionBox 
+          <QuestionBox
             title="Are you a pharmacist or can you arrange a pharmacy license?"
             yesText="Yes"
             noText="No"
@@ -93,13 +93,13 @@ const QuestionBox = ({ title, yesText, noText }) => {
     <div className="question-box">
       <h3 className="question-title">{title}</h3>
       <hr className="question-divider" />
-      <button 
+      <button
         className={`yes-btn ${selected === 'yes' ? 'selected' : ''}`}
         onClick={() => handleSelect('yes')}
       >
         {yesText}
       </button>
-      <button 
+      <button
         className={`no-btn ${selected === 'no' ? 'selected' : ''}`}
         onClick={() => handleSelect('no')}
       >

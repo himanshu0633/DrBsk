@@ -36,7 +36,7 @@ const Head = () => {
 
         <div className="header-buttons">
           <a href="FranchiseBanner">
-            <ClipboardList size={16} /> Franchise Inquiry
+            <ClipboardList size={16} /> WholeSale Inquiry
           </a>
           <NavLink
             to="/homepage"

@@ -272,9 +272,9 @@ const Footer = () => {
               </li>
               <li>
                 {/* <a href="">Gift Cards</a> */}
-                
+
               </li>
-               <li>
+              <li>
                 {/* <a href="">Gift Cards</a> */}
                 <NavLink to="/pharma-admin">Admin Panel</NavLink>
               </li>
@@ -337,7 +337,8 @@ const Footer = () => {
       <div className="footer-bottom">
         <div className="footer-bottom-container">
           <p>© {new Date().getFullYear()} Dr.BSK's. All Rights Reserved.</p>
-          <div className="payment-methods">
+          <p>Crafted With ❤ by CIIS - Career Infowis IT Solutions Pvt Ltd</p>
+          {/* <div className="payment-methods">
             <img
               src="https://cdn-icons-png.flaticon.com/512/196/196578.png"
               alt="Visa"
@@ -354,7 +355,7 @@ const Footer = () => {
               src="https://cdn-icons-png.flaticon.com/512/825/825454.png"
               alt="UPI"
             />
-          </div>
+          </div> */}
         </div>
       </div>
     </footer>
