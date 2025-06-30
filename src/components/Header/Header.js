@@ -77,11 +77,6 @@ const Header = () => {
 
       if (data.length > 0) {
         const location = data[0].display_name;
-<<<<<<< HEAD
-        console.log("dkhfkwhdrsjjk", location);
-
-=======
->>>>>>> 8530901e57acd29df89bbf9079ef255a696033cc
         setLocationName(`${location}`);
         setCurrentPincode(pincode);
       } else {
