@@ -245,7 +245,7 @@ const Landing = () => {
       {/* About Section */}
       <section className="about-section">
         <div className="about-container">
-          <div className="about-image animated"><img src={storeImage} alt="BSK Pharma Store" /></div>
+          <div className="about-image animated"><img className='objectfitImg' src='https://www.ukgermanpharmaceuticals.com/uploaded-files/banner-image/Result-Oriented-Diabetic-Medicines-Brand-In-India09.jpg' alt="BSK Pharma Store" /></div>
           <div className="about-content animated">
             <h2>About Us</h2>
             <p>UK German Pharmaceuticals – Established in 1991, we are one of India’s most trusted animal healthcare companies...</p>
