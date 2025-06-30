@@ -230,7 +230,7 @@ const Footer = () => {
           </div>
 
           {/* Column 3: Policies */}
-          <div className="foo ter-col footerLinkSec">
+          {/* <div className="foo ter-col footerLinkSec">
             <h4>Our Policies</h4>
             <ul className="footer-links">
               <li>
@@ -252,27 +252,27 @@ const Footer = () => {
                 <a href="#">IP Policy</a>
               </li>
             </ul>
-          </div>
+          </div> */}
 
           {/* Column 4: Shopping */}
           <div className="foo ter-col footerLinkSec">
             <h4>Shopping</h4>
             <ul className="footer-links">
               <li>
-                <a href="#">Health Articles</a>
+                {/* <a href="#">Health Articles</a> */}
               </li>
               <li>
-                <a href="#">Offers and Coupons</a>
+                {/* <a href="#">Offers and Coupons</a> */}
               </li>
               <li>
-                <a href="#">FAQs</a>
+                <a href="/faq">FAQs</a>
               </li>
               <li>
-                <a href="#">Store Locator</a>
+                {/* <a href="#">Store Locator</a> */}
               </li>
               <li>
                 {/* <a href="">Gift Cards</a> */}
-                <NavLink to="/pharma-admin">Gift Cards</NavLink>
+                
               </li>
                <li>
                 {/* <a href="">Gift Cards</a> */}
