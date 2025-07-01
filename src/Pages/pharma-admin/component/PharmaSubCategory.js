@@ -443,7 +443,7 @@ const PharmaSubCategory = () => {
                 color="primary"
                 variant="contained"
                 className='cursor-pointer text-light'
-                disabled={!formData.name || !formData.description || !formData.category_id || !formData.subCategoryvariety || (!formData.image && !editingId)}
+                // disabled={!formData.name || !formData.description || !formData.category_id || !formData.subCategoryvariety || (!formData.image && !editingId)}
               >
                 {editingId ? 'Update' : 'Save'}
               </Button>
