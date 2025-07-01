@@ -42,7 +42,7 @@ const Adminlogin = () => {
       setIsLoading(false);
       return;
     }
-
+    
     // Simulate API call
     setTimeout(() => {
       setIsLoading(false);
@@ -103,8 +103,8 @@ const Adminlogin = () => {
                   {errors.password && <div className="davaindia-error-message">{errors.password}</div>}
                 </div>
 
-                <button 
-                  type="submit" 
+                <button
+                  type="submit"
                   className="davaindia-btn davaindia-btn-primary"
                   disabled={isLoading}
                 >

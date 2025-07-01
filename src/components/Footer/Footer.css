@@ -295,7 +295,6 @@ address {
 
   /* .footer_flex {
     justify-content: space-between;
-
   } */
 }
 
@@ -328,11 +327,12 @@ address {
     margin-bottom: 20px;
     font-size: 22px;
   }
-.footer_flex1 {
-  display: flex;
-  /* justify-content: space-between; */
-  align-items: center;
-  justify-content: center;
-  gap: 250px;
-}
+
+  .footer_flex1 {
+    display: flex;
+    /* justify-content: space-between; */
+    align-items: center;
+    justify-content: center;
+    gap: 250px;
+  }
 }

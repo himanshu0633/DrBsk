@@ -32,6 +32,7 @@ const Header = () => {
     return () => window.removeEventListener('resize', handleResize);
   }, []);
 
+
   useEffect(() => {
     const handleClickOutside = (event) => {
       if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
@@ -41,6 +42,8 @@ const Header = () => {
 
     if (showDropdown) {
       document.addEventListener('mousedown', handleClickOutside);
+    } else {
+      document.removeEventListener('mousedown', handleClickOutside);
     }
 
     return () => {
@@ -57,8 +60,10 @@ const Header = () => {
   const handleLogout = (e) => {
     e.preventDefault();
     console.log('Logging out...');
-    sessionStorage.clear();
+    // sessionStorage.clear();
     // window.location.href = '/login';
+    sessionStorage.removeItem('userData');
+    setShowDropdown(false);
     navigate('/login')
   };
 
@@ -136,19 +141,12 @@ const Header = () => {
               </a>}
             </div>
             <div className='navbarIconFlex'>
-              <Link onClick={() => navigate('/cart')} className="cart-link">
+              <a onClick={() => navigate('/cart')} className="cart-link">
                 <ShoppingCart size={30} />
                 {cartCount > 0 && <span className="cart-badge">{cartCount}</span>}
-              </Link>
+              </a>
 
-              <div className="signin-dropdown-wrapper" ref={dropdownRef}>
-
-                {/* without login don't show sign in button  */}
-                {/* {userData ? <div className="signin-btn" onClick={toggleDropdown}>
-                  <div className="signin-icon">👤</div>
-                  <span className='margin_left_8'>Sign In</span>
-                </div> : null} */}
-
+              {/* <div className="signin-dropdown-wrapper" ref={dropdownRef}>
                 <div className="signin-btn" onClick={toggleDropdown}>
                   <div className="signin-icon">👤</div>
                   <span className='margin_left_8'>Sign In</span>
@@ -166,7 +164,47 @@ const Header = () => {
                     </a>
                   </div>
                 )}
+              </div> */}
+
+
+              <div className="signin-dropdown-wrapper" ref={dropdownRef}>
+                {/* Show sign-in button only when userData is not available */}
+                {!userData ? (
+                  <div className="signin-btn" onClick={toggleDropdown}>
+                    <div className="signin-icon">👤</div>
+                    <span className='margin_left_8'>Sign In</span>
+                  </div>
+                ) : (
+                  <div className="signin-btn" onClick={toggleDropdown}>
+                    <div className="signin-icon">👤</div>
+                    <span className='margin_left_8'>Profile</span>
+                  </div>
+                )}
+
+                {/* Show the dropdown menu only if userData exists */}
+                {showDropdown && userData && (
+                  <div className="dropdown-menu">
+                    <a className="dropdown-item" onClick={()=>{navigate('/EditProfile')}}>
+                      <span className="dropdown-icon">👤</span> My Profile
+                    </a>
+                    <a className="dropdown-item" onClick={()=>{navigate('/OrderPage')}} >
+                      <span className="dropdown-icon">📦</span> My Orders
+                    </a>
+                    <a href="#" className="dropdown-item" onClick={handleLogout}>
+                      <span className="dropdown-icon">🚪</span> Logout
+                    </a>
+                  </div>
+                )}
+                {/* If not logged in, redirect to login page */}
+                {!userData && showDropdown && (
+                  <div className="dropdown-menu">
+                    <a className="dropdown-item" onClick={() => navigate('/login')}>
+                      <span className="dropdown-icon">🔑</span> Go to Login
+                    </a>
+                  </div>
+                )}
               </div>
+
             </div>
           </div>
           <div className='headerLocationShowSmlScreen flexProp'>

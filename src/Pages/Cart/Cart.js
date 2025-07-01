@@ -85,7 +85,7 @@ const Cart = () => {
 
         // Redirect to dashboard
         // window.location.href = '/';
-            navigate('/')
+        navigate('/homepage')
       }
     } catch (error) {
       console.error("Login error:", error);
