@@ -1,27 +1,24 @@
-import React, { useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import {
   IndianRupee, Shield, Store, Headphones,
   ClipboardList, ShoppingCart, MapPin
 } from 'lucide-react';
 import 'animate.css/animate.min.css';
 import './Landing.css';
-import logo from '../../logo/logo1.jpg';
-import kapidev from '../../logo/kapildev.png';
 import nablLogo from '../../logo/nabl-logo.png';
 import whoLogo from '../../logo/who.png';
 import fdaLogo from '../../logo/fda.png';
-import storeImage from '../../logo/store-image.png';
-import teamMember from '../../logo/team-member.jpg';
-import phoneMap from '../../logo/phone-map.jpg';
 import Footer from '../../components/Footer/Footer';
 import Head from '../Head/Head';
-import { Link, NavLink } from 'react-router-dom';
+import { Link, NavLink, useNavigate } from 'react-router-dom';
 
 const Landing = () => {
   const [mobileMenuActive, setMobileMenuActive] = useState(false);
   const [scrolled, setScrolled] = useState(false);
   const [currentSlide, setCurrentSlide] = useState(0);
   const [currentTimelineIndex, setCurrentTimelineIndex] = useState(0);
+  const navigate = useNavigate();
+
 
   const toggleMobileMenu = () => {
     setMobileMenuActive(!mobileMenuActive);
@@ -135,37 +132,6 @@ const Landing = () => {
   return (
     <div className="landing-page">
       <Head />
-
-      {/* Mobile Menu */}
-      <div className={`mobile-menu ${mobileMenuActive ? 'active' : ''}`}>
-        {/* <a href="/">Home</a>
-        <a href="/aboutus">About Us</a>
-        <a href="/products">Products</a>
-        <a href="/store">Stores</a>
-        <a href="/contactus">Contact</a> */}
-        <NavLink to="/">Home</NavLink>
-        <NavLink to="/aboutus">About Us</NavLink>
-        <NavLink to="/products">Products</NavLink>
-        <NavLink to="/store">Stores</NavLink>
-        <NavLink to="/contactus">Contact</NavLink>
-
-        <div className="mobile-buttons">
-          {/* <a href="FranchiseBanner"><ClipboardList size={16} /> WholeSale Inquiry</a> */}
-          <NavLink to='/FranchiseBanner'><ClipboardList size={16} /> WholeSale Inquiry</NavLink>
-          <NavLink
-            to="/homepage"
-            onClick={() => {
-              console.log("Navigating to homepage...");
-              setMobileMenuActive(false);
-            }}
-          >
-            <ShoppingCart size={16} /> Buy Medicines
-          </NavLink>
-
-
-        </div>
-      </div>
-      <div className={`overlay ${mobileMenuActive ? 'active' : ''}`} onClick={toggleMobileMenu}></div>
 
       {/* Banner Section */}
       <section className="banner-container">

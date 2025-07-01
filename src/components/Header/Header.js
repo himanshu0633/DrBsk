@@ -20,7 +20,7 @@ const Header = () => {
   // Get userData from sessionStorage
   const storedUser = sessionStorage.getItem('userData');
   const userData = storedUser ? JSON.parse(storedUser) : null;
-    const navigate = useNavigate();
+  const navigate = useNavigate();
 
   // Listen for screen resize events
   useEffect(() => {
@@ -59,7 +59,7 @@ const Header = () => {
     console.log('Logging out...');
     sessionStorage.clear();
     // window.location.href = '/login';
-        navigate('/login')
+    navigate('/login')
   };
 
   const handleDivClick = () => {
@@ -128,7 +128,7 @@ const Header = () => {
                 )}
               </div>
 
-              {userData?.type === "wholesalePartner" ? null : <a href="/Prescription" className="no-decoration order_5">
+              {userData?.type === "wholesalePartner" ? null : <a onClick={() => navigate('/Prescription')} className="no-decoration order_5">
                 <div className="upload-box">
                   <span className="upload-icon">📄</span>
                   <span className="location-name">Upload Prescription</span>
@@ -136,7 +136,7 @@ const Header = () => {
               </a>}
             </div>
             <div className='navbarIconFlex'>
-              <Link to="/cart" className="cart-link">
+              <Link onClick={() => navigate('/cart')} className="cart-link">
                 <ShoppingCart size={30} />
                 {cartCount > 0 && <span className="cart-badge">{cartCount}</span>}
               </Link>

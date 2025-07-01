@@ -5,7 +5,7 @@ import API_URL from "../../config";
 
 const Banner = () => {
   const [banners, setBanners] = useState([]);
-  const [currentIndex, setCurrentIndex] = useState(1); // Start at first original image
+  const [currentIndex, setCurrentIndex] = useState(1); 
   const [transitionEnabled, setTransitionEnabled] = useState(true);
   const intervalRef = useRef(null);
 

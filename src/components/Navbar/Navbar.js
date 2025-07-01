@@ -2,11 +2,12 @@ import React, { useEffect, useState } from 'react';
 import './Navbar.css';
 import { Phone, Mail, Smartphone, ChevronDown, Menu } from 'lucide-react';
 import axiosInstance from '../AxiosInstance';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 
 const Navbar = () => {
   const [categoryName, setCategoryName] = useState([]);
   const [subcategoryName, setSubCategoryName] = useState([]);
+  const navigate = useNavigate();
 
   useEffect(() => {
     fetchData();
@@ -63,7 +64,7 @@ const Navbar = () => {
 
         {/* Right Section */}
         <div className="nav-right">
-          <a href="Phone" style={{ textDecoration: 'none' }}>
+          <a onClick={() => navigate('/phone')} style={{ textDecoration: 'none' }}>
             <div className="get-app">
               <Smartphone size={16} className="icon" />
               <span>Get the App</span>

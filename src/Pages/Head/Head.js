@@ -36,18 +36,8 @@ const Head = () => {
         </div>
 
         <div className="header-buttons">
-          {/* <NavLink to='FranchiseBanner'><ClipboardList size={16} /> WholeSale Inquiry</NavLink> */}
-          <a onClick={() => navigate('/FranchiseBanner')}> <ClipboardList size={16} /> WholeSale Inquiry</a>
-          {/* <NavLink
-            to="/homepage"
-            onClick={() => {
-              console.log("Navigating to homepage...");
-              setMobileMenuActive(false);
-            }}
-          >
-            <ShoppingCart size={16} /> Buy Medicines
-          </NavLink> */}
-          <a onClick={() => {
+          <a className='text-light' onClick={() => navigate('/FranchiseBanner')} > <ClipboardList size={16} /> WholeSale Inquiry</a>
+          <a className='text-light' onClick={() => {
             navigate('/homepage')
             setMobileMenuActive(false);
           }}>  <ShoppingCart size={16} /> Buy Medicines</a>
@@ -65,24 +55,20 @@ const Head = () => {
         <button className="close-menu-btn" onClick={toggleMobileMenu}>
           ✕
         </button>
-        <NavLink to="/">Home</NavLink>
-        <NavLink to="/aboutus">About Us</NavLink>
-        <NavLink to="/products">Products</NavLink>
-        <NavLink to="/store">Stores</NavLink>
-        <NavLink to="/contactus">Contact</NavLink>
+        <a onClick={() => navigate('/')}>Home</a>
+        <a onClick={() => navigate('/aboutus')}>About Us</a>
+        <a onClick={() => navigate('/products')}>Products</a>
+        <a onClick={() => navigate('/store')}>Stores</a>
+        <a onClick={() => navigate('/contactus')}>Contact</a>
 
         <div className="mobile-buttons">
-          <a href="franchisee-enquiry.html"><ClipboardList size={16} /> Franchise Inquiry</a>
-          <NavLink
-            to="/homepage"
-            onClick={() => {
-              console.log("Navigating to homepage...");
-              setMobileMenuActive(false);
-            }}
-          >
-            <ShoppingCart size={16} /> Buy Medicines
-          </NavLink>
+          <a className='text-light' onClick={() => navigate('/FranchiseBanner')} > <ClipboardList size={16} /> WholeSale Inquiry</a>
+          <a className='text-light' onClick={() => {
+            navigate('/homepage')
+            setMobileMenuActive(false);
+          }}>  <ShoppingCart size={16} /> Buy Medicines</a>
         </div>
+
       </div>
 
       <div className={`overlay ${mobileMenuActive ? 'active' : ''}`} onClick={toggleMobileMenu}></div>
