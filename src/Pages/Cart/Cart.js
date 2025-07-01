@@ -8,6 +8,7 @@ import SignUpForm from '../../components/SignUp';
 import axiosInstance from '../../components/AxiosInstance';
 import WholesalePartnerForm from '../../components/wholeSale_signup';
 import { toast } from 'react-toastify';
+import { useNavigate } from 'react-router-dom';
 
 const Cart = () => {
   const [showPassword, setShowPassword] = useState(false);
@@ -22,7 +23,7 @@ const Cart = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [loginError, setLoginError] = useState(null);
   const [isWholesalePartner, setIsWholesalePartner] = useState(false);
-
+  const navigate = useNavigate();
 
   const togglePasswordVisibility = () => setShowPassword(!showPassword);
   const toggleLoginMethod = () => {
@@ -83,7 +84,8 @@ const Cart = () => {
         sessionStorage.setItem('userData', JSON.stringify(response.data.data));
 
         // Redirect to dashboard
-        window.location.href = '/';
+        // window.location.href = '/';
+            navigate('/')
       }
     } catch (error) {
       console.error("Login error:", error);

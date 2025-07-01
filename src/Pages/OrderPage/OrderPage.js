@@ -4,6 +4,7 @@ import Header from '../../components/Header/Header';
 import Footer from '../../components/Footer/Footer';
 import axiosInstance from '../../components/AxiosInstance';
 import CustomLoader from '../../components/CustomLoader';
+import { useNavigate } from 'react-router-dom';
 
 const OrderPage = () => {
   const [orders, setOrders] = useState([]);
@@ -13,6 +14,8 @@ const OrderPage = () => {
   // Get userId from sessionStorage
   const userData = JSON.parse(sessionStorage.getItem('userData'));
   const userId = userData?._id;
+  const navigate = useNavigate();
+
 
   useEffect(() => {
     fetchData();
@@ -33,7 +36,8 @@ const OrderPage = () => {
     if (userData) {
       setIsAuthenticated(true);
     } else {
-      window.location.href = '/login';
+      // window.location.href = '/login';
+          navigate('/login')
     }
   }, []);
 

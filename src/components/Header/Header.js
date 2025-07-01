@@ -4,7 +4,7 @@ import '../../App.css';
 import logo from '../../logo/logo1.jpg';
 import { useSelector } from 'react-redux';
 import { ShoppingCart } from 'lucide-react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 
 const Header = () => {
   const cartItems = useSelector((state) => state.app.data);
@@ -20,6 +20,7 @@ const Header = () => {
   // Get userData from sessionStorage
   const storedUser = sessionStorage.getItem('userData');
   const userData = storedUser ? JSON.parse(storedUser) : null;
+    const navigate = useNavigate();
 
   // Listen for screen resize events
   useEffect(() => {
@@ -57,7 +58,8 @@ const Header = () => {
     e.preventDefault();
     console.log('Logging out...');
     sessionStorage.clear();
-    window.location.href = '/login';
+    // window.location.href = '/login';
+        navigate('/login')
   };
 
   const handleDivClick = () => {

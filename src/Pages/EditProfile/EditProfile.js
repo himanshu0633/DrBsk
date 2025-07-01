@@ -4,6 +4,7 @@ import './EditProfile.css';
 import Footer from '../../components/Footer/Footer';
 import axiosInstance from '../../components/AxiosInstance';
 import { toast } from 'react-toastify';
+import { useNavigate } from 'react-router-dom';
 
 const EditProfile = () => {
   const [formData, setFormData] = useState({
@@ -21,7 +22,7 @@ const EditProfile = () => {
   const [profileImage, setProfileImage] = useState(null);
   const [isAuthenticated, setIsAuthenticated] = useState(null);
   const [userId, setUserId] = useState(null);
-
+  const navigate = useNavigate();
 
   useEffect(() => {
     const userData = sessionStorage.getItem('userData');
@@ -47,7 +48,8 @@ const EditProfile = () => {
         setProfileImage(parsedData.profileImage);
       }
     } else {
-      window.location.href = '/login';
+      // window.location.href = '/login';
+          navigate('/login')
     }
   }, []);
 
@@ -96,7 +98,8 @@ const EditProfile = () => {
     e.preventDefault();
     console.log('Logging out...');
     sessionStorage.clear();
-    window.location.href = '/login';
+    // window.location.href = '/login';
+        navigate('/login')
   };
 
 

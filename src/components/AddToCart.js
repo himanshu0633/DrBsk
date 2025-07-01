@@ -36,7 +36,8 @@ const AddToCart = () => {
     if (userData) {
       setIsAuthenticated(true);
     } else {
-      window.location.href = '/login';
+      // window.location.href = '/login';
+      navigate('/login')
     }
   }, []);
 
