@@ -52,7 +52,7 @@ const Features = () => {
           {/* Feature Card */}
           <div className="featurs-item text-center rounded p-4"
             style={{ cursor: 'pointer' }}>
-            <NavLink to='OrderPage' className='textDecorNone'>
+            {/* <NavLink to='OrderPage' className='textDecorNone'>
               <div className="featurs_item1 text-center rounded p-4"
                 style={{ cursor: 'pointer' }}>
                 <div className="featurs-icon">
@@ -63,7 +63,21 @@ const Features = () => {
                   <p className="mb-0 ">Check your previously bought items</p>
                 </div>
               </div>
-            </NavLink>
+            </NavLink> */}
+
+            <div onClick={() => navigate('/OrderPage')} className='textDecorNone'>
+              <div className="featurs_item1 text-center rounded p-4"
+                style={{ cursor: 'pointer' }}>
+                <div className="featurs-icon">
+                  <img src="https://app.davaindia.com/images/QuickActions/PrevBought.gif" alt="Previously Bought" />
+                </div>
+                <div className="featurs-content">
+                  <h5 >Previously Bought</h5>
+                  <p className="mb-0 ">Check your previously bought items</p>
+                </div>
+              </div>
+            </div>
+
           </div>
 
           {/* Feature Card */}

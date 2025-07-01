@@ -118,9 +118,10 @@ import React from "react";
 
 import "./Footer.css";
 import logo from "../../logo/logo1.jpg";
-import { NavLink } from "react-router-dom";
+import { NavLink, useNavigate } from "react-router-dom";
 
 const Footer = () => {
+  const navigate = useNavigate();
   return (
     <footer className="footer">
       <div className="footer-wave"></div>
@@ -199,7 +200,7 @@ const Footer = () => {
           <div className="foo ter-col footerLinkSec">
             <h4>Company</h4>
             <ul className="footer-links">
-              <li>
+              {/* <li>
                 <NavLink to="/aboutus">About us</NavLink>
               </li>
               <li>
@@ -219,13 +220,13 @@ const Footer = () => {
               </li>
               <li>
                 <NavLink to="/contactus">Contact us</NavLink>
-              </li>
-              {/* <li><a href="/aboutus">About us</a></li>
-              <li><a href="/fever">Our Products</a></li>
-              <li><a href="/testimonial">Customer Speaks</a></li>
-              <li><a href="#">Career</a></li>
-              <li><a href="/contactus">Contact</a></li>
-              <li><a href="/photo">Photo Gallery</a></li> */}
+              </li> */}
+              <li><a onClick={() => navigate('/aboutus')}>About us</a></li>
+              <li><a onClick={() => navigate('/fever')}>Our Products</a></li>
+              <li><a onClick={() => navigate('/testimonial')}>Customer Speaks</a></li>
+              <li><a onClick={() => navigate('/video')}>Video Gallery</a></li>
+              <li><a onClick={() => navigate('/blogs')}>Blogs</a></li>
+              <li><a onClick={() => navigate('/contactus')}>Contact us</a></li>
             </ul>
           </div>
 

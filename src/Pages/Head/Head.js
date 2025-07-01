@@ -2,11 +2,12 @@ import React, { useState, useEffect } from 'react';
 import { ClipboardList, ShoppingCart } from 'lucide-react';
 import logo from '../../logo/logo1.jpg';
 import './Head.css'
-import { NavLink } from 'react-router-dom';
+import { NavLink, useNavigate } from 'react-router-dom';
 
 const Head = () => {
   const [mobileMenuActive, setMobileMenuActive] = useState(false);
   const [scrolled, setScrolled] = useState(false);
+  const navigate = useNavigate();
 
   const toggleMobileMenu = () => {
     setMobileMenuActive(!mobileMenuActive);
@@ -35,8 +36,9 @@ const Head = () => {
         </div>
 
         <div className="header-buttons">
-          <NavLink to='FranchiseBanner'><ClipboardList size={16} /> WholeSale Inquiry</NavLink>
-          <NavLink
+          {/* <NavLink to='FranchiseBanner'><ClipboardList size={16} /> WholeSale Inquiry</NavLink> */}
+          <a onClick={() => navigate('/FranchiseBanner')}> <ClipboardList size={16} /> WholeSale Inquiry</a>
+          {/* <NavLink
             to="/homepage"
             onClick={() => {
               console.log("Navigating to homepage...");
@@ -44,7 +46,11 @@ const Head = () => {
             }}
           >
             <ShoppingCart size={16} /> Buy Medicines
-          </NavLink>
+          </NavLink> */}
+          <a onClick={() => {
+            navigate('/homepage')
+            setMobileMenuActive(false);
+          }}>  <ShoppingCart size={16} /> Buy Medicines</a>
         </div>
 
         <div className={`hamburger ${mobileMenuActive ? 'active' : ''}`} onClick={toggleMobileMenu}>
