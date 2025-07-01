@@ -128,8 +128,8 @@ const PharmaWholeSale = () => {
           {loading ? (
             <CustomLoader />
           ) : (
-            <TableContainer component={Paper} sx={{ maxHeight: 'calc(100vh - 200px)', overflow: 'auto' }}>
-              <Table stickyHeader aria-label="wholesale users table">
+            <TableContainer component={Paper} >
+              <Table sx={{ minWidth: 650 }} aria-label="WholeSaleUser table">
                 <TableHead>
                   <TableRow>
                     <TableCell>Company</TableCell>

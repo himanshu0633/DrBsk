@@ -34,10 +34,10 @@ const PharmaBanner = () => {
     const [rowsPerPage, setRowsPerPage] = useState(10);
 
     const bannerList = [
-        { id: 1, title: "main" },
-        { id: 2, title: "carousel" },
-        { id: 3, title: "carousel1" },
-        { id: 4, title: "carousel2" }
+        { id: 1, title: "HomePage Slider" },
+        { id: 2, title: "Middle Slider" },
+        { id: 3, title: "End Slider" },
+        // { id: 4, title: "carousel2" }
     ];
 
     const handleInputChange = (e) => {
@@ -161,7 +161,7 @@ const PharmaBanner = () => {
                 </Box>
             ) : (
                 <Box sx={{ mt: 4 }}>
-                    <TableContainer component={Paper} sx={{ borderRadius: 2, minWidth: '900px' }}>
+                    <TableContainer component={Paper} >
                         <Table>
                             <TableHead sx={{ backgroundColor: '#68171b' }}>
                                 <TableRow>
