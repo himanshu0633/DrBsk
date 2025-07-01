@@ -196,7 +196,7 @@ body {
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
-  text-fill-color: transparent;
+  -text-fill-color: transparent;
   opacity: 0;
   transform: translateY(30px);
   animation: fadeInUp 1s ease-out 0.3s forwards;

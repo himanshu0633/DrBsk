@@ -99,12 +99,34 @@ const AddNewProduct = () => {
     // };
 
 
+    // const handleChange = (e) => {
+    //     const { name, value } = e.target;
+    //     setFormData(prev => ({
+    //         ...prev,
+    //         [name]: value
+    //     }));
+
+    //     if (name === "category") {
+    //         setFormData(prev => ({ ...prev, sub_category: "" })); // Reset subcategory
+    //         fetchSubCategories(value);
+    //     }
+    // };
+
     const handleChange = (e) => {
         const { name, value } = e.target;
-        setFormData(prev => ({
-            ...prev,
-            [name]: value
-        }));
+        setFormData(prev => {
+            const updatedData = { ...prev, [name]: value };
+
+            // Calculate consumer_price whenever 'mrp' or 'discount' changes
+            if (name === 'mrp' || name === 'discount') {
+                const { mrp, discount } = updatedData;
+                if (mrp && discount) {
+                    const consumerPrice = mrp - (mrp * (discount / 100));
+                    updatedData.consumer_price = consumerPrice.toFixed(2); // rounding to two decimal places
+                }
+            }
+            return updatedData;
+        });
 
         if (name === "category") {
             setFormData(prev => ({ ...prev, sub_category: "" })); // Reset subcategory
@@ -500,32 +522,18 @@ const AddNewProduct = () => {
                         <div className="herbal-form-section">
                             <h3>Pricing Information</h3>
                             <div className="herbal-form-row">
-                                <div className="herbal-form-group">
-                                    <label>WholesalePartner Price (MRP)*</label>
-                                    <input
-                                        type="number"
-                                        name="retail_price"
-                                        value={formData.retail_price}
-                                        onChange={handleChange}
-                                        placeholder="Enter retail price"
-                                        min="0"
-                                        step="0.01"
-                                    />
-                                    {errors.retail_price && <span className="herbal-error">{errors.retail_price}</span>}
-                                </div>
 
                                 <div className="herbal-form-group">
-                                    <label>Consumer Price*</label>
+                                    <label>MRP</label>
                                     <input
                                         type="number"
-                                        name="consumer_price"
-                                        value={formData.consumer_price}
+                                        name="mrp"
+                                        value={formData.mrp}
                                         onChange={handleChange}
-                                        placeholder="Enter consumer price"
+                                        placeholder="Enter maximum retail price"
                                         min="0"
                                         step="0.01"
                                     />
-                                    {errors.consumer_price && <span className="herbal-error">{errors.consumer_price}</span>}
                                 </div>
 
                                 <div className="herbal-form-group">
@@ -540,20 +548,50 @@ const AddNewProduct = () => {
                                         max="100"
                                     />
                                 </div>
-                            </div>
 
-                            <div className="herbal-form-row">
-                                <div className="herbal-form-group">
-                                    <label>MRP</label>
+                                {/* <div className="herbal-form-group">
+                                    <label>Consumer Price*</label>
                                     <input
                                         type="number"
-                                        name="mrp"
-                                        value={formData.mrp}
+                                        name="consumer_price"
+                                        value={formData.consumer_price}
                                         onChange={handleChange}
-                                        placeholder="Enter maximum retail price"
+                                        placeholder="Enter consumer price"
                                         min="0"
                                         step="0.01"
                                     />
+                                    {errors.consumer_price && <span className="herbal-error">{errors.consumer_price}</span>}
+                                </div> */}
+
+                                <div className="herbal-form-group">
+                                    <label>Consumer Price</label>
+                                    <input
+                                        type="number"
+                                        name="consumer_price"
+                                        value={formData.consumer_price}
+                                        readOnly
+                                        placeholder="Calculated consumer price"
+                                        min="0"
+                                        step="0.01"
+                                    />
+                                </div>
+
+                            </div>
+
+
+                            <div className="herbal-form-row">
+                                <div className="herbal-form-group">
+                                    <label>WholesalePartner Price (MRP)*</label>
+                                    <input
+                                        type="number"
+                                        name="retail_price"
+                                        value={formData.retail_price}
+                                        onChange={handleChange}
+                                        placeholder="Enter retail price"
+                                        min="0"
+                                        step="0.01"
+                                    />
+                                    {errors.retail_price && <span className="herbal-error">{errors.retail_price}</span>}
                                 </div>
 
                                 <div className="herbal-form-group">
