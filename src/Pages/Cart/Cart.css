@@ -182,6 +182,7 @@ body {
   transition: all 0.2s;
   border: 1px solid var(--davaindia-border);
 }
+
 .davaindia-input-container1 {
   position: relative;
   display: flex;
@@ -295,7 +296,7 @@ body {
 }
 
 .davaindia-btn-primary {
-  background-color: var(--davaindia-primary);
+  background-color: #68171b;
   color: white;
 }
 
@@ -414,7 +415,7 @@ body {
 .davaindia-toggle-btn {
   background: none;
   border: none;
-  color: var(--davaindia-primary);
+  color: #68171b;
   font-size: 0.875rem;
   font-weight: 500;
   cursor: pointer;
