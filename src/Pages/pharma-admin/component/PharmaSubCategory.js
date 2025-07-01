@@ -28,9 +28,6 @@ import {
   Chip,
   CircularProgress,
   Avatar,
-  Card,
-  CardHeader,
-  CardContent,
   TablePagination
 } from '@mui/material';
 import { Add, Edit, Delete, Close, CloudUpload } from '@mui/icons-material';
@@ -75,7 +72,6 @@ const PharmaSubCategory = () => {
   const [page, setPage] = useState(0);
   const [rowsPerPage, setRowsPerPage] = useState(10);
 
-  // Pagination handlers
   const handleChangePage = (event, newPage) => {
     setPage(newPage);
   };
@@ -149,8 +145,8 @@ const PharmaSubCategory = () => {
   };
 
   const handleCreateOrUpdate = async (e) => {
-    e.preventDefault();
-
+    e.preventDefault();  // Make sure to prevent the default form submission behavior
+    console.log('form data', formData);
     const newFormData = new FormData();
     newFormData.append('name', formData.name);
     newFormData.append('description', formData.description);
@@ -290,7 +286,6 @@ const PharmaSubCategory = () => {
                         label={item.deleted_at ? 'Deleted' : 'Active'}
                         status={item.deleted_at ? 'inactive' : 'active'}
                         sx={{ pointerEvents: 'none' }}
-                      // onClick={() => { }}
                       />
                     </TableCell>
                     <TableCell>
@@ -316,7 +311,7 @@ const PharmaSubCategory = () => {
             <TablePagination
               rowsPerPageOptions={[10, 20, 30]}
               component="div"
-              count={subCategoryList .length}
+              count={subCategoryList.length}
               rowsPerPage={rowsPerPage}
               page={page}
               onPageChange={handleChangePage}
@@ -342,6 +337,7 @@ const PharmaSubCategory = () => {
               position: 'absolute',
               right: 8,
               top: 8,
+              // zIndex: 10,
               color: (theme) => theme.palette.grey[500],
             }}
           >
@@ -439,21 +435,21 @@ const PharmaSubCategory = () => {
                 )}
               </Grid>
             </Grid>
+            <DialogActions>
+              <Button onClick={handleCloseModal} color="secondary">
+                Cancel
+              </Button>
+              <Button
+                color="primary"
+                variant="contained"
+                className='cursor-pointer text-light'
+                disabled={!formData.name || !formData.description || !formData.category_id || !formData.subCategoryvariety || (!formData.image && !editingId)}
+              >
+                {editingId ? 'Update' : 'Save'}
+              </Button>
+            </DialogActions>
           </form>
         </DialogContent>
-        <DialogActions>
-          <Button onClick={handleCloseModal} color="secondary">
-            Cancel
-          </Button>
-          <Button
-            onClick={handleCreateOrUpdate}
-            color="primary"
-            variant="contained"
-            disabled={!formData.name || !formData.description || !formData.category_id || !formData.subCategoryvariety || (!formData.image && !editingId)}
-          >
-            {editingId ? 'Update' : 'Save'}
-          </Button>
-        </DialogActions>
       </Dialog>
     </Container>
   );
