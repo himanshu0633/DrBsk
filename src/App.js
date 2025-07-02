@@ -92,7 +92,7 @@ function App() {
         <Route path="/fever" element={<Fever />} />
         <Route path="/fever/:id" element={<Fever />} />
         <Route path="/ProductPage/:id" element={<ProductPage />} />
-        <Route path="/FranchiseBanner" element={<FranchiseBanner />} />
+        <Route path="/wholesaleInquiry" element={<FranchiseBanner />} />
         <Route path="/EditProfile" element={<EditProfile />} />
         <Route path="/OrderPage" element={<OrderPage />} />
         <Route path="/PatientsPage" element={<PatientsPage />} />

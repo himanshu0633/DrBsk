@@ -36,7 +36,7 @@ const Head = () => {
         </div>
 
         <div className="header-buttons">
-          <a className='text-light' onClick={() => navigate('/FranchiseBanner')} > <ClipboardList size={16} /> WholeSale Inquiry</a>
+          <a className='text-light' onClick={() => navigate('/wholesaleInquiry')} > <ClipboardList size={16} /> WholeSale Inquiry</a>
           <a className='text-light' onClick={() => {
             navigate('/homepage')
             setMobileMenuActive(false);
@@ -62,7 +62,7 @@ const Head = () => {
         <a onClick={() => navigate('/contactus')}>Contact</a>
 
         <div className="mobile-buttons">
-          <a className='text-light' onClick={() => navigate('/FranchiseBanner')} > <ClipboardList size={16} /> WholeSale Inquiry</a>
+          <a className='text-light' onClick={() => navigate('/wholesaleInquiry')} > <ClipboardList size={16} /> WholeSale Inquiry</a>
           <a className='text-light' onClick={() => {
             navigate('/homepage')
             setMobileMenuActive(false);

@@ -62,7 +62,7 @@ const Fever = () => {
     setLoading(false);
   };
 
-  // 🟡 Fetch subcategories and match category
+  //  Fetch subcategories and match category
   const fetchSubcategories = async () => {
     try {
       const res = await axiosInstance.get("/user/allSubcategories");
