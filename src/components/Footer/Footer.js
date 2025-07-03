@@ -119,6 +119,7 @@ import React from "react";
 import "./Footer.css";
 import logo from "../../logo/logo1.jpg";
 import { NavLink, useNavigate } from "react-router-dom";
+import { Smartphone } from "lucide-react";
 
 const Footer = () => {
   const navigate = useNavigate();

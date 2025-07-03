@@ -193,9 +193,9 @@ const AddNewProduct = () => {
             }
         });
 
-        if (formData.expires_on && new Date(formData.expires_on) < new Date()) {
-            newErrors.expires_on = "Expiry date must be in the future";
-        }
+        // if (formData.expires_on && new Date(formData.expires_on) < new Date()) {
+        //     newErrors.expires_on = "Expiry date must be in the future";
+        // }
 
         setErrors(newErrors);
         return Object.keys(newErrors).length === 0;
@@ -607,13 +607,14 @@ const AddNewProduct = () => {
                                 </div>
 
                                 <div className="herbal-form-group">
-                                    <label>Expiry Date*</label>
+                                    <label>Use By* (Expiry Date)</label>
                                     <input
-                                        type="date"
+                                        // type="date"
+                                        type="text"
                                         name="expires_on"
                                         value={formData.expires_on}
                                         onChange={handleChange}
-                                        min={new Date().toISOString().split('T')[0]}
+                                        // min={new Date().toISOString().split('T')[0]}
                                     />
                                     {errors.expires_on && <span className="herbal-error">{errors.expires_on}</span>}
                                 </div>
@@ -755,3 +756,7 @@ const AddNewProduct = () => {
 }
 
 export default AddNewProduct
+
+
+
+

@@ -43,7 +43,7 @@ const Navbar = () => {
 
         {/* Left Section - Categories with Subcategories */}
         <div className="nav-left">
-          {categoryName?.slice(0, 5).map((category) => (
+          {categoryName?.slice(0, 4).map((category) => (
             <div className="nav-item" key={category._id}>
               <span>
                 {category.name} <ChevronDown size={14} className="dropdown-icon" />
@@ -63,20 +63,22 @@ const Navbar = () => {
         </div>
 
         {/* Right Section */}
-        <div className="nav-right">
+        <div className="nav-right ">
           <a onClick={() => navigate('/phone')} style={{ textDecoration: 'none' }}>
             <div className="get-app">
               <Smartphone size={16} className="icon" />
               <span>Get the App</span>
             </div>
           </a>
-          <div className="phone">
-            <Phone size={16} className="icon" />
-            <span>+91-911-551-3759</span>
-          </div>
-          <div className="email">
-            <Mail size={16} className="icon" />
-            <span>ukgermanpharmaceutical@gmail.com</span>
+          <div style={{ display: 'flex', flexDirection: 'column' }}>
+            <div className="phone">
+              <Phone size={16} className="icon" />
+              <span>+91-911-551-3759</span>
+            </div>
+            <div className="email">
+              <Mail size={16} className="icon" />
+              <span>ukgermanpharmaceutical@gmail.com</span>
+            </div>
           </div>
         </div>
       </div>

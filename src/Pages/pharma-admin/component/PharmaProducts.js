@@ -369,7 +369,8 @@ const PharmaProducts = () => {
                   <Grid item xs={12}>
                     <Typography variant="subtitle2">Expires On:</Typography>
                     <Typography>
-                      {new Date(selectedProduct.expires_on).toLocaleDateString()}
+                      {/* {new Date(selectedProduct.expires_on).toLocaleDateString()} */}
+                      {selectedProduct.expires_on}
                     </Typography>
                   </Grid>
                 </Grid>
