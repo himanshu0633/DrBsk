@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { toast } from 'react-toastify';
 import axiosInstance from '../../components/AxiosInstance';
 import Head from '../Head/Head';
+import Footer from '../../components/Footer/Footer';
 
 const FranchiseBanner = () => {
   const [formData, setFormData] = useState({
@@ -142,9 +143,9 @@ const FranchiseBanner = () => {
       <Head />
       <div className='container mt-5'>
         <h2 style={styles.heading}>Wholesale Inquiry</h2>
-        <img src="https://www.ukgermanpharmaceuticals.com/uploaded-files/gallery/photos/thumbs/International-Excellence-Award-20241-thumbs-800X600.jpg" alt="Logo" style={{ width: '100%', height: '400px', marginBottom: '20px', marginTop: '20px',objectFit:'cover' }} />
+        <img src="https://www.ukgermanpharmaceuticals.com/uploaded-files/gallery/photos/thumbs/International-Excellence-Award-20241-thumbs-800X600.jpg" alt="Logo" style={{ width: '100%', height: '400px', marginBottom: '20px', marginTop: '20px', objectFit: 'cover', objectPosition: 'top' }} />
         <h2 style={styles.heading}>Wholesale Partner Registration</h2>
-        <form className='d-flex flex-wrap justify-content-between align-items-center' onSubmit={handleSubmit} >
+        <form className='d-flex flex-wrap justify-content-between align-items-center pb-5' onSubmit={handleSubmit} >
           <div style={styles.formGroup}>
             <label style={styles.label}>GST Number</label>
             <input type="text" name="gstNumber" value={formData.gstNumber} onChange={handleChange} style={styles.input} />
@@ -203,6 +204,7 @@ const FranchiseBanner = () => {
           {error && <p style={styles.error}>{error}</p>}
         </form>
       </div>
+      <Footer />
     </div>
   );
 };
