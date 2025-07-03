@@ -130,7 +130,8 @@ const Footer = () => {
         {/* Column 1: Logo */}
         <div className="foot er-col footerLogoSec ">
           <div className=" footerLogo">
-            <img src={logo} alt="Logo" className="logo" />
+            <a href="http://drbskhealthcare.in/"><img src={logo} alt="Logo" className="logo" /></a>
+
             <p className="company-tagline">Your Health, Our Priority</p>
           </div>
           <div>
@@ -339,7 +340,7 @@ const Footer = () => {
       <div className="footer-bottom">
         <div className="footer-bottom-container">
           <p>© {new Date().getFullYear()} Dr.BSK's. All Rights Reserved.</p>
-          <p>Crafted With ❤ by CIIS - Career Infowis IT Solutions Pvt Ltd</p>
+          <a className="text-white textDecorNone" href="https://careerinfowisitsolution.com/">Crafted With ❤ by CIIS - Career Infowis IT Solutions Pvt Ltd</a>
           {/* <div className="payment-methods">
             <img
               src="https://cdn-icons-png.flaticon.com/512/196/196578.png"
