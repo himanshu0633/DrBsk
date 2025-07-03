@@ -34,9 +34,9 @@ const PharmaBanner = () => {
     const [rowsPerPage, setRowsPerPage] = useState(10);
 
     const bannerList = [
-        { id: 1, title: "HomePage Slider" },
-        { id: 2, title: "Middle Slider" },
-        { id: 3, title: "End Slider" },
+        { id: 1, title: "HomePageSlider" },
+        { id: 2, title: "MiddleSlider" },
+        { id: 3, title: "EndSlider" },
         // { id: 4, title: "carousel2" }
     ];
 

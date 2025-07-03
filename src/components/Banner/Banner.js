@@ -5,7 +5,7 @@ import API_URL from "../../config";
 
 const Banner = () => {
   const [banners, setBanners] = useState([]);
-  const [currentIndex, setCurrentIndex] = useState(1); 
+  const [currentIndex, setCurrentIndex] = useState(1);
   const [transitionEnabled, setTransitionEnabled] = useState(true);
   const intervalRef = useRef(null);
 
@@ -17,7 +17,7 @@ const Banner = () => {
       // Filter only type === 'main' and ensure image exists
       const mainBanners = bannerData.filter(
         (banner) =>
-          banner.type === "main" &&
+          banner.type === "HomePageSlider" &&
           Array.isArray(banner.slider_image) &&
           banner.slider_image.length > 0
       );
@@ -25,7 +25,7 @@ const Banner = () => {
       if (mainBanners.length > 0) {
         setBanners([
           mainBanners[mainBanners.length - 1], // clone last
-          ...mainBanners,
+          ...mainBanners,   
           mainBanners[0], // clone first
         ]);
       }
@@ -109,11 +109,10 @@ const Banner = () => {
         {originalBanners.map((_, index) => (
           <button
             key={`banner-indicator-${index}`}
-            className={`banner-carousel-dot ${
-              index === (currentIndex - 1) % originalBanners.length
+            className={`banner-carousel-dot ${index === (currentIndex - 1) % originalBanners.length
                 ? "banner-carousel-dot-active"
                 : ""
-            }`}
+              }`}
             onClick={() => {
               setCurrentIndex(index + 1);
             }}
