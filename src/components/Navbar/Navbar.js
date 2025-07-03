@@ -73,11 +73,11 @@ const Navbar = () => {
           <div style={{ display: 'flex', flexDirection: 'column' }}>
             <div className="phone">
               <Phone size={16} className="icon" />
-              <span>+91-911-551-3759</span>
+              <a className="text-black textDecorNone" href="tel:+919115513759">+91-911-551-3759 </a>
             </div>
             <div className="email">
               <Mail size={16} className="icon" />
-              <span>ukgermanpharmaceutical@gmail.com</span>
+              <a className="text-black textDecorNone" href="mailto:ukgermanpharmaceutical@gmail.com">ukgermanpharmaceutical@gmail.com</a>
             </div>
           </div>
         </div>

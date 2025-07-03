@@ -85,7 +85,7 @@ const Prescription = () => {
       setIsAuthenticated(true);
     } else {
       // window.location.href = '/login';
-          navigate('/login')
+      navigate('/login')
     }
   }, []);
 
@@ -157,19 +157,19 @@ const Prescription = () => {
           <div className="prescription-options-container">
             <div className="prescription-option-box prescription-selected">
               <div className="prescription-option-icon">✅</div>
-              <div className="prescription-option-content">
+              <div onClick={() => navigate('/fever')} className="prescription-option-content">
                 <div className="prescription-option-title">Search & Add medicines</div>
                 <div className="prescription-option-description">Manually search and add medicines in the cart</div>
               </div>
             </div>
 
-            <div className="prescription-option-box">
+            <a href="tel:+919115513759" className="prescription-option-box textDecorNone">
               <div className="prescription-option-icon">📞</div>
               <div className="prescription-option-content">
                 <div className="prescription-option-title">Get a call from BSK Pharma</div>
                 <div className="prescription-option-description">Our pharmacist will call to confirm your medicines</div>
               </div>
-            </div>
+            </a>
           </div>
 
           <button

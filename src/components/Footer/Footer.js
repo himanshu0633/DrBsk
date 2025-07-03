@@ -138,15 +138,15 @@ const Footer = () => {
             <div className="contact-info">
               <div className="contact-item">
                 <span className="contact-icon">📞</span>
-                <p>+91-911-551-3759 </p>
+                <a className="text-black textDecorNone" href="tel:+919115513759">+91-911-551-3759 </a>
               </div>
               <div className="contact-item">
                 <span className="contact-icon">📞</span>
-                <p>+91-911-591-5933 </p>
+                <a className="text-black textDecorNone" href="tel:+919115915933">+91-911-591-5933 </a>
               </div>
               <div className="contact-item">
                 <span className="contact-icon">✉️</span>
-                <span>ukgermanpharmaceutical@gmail.com</span>
+                <a className="text-black textDecorNone" href="mailto:ukgermanpharmaceutical@gmail.com">ukgermanpharmaceutical@gmail.com</a>
               </div>
             </div>
             <div className="social-icons">
