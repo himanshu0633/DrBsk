@@ -1,6 +1,5 @@
-import React from 'react'
-import Header from '../../components/Header/Header'
 import Head from '../Head/Head'
+import Footer from '../../components/Footer/Footer'
 
 const Blogs = () => {
     return (
@@ -146,6 +145,9 @@ const Blogs = () => {
 
                 </div>
             </section>
+            <div className="footer-wrapper">
+                <Footer />
+            </div>
         </div>
     )
 }

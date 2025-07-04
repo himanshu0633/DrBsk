@@ -227,6 +227,7 @@ const Footer = () => {
               <li><a onClick={() => navigate('/fever')}>Our Products</a></li>
               <li><a onClick={() => navigate('/testimonial')}>Customer Speaks</a></li>
               <li><a onClick={() => navigate('/video')}>Video Gallery</a></li>
+              <li><a onClick={() => navigate('/photo')}>Photo Gallery</a></li>
               <li><a onClick={() => navigate('/blogs')}>Blogs</a></li>
               <li><a onClick={() => navigate('/contactus')}>Contact us</a></li>
             </ul>
@@ -237,7 +238,7 @@ const Footer = () => {
             <h4>Our Policies</h4>
             <ul className="footer-links">
               <li>
-                <a onClick={()=>navigate('/terms')}>Terms and Conditions</a>
+                <a onClick={() => navigate('/terms')}>Terms and Conditions</a>
               </li>
               {/*   <li>
                 <a href="#">Privacy Policy</a>
@@ -340,7 +341,8 @@ const Footer = () => {
       <div className="footer-bottom">
         <div className="footer-bottom-container">
           <p>© {new Date().getFullYear()} Dr.BSK's. All Rights Reserved.</p>
-          <a className="text-white textDecorNone" href="https://careerinfowisitsolution.com/">Crafted With ❤ by CIIS - Career Infowis IT Solutions Pvt Ltd</a>
+          <a className="text-white textDecorNone" target="blank" href="https://careerinfowisitsolution.com/">Crafted With ❤ by CIIS - Career Infowis IT Solutions Pvt Ltd</a>
+           
           {/* <div className="payment-methods">
             <img
               src="https://cdn-icons-png.flaticon.com/512/196/196578.png"

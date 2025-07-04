@@ -409,10 +409,10 @@ const AddToCart = () => {
                     <span>₹{totalPrice.toFixed(2)}</span>
                   </div>
 
-                  <div className="promo-code">
+                  {/* <div className="promo-code">
                     <input type="text" placeholder="Enter promo code" className="promo-input" />
                     <button className="apply-btn">Apply</button>
-                  </div>
+                  </div> */}
 
                   <button className="checkout-btn" onClick={handleCheckout}>
                     Proceed to Checkout

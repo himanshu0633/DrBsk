@@ -59,7 +59,7 @@ const Testimonial = () => {
   return (
     <div>
       {/* <button onClick={() => (navigate('/'))}>Back</button> */}
-      <div className="home_testimonials_webpulse">
+      <div className="home_testimonials_webpulse my-5">
         <div className="container">
           <div className="row">
 

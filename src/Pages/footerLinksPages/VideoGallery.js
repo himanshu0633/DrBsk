@@ -111,7 +111,9 @@ const VideoGallery = () => {
                     </div>
                 </div>
             </section>
-            {/* <Footer/> */}
+            <div className="footer-wrapper">
+                <Footer />
+            </div>
         </div>
     )
 }

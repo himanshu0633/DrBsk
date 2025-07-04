@@ -106,7 +106,9 @@ const PhotoGallery = () => {
 
             <Testimonial />
 
-            {/* <Footer /> */}
+            <div className="footer-wrapper">
+                <Footer />
+            </div>
 
         </div>
     );

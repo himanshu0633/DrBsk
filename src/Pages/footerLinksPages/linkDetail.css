@@ -372,6 +372,27 @@ img {
     cursor: pointer;
 }
 
+/* Footer wrapper styles */
+.footer-wrapper {
+    margin-top: 0;
+    padding-top: 0;
+    position: relative;
+    z-index: 1;
+}
+
+/* Ensure footer doesn't inherit unwanted styles */
+.footer-wrapper .footer {
+    margin-top: 0;
+    padding-top: 0;
+}
+
+/* Clear any floats that might affect footer */
+.footer-wrapper::before {
+    content: "";
+    display: table;
+    clear: both;
+}
+
 .gallery_page {
     float: left;
     width: 100%;

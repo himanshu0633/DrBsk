@@ -1,10 +1,7 @@
-import React from 'react'
-import Header from '../../components/Header/Header'
-import Footer from '../../components/Footer/Footer'
 import './linkDetail.css'
-import Slider from "react-slick";
 import Testimonial from './component/Testimonial';
 import Head from '../Head/Head';
+import Footer from '../../components/Footer/Footer';
 
 const AboutUs = () => {
     const serviceCardArr = [
@@ -29,7 +26,6 @@ const AboutUs = () => {
             detail: 'Manufacturers, Suppliers'
         },
     ]
-
 
     return (
         <div>
@@ -185,7 +181,9 @@ const AboutUs = () => {
             {/* testimonials */}
             <Testimonial />
 
-            {/* <Footer /> */}
+            <div  className="footer-wrapper">
+                <Footer />
+            </div>
 
         </div >
     )
