@@ -60,6 +60,7 @@ import Testimonial from "./Pages/footerLinksPages/component/Testimonial";
 import VideoGallery from "./Pages/footerLinksPages/VideoGallery";
 import Blogs from "./Pages/footerLinksPages/Blogs";
 import BlogCardDetail from "./Pages/footerLinksPages/BlogCardDetail";
+import Terms from "./Pages/footerLinksPages/Terms";
 
 
 
@@ -106,6 +107,7 @@ function App() {
         <Route path="/subcategory/:subCategoryName" element={<Fever />} />
         <Route path="/aboutus" element={<AboutUs />} />
         <Route path="/contactus" element={<ContactusForm />} />
+        <Route path="/terms" element={<Terms />} />
         <Route path="/photo" element={<PhotoGallery />} />
         <Route path="/video" element={<VideoGallery />} />
         <Route path="/testimonial" element={<Testimonial />} />

@@ -233,13 +233,13 @@ const Footer = () => {
           </div>
 
           {/* Column 3: Policies */}
-          {/* <div className="foo ter-col footerLinkSec">
+          <div className="foo ter-col footerLinkSec">
             <h4>Our Policies</h4>
             <ul className="footer-links">
               <li>
-                <a href="#">Terms and Conditions</a>
+                <a onClick={()=>navigate('/terms')}>Terms and Conditions</a>
               </li>
-              <li>
+              {/*   <li>
                 <a href="#">Privacy Policy</a>
               </li>
               <li>
@@ -253,9 +253,9 @@ const Footer = () => {
               </li>
               <li>
                 <a href="#">IP Policy</a>
-              </li>
+              </li> */}
             </ul>
-          </div> */}
+          </div>
 
           {/* Column 4: Shopping */}
           <div className="foo ter-col footerLinkSec">
