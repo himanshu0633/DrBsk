@@ -240,6 +240,10 @@ const Footer = () => {
               <li>
                 <a onClick={() => navigate('/terms')}>Terms and Conditions</a>
               </li>
+              <li>
+                <a onClick={() => navigate('/privacy')}>Privacy Policy</a>
+              </li>
+              <li> <NavLink to="/pharma-admin">Admin Panel</NavLink></li>
               {/*   <li>
                 <a href="#">Privacy Policy</a>
               </li>
@@ -259,31 +263,27 @@ const Footer = () => {
           </div>
 
           {/* Column 4: Shopping */}
-          <div className="foo ter-col footerLinkSec">
+          {/* <div className="foo ter-col footerLinkSec">
             <h4>Shopping</h4>
             <ul className="footer-links">
               <li>
-                {/* <a href="#">Health Articles</a> */}
+                <a href="#">Health Articles</a>
               </li>
               <li>
-                {/* <a href="#">Offers and Coupons</a> */}
+                <a href="#">Offers and Coupons</a>
               </li>
               <li>
-                {/* <a href="/faq">FAQs</a> */}
+                <a href="/faq">FAQs</a>
               </li>
               <li>
-                {/* <a href="#">Store Locator</a> */}
+                <a href="#">Store Locator</a>
               </li>
               <li>
-                {/* <a href="">Gift Cards</a> */}
-
+                <a href="">Gift Cards</a>
               </li>
-              <li>
-                {/* <a href="">Gift Cards</a> */}
-                <NavLink to="/pharma-admin">Admin Panel</NavLink>
-              </li>
+            
             </ul>
-          </div>
+          </div> */}
 
           {/* Column 5: Contact */}
           <div className="foo ter-col footerLinkSec">
@@ -342,7 +342,7 @@ const Footer = () => {
         <div className="footer-bottom-container">
           <p>© {new Date().getFullYear()} Dr.BSK's. All Rights Reserved.</p>
           <a className="text-white textDecorNone" target="blank" href="https://careerinfowisitsolution.com/">Crafted With ❤ by CIIS - Career Infowis IT Solutions Pvt Ltd</a>
-           
+
           {/* <div className="payment-methods">
             <img
               src="https://cdn-icons-png.flaticon.com/512/196/196578.png"

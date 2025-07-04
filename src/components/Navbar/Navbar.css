@@ -13,7 +13,7 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding:10px 20px;
+  padding: 10px 20px;
   background-color: #ffffff;
   border-bottom: 1px solid var(--border-color);
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
@@ -219,6 +219,12 @@
   .phone span,
   .email span {
     display: none;
+  }
+
+  .smlDflex {
+    display: flex;
+    flex-direction: row !important;
+    gap: 0.8rem;
   }
 
   .phone .icon,

@@ -230,19 +230,19 @@ const Landing = () => {
         <h2 className="section-title" style={{ color: 'white' }}>Our Achievements</h2>
         <div className="stats-container">
           <div className="stat-item animate__animated animate__fadeInUp">
-            <div className="stat-number" data-target="2000">0</div>
+            <div className="stat-number" data-target="800">0</div>
             <div className="stat-text">Products</div>
           </div>
           <div className="stat-item animate__animated animate__fadeInUp">
-            <div className="stat-number" data-target="100">0</div>
+            <div className="stat-number" data-target="3">0</div>
             <div className="stat-text">Stores</div>
           </div>
-          <div className="stat-item animate__animated animate__fadeInUp">
+          {/* <div className="stat-item animate__animated animate__fadeInUp">
             <div className="stat-number" data-target="9">0</div>
             <div className="stat-text">Lakh Sq.Ft Warehouse</div>
-          </div>
+          </div> */}
           <div className="stat-item animate__animated animate__fadeInUp">
-            <div className="stat-number" data-target="35">0</div>
+            <div className="stat-number" data-target="45">0</div>
             <div className="stat-text">Years of Experience</div>
           </div>
         </div>

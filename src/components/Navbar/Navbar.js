@@ -70,14 +70,14 @@ const Navbar = () => {
               <span>Get the App</span>
             </div>
           </a>
-          <div style={{ display: 'flex', flexDirection: 'column' }}>
-            <div className="phone">
+          <div style={{ display: 'flex', flexDirection: 'column' }} className='smlDflex' >
+            <a className="text-black textDecorNone phone" href="tel:+919115513759"  >
               <Phone size={16} className="icon" />
-              <a className="text-black textDecorNone" href="tel:+919115513759">+91-911-551-3759 </a>
-            </div>
-            <div className="email">
+              <span >+91-911-551-3759 </span>
+            </a>
+            <div className="text-black textDecorNone email" href="mailto:ukgermanpharmaceutical@gmail.com">
               <Mail size={16} className="icon" />
-              <a className="text-black textDecorNone" href="mailto:ukgermanpharmaceutical@gmail.com">ukgermanpharmaceutical@gmail.com</a>
+              <span >ukgermanpharmaceutical@gmail.com</span>
             </div>
           </div>
         </div>

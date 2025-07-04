@@ -180,7 +180,7 @@ body {
 .banner-text {
   flex: 1;
   max-width: 600px;
-  padding: 0 5%;
+  /* padding: 0 5%; */
   position: relative;
   z-index: 1;
   margin: 0 auto;

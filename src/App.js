@@ -61,6 +61,7 @@ import VideoGallery from "./Pages/footerLinksPages/VideoGallery";
 import Blogs from "./Pages/footerLinksPages/Blogs";
 import BlogCardDetail from "./Pages/footerLinksPages/BlogCardDetail";
 import Terms from "./Pages/footerLinksPages/Terms";
+import Privacy from "./Pages/footerLinksPages/Privacy";
 
 
 
@@ -109,6 +110,7 @@ function App() {
         <Route path="/contactus" element={<ContactusForm />} />
         <Route path="/terms" element={<Terms />} />
         <Route path="/photo" element={<PhotoGallery />} />
+        <Route path="/privacy" element={<Privacy />} />
         <Route path="/video" element={<VideoGallery />} />
         <Route path="/testimonial" element={<Testimonial />} />
         <Route path="/blogs" element={<Blogs />} />
