@@ -75,10 +75,10 @@ const Navbar = () => {
               <Phone size={16} className="icon" />
               <span >+91-911-551-3759 </span>
             </a>
-            <div className="text-black textDecorNone email" href="mailto:ukgermanpharmaceutical@gmail.com">
+            <a className="text-black textDecorNone email" href="mailto:ukgermanpharmaceutical@gmail.com">
               <Mail size={16} className="icon" />
               <span >ukgermanpharmaceutical@gmail.com</span>
-            </div>
+            </a>
           </div>
         </div>
       </div>

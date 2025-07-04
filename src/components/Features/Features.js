@@ -66,7 +66,7 @@ const Features = () => {
             </NavLink> */}
 
             <div onClick={() => navigate('/OrderPage')} className='textDecorNone'>
-              <div className="featurs_item1 text-center rounded p-4"
+              <div className="featurs_item1 text-center rounded "
                 style={{ cursor: 'pointer' }}>
                 <div className="featurs-icon">
                   <img src="https://app.davaindia.com/images/QuickActions/PrevBought.gif" alt="Previously Bought" />
