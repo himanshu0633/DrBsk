@@ -24,6 +24,18 @@
   margin: 0 5px;
 }
 
+.original-price {
+  text-decoration: line-through;
+  margin-left: 5px;
+}
+
+.discount {
+  color: red;
+  font-size: 14px;
+  margin-left: 5px;
+}
+
+
 .breadcrumb-divider {
   color: #999;
 }
