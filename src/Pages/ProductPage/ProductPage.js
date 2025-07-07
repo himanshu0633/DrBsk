@@ -70,7 +70,7 @@ const ProductPage = () => {
         ...p,
         price: parseFloat(p.consumer_price),
         originalPrice: parseFloat(p.retail_price),
-        discount: parseFloat(p.retail_price) - parseFloat(p.consumer_price),
+        // discount: parseFloat(p.retail_price) - parseFloat(p.consumer_price),
       };
 
       setProduct(fetchedProduct);
@@ -199,9 +199,9 @@ const ProductPage = () => {
               <div className="product-meta">
                 <span className="product-pack">{product?.quantity || "Loading..."}</span>
 
-                <span className="product-rating">
+                {/* <span className="product-rating">
                   ★★★★☆ <span className="rating-count">(128 reviews)</span>
-                </span>
+                </span> */}
               </div>
 
               <div className="stock-status in-stock">
@@ -225,18 +225,18 @@ const ProductPage = () => {
               </div>
 
               <div className="product-details">
-                <div className="product-detail">
+                {/* <div className="product-detail">
                   <FlaskConical className="detail-icon" size={16} />
                   <div>
                     <strong>Composition:</strong>
                     <span>Cough Drops Nutravedic, Menthol, Eucalyptus Oil</span>
                   </div>
-                </div>
+                </div> */}
 
                 <div className="product-detail">
                   <CalendarDays className="detail-icon" size={16} />
                   <div>
-                    <strong>Expires on or after:</strong>
+                    <strong>Expires on or after: </strong>
                     <span>{product?.expires_on || "..."}</span>
                   </div>
                 </div>
@@ -244,7 +244,7 @@ const ProductPage = () => {
                 <div className="product-detail">
                   <Globe2 className="detail-icon" size={16} />
                   <div>
-                    <strong>Country of origin:</strong>
+                    <strong>Country of origin: </strong>
                     <span>India</span>
                   </div>
                 </div>
@@ -268,23 +268,30 @@ const ProductPage = () => {
                 <div className="tax-info">Inclusive of all taxes</div>
               </div> */}
 
-              <div className="product-price">
-                {userData?.type === "wholesalePartner" ? (
-                  <>
-                    <span>₹{product.retail_price}</span>
-                    {product.consumer_price < product.retail_price && (
-                      <span className="original-price">₹{product.consumer_price}</span>
-                    )}
-                  </>
-                ) : (
-                  <>
-                    <span>₹{product.consumer_price}</span>
-                    {product.retail_price > product.consumer_price && (
-                      <span className="original-price">₹{product.retail_price}</span>
-                    )}
-                  </>
-                )}
-              </div>
+            <div className="product-price">
+  {userData?.type === "wholesalePartner" ? (
+    <>
+      <span>₹{product.retail_price}</span>
+      {product.consumer_price < product.retail_price && (
+        <span className="original-price">₹{product.consumer_price}</span>
+      )}
+      {/* {product.discount && (
+        <span className="discount">({product.discount}% off)</span>
+      )} */}
+    </>
+  ) : (
+    <>
+      <span>₹{product.consumer_price}</span>
+      {product.mrp > product.consumer_price && (
+        <span className="original-price">₹{product.mrp}</span>
+      )}
+      {product?.discount && (
+        <span className="discount">{product?.discount}% off</span>
+      )}
+    </>
+  )}
+</div>
+
 
               <div className="delivery-info">
                 <label className="delivery-option" htmlFor="standard">

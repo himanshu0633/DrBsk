@@ -48,7 +48,7 @@ const Fever = () => {
       const response = await axiosInstance.get(`/user/allproducts`);
       const fetched = response.data.map((p) => {
         const retail = parseFloat(p.retail_price) || 0;
-        const consumer = parseFloat(p.consumer_price) || 0;
+        const consumer = parseFloat(p.mrp) || 0;
         const discount = Math.max(0, retail - consumer);
         return {
           ...p,
