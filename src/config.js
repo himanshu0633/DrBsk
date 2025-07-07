@@ -1,6 +1,6 @@
 
 const API_URL = window.location.protocol === 'https:'
-    ? 'https://drbskhealthcare.com/'
+    ? 'https://drbskhealthcare.com/api'
     : window.location.hostname === 'drbskhealthcare.in'
         ? 'http://drbskhealthcare.in:4000'
         : 'http://31.97.61.81:4000';
