@@ -202,27 +202,6 @@ const Footer = () => {
           <div className="foo ter-col footerLinkSec">
             <h4>Company</h4>
             <ul className="footer-links">
-              {/* <li>
-                <NavLink to="/aboutus">About us</NavLink>
-              </li>
-              <li>
-                <NavLink to="/fever">Our Products</NavLink>
-              </li>
-              <li>
-                <NavLink to="/testimonial">Customer Speaks</NavLink>
-              </li>
-              <li>
-                <NavLink to="/photo">Photo Gallery</NavLink>
-              </li>
-              <li>
-                <NavLink to="/video">Video Gallery</NavLink>
-              </li>
-              <li>
-                <NavLink to="/blogs">Blogs</NavLink>
-              </li>
-              <li>
-                <NavLink to="/contactus">Contact us</NavLink>
-              </li> */}
               <li><a onClick={() => navigate('/aboutus')}>About us</a></li>
               <li><a onClick={() => navigate('/fever')}>Our Products</a></li>
               <li><a onClick={() => navigate('/testimonial')}>Customer Speaks</a></li>
@@ -244,9 +223,7 @@ const Footer = () => {
                 <a onClick={() => navigate('/privacy')}>Privacy Policy</a>
               </li>
               <li> <NavLink to="/pharma-admin">Admin Panel</NavLink></li>
-              {/*   <li>
-                <a href="#">Privacy Policy</a>
-              </li>
+              {/*  
               <li>
                 <a href="#">Grievance Redressal Policy</a>
               </li>
@@ -274,9 +251,6 @@ const Footer = () => {
               </li>
               <li>
                 <a href="/faq">FAQs</a>
-              </li>
-              <li>
-                <a href="#">Store Locator</a>
               </li>
               <li>
                 <a href="">Gift Cards</a>
