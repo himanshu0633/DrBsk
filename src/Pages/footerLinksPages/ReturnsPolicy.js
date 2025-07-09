@@ -10,7 +10,8 @@ import {
     Accordion,
     AccordionSummary,
     AccordionDetails,
-    Paper
+    Paper,
+    Button
 } from '@mui/material';
 import {
     AssignmentReturn,
@@ -84,18 +85,52 @@ const ReturnsPolicy = () => {
                             <ListItem>
                                 <ListItemText
                                     primary="Email"
-                                    secondary="ukgermanpharmaceutical@gmail.com"
-                                    secondaryTypographyProps={{ color: 'primary.main' }}
+                                    secondary={
+                                        <a
+                                            href="mailto:ukgermanpharmaceutical@gmail.com"
+                                            style={{
+                                                color: 'primary.main',
+                                                textDecoration: 'none',
+                                                '&:hover': {
+                                                    textDecoration: 'underline'
+                                                }
+                                            }}
+                                        >
+                                            ukgermanpharmaceutical@gmail.com
+                                        </a>
+                                    }
                                 />
                             </ListItem>
                             <ListItem>
                                 <ListItemText
                                     primary="Phone"
                                     secondary={
-                                        <>
-                                            <Chip label="+91 91157-39933" size="small" sx={{ mr: 1 }} />
-                                            <Chip label="+91 91157-39699" size="small" />
-                                        </>
+                                        <Box sx={{ display: 'flex', gap: 1 }}>
+                                            <Button
+                                                component="a"
+                                                href="tel:+919115739933"
+                                                size="small"
+                                                sx={{
+                                                    borderRadius: 16,
+                                                    textTransform: 'none',
+                                                    color: 'primary.main'
+                                                }}
+                                            >
+                                                +91 91157-39933
+                                            </Button>
+                                            <Button
+                                                component="a"
+                                                href="tel:+919115739699"
+                                                size="small"
+                                                sx={{
+                                                    borderRadius: 16,
+                                                    textTransform: 'none',
+                                                    color: 'primary.main'
+                                                }}
+                                            >
+                                                +91 91157-39699
+                                            </Button>
+                                        </Box>
                                     }
                                 />
                             </ListItem>
