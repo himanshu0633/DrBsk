@@ -62,6 +62,7 @@ import Blogs from "./Pages/footerLinksPages/Blogs";
 import BlogCardDetail from "./Pages/footerLinksPages/BlogCardDetail";
 import Terms from "./Pages/footerLinksPages/Terms";
 import Privacy from "./Pages/footerLinksPages/Privacy";
+import ShippingPolicy from "./Pages/footerLinksPages/ShippingPolicy";
 
 
 
@@ -111,6 +112,8 @@ function App() {
         <Route path="/terms" element={<Terms />} />
         <Route path="/photo" element={<PhotoGallery />} />
         <Route path="/privacy" element={<Privacy />} />
+        <Route path="/return" element={<Privacy />} />
+        <Route path="/shipping" element={<ShippingPolicy />} />
         <Route path="/video" element={<VideoGallery />} />
         <Route path="/testimonial" element={<Testimonial />} />
         <Route path="/blogs" element={<Blogs />} />

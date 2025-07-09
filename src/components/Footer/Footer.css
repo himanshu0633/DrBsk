@@ -271,7 +271,7 @@ address {
   /* justify-content: space-between; */
   align-items: center;
   justify-content: center;
-  gap: 80px;
+  gap: 50px;
 }
 
 @media (max-width:670px) {
@@ -328,6 +328,15 @@ address {
     font-size: 22px;
   }
 
+  .footer_flex1 {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 90px;
+  }
+}
+
+@media (min-width:1200px) {
   .footer_flex1 {
     display: flex;
     /* justify-content: space-between; */
