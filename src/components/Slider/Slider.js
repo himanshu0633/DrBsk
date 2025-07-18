@@ -2,9 +2,13 @@ import React, { useEffect, useState } from 'react';
 import './Slider.css';
 import axiosInstance from '../AxiosInstance';
 import API_URL from '../../config';
+import Slider from 'react-slick'; // Import Slick Slider
 
-const Slider = () => {
-  const [loaded, setLoaded] = useState(false);
+// Import Slick Carousel styles
+import "slick-carousel/slick/slick.css";
+import "slick-carousel/slick/slick-theme.css";
+
+const BannerSlider = () => {
   const [banners, setBanners] = useState([]);
 
   // Fetch banners of type 'carousel1'
@@ -15,7 +19,7 @@ const Slider = () => {
 
       const mainBanners = bannerData.filter(
         (banner) =>
-          banner.type === "carousel1" &&
+          banner.type === "MiddleSlider" &&
           Array.isArray(banner.slider_image) &&
           banner.slider_image.length > 0
       );
@@ -28,19 +32,6 @@ const Slider = () => {
           mainBanners[0],
         ];
         setBanners(updatedBanners);
-
-        // Preload images
-        let loadedCount = 0;
-        updatedBanners.forEach((banner) => {
-          const img = new Image();
-          img.src = banner.slider_image[0]; // Use first image
-          img.onload = () => {
-            loadedCount++;
-            if (loadedCount === updatedBanners.length) {
-              setLoaded(true);
-            }
-          };
-        });
       }
     } catch (error) {
       console.error("Error fetching banners:", error);
@@ -51,23 +42,49 @@ const Slider = () => {
     fetchData();
   }, []);
 
+  
+  const settings = {
+    dots: true,  // Show dots for navigation
+    infinite: true,  // Loop the slider
+    speed: 500,  // Transition speed
+    slidesToShow: 3,  // Show one slide at a time
+    slidesToScroll: 1,  // Scroll one slide at a time
+    autoplay: true,  // Enable autoplay
+    autoplaySpeed: 3000,  // Autoplay interval (in ms)
+    arrows: false,  // Disable arrows
+    responsive: [
+      {
+        breakpoint: 1024,
+        settings: {
+          slidesToShow: 2,  // Show two slides on medium screens
+          slidesToScroll: 1,
+        },
+      },
+      {
+        breakpoint: 600,
+        settings: {
+          slidesToShow: 1,  // Show one slide on small screens
+          slidesToScroll: 1,
+        },
+      },
+    ],
+  };
+
   return (
     <div className="cd-slider-container">
-      <div className={`cd-slider-track ${loaded ? 'animate' : ''}`}>
+      <Slider {...settings}>  {/* Wrap the slides with Slider component */}
         {banners.map((banner, index) => (
           <div className="cd-slide" key={`banner-${index}`}>
             <img
-              // src={banner.slider_image[0]}
-                              src={`${API_URL}/${banner.slider_image[0]}`}
-              
+              src={`${API_URL}/${banner.slider_image[0]}`}
               alt={`Banner ${index + 1}`}
               className="cd-image"
             />
           </div>
         ))}
-      </div>
+      </Slider>
     </div>
   );
 };
 
-export default Slider;
+export default BannerSlider;
