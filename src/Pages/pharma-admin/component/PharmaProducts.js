@@ -155,6 +155,7 @@ const PharmaProducts = () => {
                   <TableCell sx={{ color: 'white', fontWeight: 'bold' }}>Name</TableCell>
                   <TableCell sx={{ color: 'white', fontWeight: 'bold' }}>Category</TableCell>
                   <TableCell sx={{ color: 'white', fontWeight: 'bold' }}>Price (Retail)</TableCell>
+                  <TableCell sx={{ color: 'white', fontWeight: 'bold' }}>MRP (Consumer)</TableCell>
                   <TableCell sx={{ color: 'white', fontWeight: 'bold' }}>Stock</TableCell>
                   <TableCell sx={{ color: 'white', fontWeight: 'bold' }}>Status</TableCell>
                   <TableCell sx={{ color: 'white', fontWeight: 'bold' }}>Actions</TableCell>
@@ -191,6 +192,11 @@ const PharmaProducts = () => {
                     <TableCell>
                       <Typography fontWeight="medium">
                         ₹{product.retail_price}
+                      </Typography>
+                    </TableCell>
+                    <TableCell>
+                      <Typography fontWeight="medium">
+                        ₹{product.consumer_price}
                       </Typography>
                       {product.discount > 0 && (
                         <Typography variant="body2" color="error">

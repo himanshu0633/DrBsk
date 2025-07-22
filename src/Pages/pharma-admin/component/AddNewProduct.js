@@ -296,64 +296,6 @@ const AddNewProduct = () => {
 
 
     // option 3 : sending data as FormData
-    // const handleSubmit = async (e) => {
-    //     e.preventDefault();
-    //     if (!validateForm()) return;
-
-    //     try {
-    //         const formPayload = new FormData();
-
-    //         // Append all fields (excluding media for now)
-    //         Object.entries(formData).forEach(([key, value]) => {
-    //             if (key === 'media') return;
-    //             if (value !== null && value !== undefined) {
-    //                 formPayload.append(key, value);
-    //             }
-    //         });
-
-    //         // Append media files (only new uploads with .file property)
-    //         formData.media.forEach((item) => {
-    //             if (item?.file) {
-    //                 formPayload.append('media', item.file);
-    //             } else {
-    //                 // Optionally append existing media URLs if needed
-    //                 formPayload.append('existingMedia', item.url);
-    //             }
-    //         });
-
-    //         let res;
-    //         if (isEditMode) {
-    //             res = await axiosInstance.put(
-    //                 `/user/updateProduct/${id}`,
-    //                 formPayload,
-    //                 {
-    //                     headers: {
-    //                         'Content-Type': 'multipart/form-data',
-    //                     },
-    //                 }
-    //             );
-    //             toast.success('Product updated successfully!');
-    //         } else {
-    //             res = await axiosInstance.post(
-    //                 '/user/createProduct',
-    //                 formPayload,
-    //                 {
-    //                     headers: {
-    //                         'Content-Type': 'multipart/form-data',
-    //                     },
-    //                 }
-    //             );
-    //             toast.success('Product added successfully!');
-    //         }
-
-    //         navigate('/pharma-admin/products');
-    //     } catch (error) {
-    //         console.error('Submit Error:', error);
-    //         toast.error('Something went wrong. Please try again.', error);
-    //     }
-    // };
-
-    // option 4:
     const handleSubmit = async (e) => {
         e.preventDefault();
         if (!validateForm()) return;
@@ -361,51 +303,55 @@ const AddNewProduct = () => {
         try {
             const formPayload = new FormData();
 
-            // Append fields except media
+            // Append all fields (excluding media for now)
             Object.entries(formData).forEach(([key, value]) => {
                 if (key === 'media') return;
-                formPayload.append(key, value);
+                if (value !== null && value !== undefined) {
+                    formPayload.append(key, value);
+                }
             });
 
-            // Append media files
+            // Append media files (only new uploads with .file property)
             formData.media.forEach((item) => {
-                if (item.file) {
+                if (item?.file) {
                     formPayload.append('media', item.file);
+                } else {
+                    // Optionally append existing media URLs if needed
+                    formPayload.append('existingMedia', item.url);
                 }
             });
 
             let res;
             if (isEditMode) {
-                res = await axiosInstance.put(`/user/updateProduct/${id}`, formPayload, {
-                    headers: {
-                        'Content-Type': 'multipart/form-data'
+                res = await axiosInstance.put(
+                    `/user/updateProduct/${id}`,
+                    formPayload,
+                    {
+                        headers: {
+                            'Content-Type': 'multipart/form-data',
+                        },
                     }
-                });
+                );
                 toast.success('Product updated successfully!');
             } else {
-                // res = await axiosInstance.post(`/user/createProduct`, formPayload, {
-                //     headers: {
-                //         'Content-Type': 'multipart/form-data'
-                //     }
-                // });
-                console.log('Submitting formPayload');
-                for (let pair of formPayload.entries()) {
-                    console.log(pair[0], pair[1]);
-                }
-
-                res = await axiosInstance.post(`/user/createProduct`, formPayload);
-
+                res = await axiosInstance.post(
+                    '/user/createProduct',
+                    formPayload,
+                    {
+                        headers: {
+                            'Content-Type': 'multipart/form-data',
+                        },
+                    }
+                );
                 toast.success('Product added successfully!');
             }
 
             navigate('/pharma-admin/products');
         } catch (error) {
             console.error('Submit Error:', error);
-            toast.error('Something went wrong. Please try again.');
+            toast.error('Something went wrong. Please try again.', error);
         }
     };
-
-
 
 
     const handleReset = () => {
@@ -668,7 +614,7 @@ const AddNewProduct = () => {
                                         name="expires_on"
                                         value={formData.expires_on}
                                         onChange={handleChange}
-                                    // min={new Date().toISOString().split('T')[0]}
+                                        // min={new Date().toISOString().split('T')[0]}
                                     />
                                     {errors.expires_on && <span className="herbal-error">{errors.expires_on}</span>}
                                 </div>
