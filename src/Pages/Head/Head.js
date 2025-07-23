@@ -29,11 +29,14 @@ const Head = () => {
   return (
     <>
       <header className={`header ${scrolled ? 'scrolled' : ''}`}>
-        <div className='logodivWidth'>
+        {/* <div className='logodivWidth'>
           <div className="logo">
             <a href="/"><img src={logo} alt="BSK Pharma Logo" /></a>
           </div>
-        </div>
+        </div> */}
+        <a className='logo_size' href="/">
+          <img src={logo} alt="Logo" className="logo" />
+        </a>
 
         <div className="header-buttons">
           <a className='text-light' onClick={() => navigate('/wholesaleInquiry')} > <ClipboardList size={16} /> WholeSale Inquiry</a>
