@@ -7,24 +7,6 @@
   position: relative;
 }
 
-.cd-slider-track {
-  display: flex;
-  width: fit-content;
-}
-
-.cd-slider-track.animate {
-  animation: scroll-left 30s linear infinite;
-}
-
-@keyframes scroll-left {
-  0% {
-    transform: translateX(0);
-  }
-  100% {
-    transform: translateX(-50%);
-  }
-}
-
 .cd-slide {
   flex-shrink: 0;
   padding: 0 10px;
@@ -47,4 +29,3 @@
   transform: scale(1.05);
   box-shadow: 0 6px 12px rgba(0, 0, 0, 0.3);
 }
-
