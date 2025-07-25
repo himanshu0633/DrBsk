@@ -145,7 +145,7 @@ const ProductPage = () => {
                 <img src={`${API_URL}${product.media[selectedImageIndex]?.url}`} alt="Cough Drops Jar" className="product-image1" />
                 <div className="product-badge natural-badge">
                   <Leaf className="badge-icon" size={16} />
-                  <span>99% Natural</span>
+                  <span>Natural</span>
                 </div>
                 <div className="product-badge bestseller-badge">
                   <Bolt className="badge-icon" size={16} />
@@ -419,7 +419,7 @@ const ProductPage = () => {
                     </div>
                     <div className="feature-text">
                       <h4>Natural Ingredients</h4>
-                      <p>Made with 99% natural active ingredients</p>
+                      <p>Made with natural active ingredients</p>
                     </div>
                   </div>
                   <div className="feature-item">
