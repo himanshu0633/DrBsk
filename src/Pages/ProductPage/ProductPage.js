@@ -4,10 +4,10 @@ import ProductCarousel from '../../components/ProductCarousel/ProductCarousel';
 import Footer from '../../components/Footer/Footer';
 import Header from '../../components/Header/Header';
 import Navbar from '../../components/Navbar/Navbar';
-import { useLocation, useNavigate, useParams } from 'react-router-dom';
+import { Link, useLocation, useNavigate, useParams } from 'react-router-dom';
 import { useEffect } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
-import { addData } from '../../store/Action'; 
+import { addData } from '../../store/Action';
 
 import {
   Leaf,
@@ -145,7 +145,7 @@ const ProductPage = () => {
                 <img src={`${API_URL}${product.media[selectedImageIndex]?.url}`} alt="Cough Drops Jar" className="product-image1" />
                 <div className="product-badge natural-badge">
                   <Leaf className="badge-icon" size={16} />
-                  <span>100% Natural</span>
+                  <span>99% Natural</span>
                 </div>
                 <div className="product-badge bestseller-badge">
                   <Bolt className="badge-icon" size={16} />
@@ -268,36 +268,36 @@ const ProductPage = () => {
                 <div className="tax-info">Inclusive of all taxes</div>
               </div> */}
 
-            <div className="product-price">
-  {userData?.type === "wholesalePartner" ? (
-    <>
-      <span>₹{product.retail_price}</span>
-      {product.consumer_price < product.retail_price && (
-        <span className="original-price">₹{product.consumer_price}</span>
-      )}
-      {/* {product.discount && (
+              <div className="product-price">
+                {userData?.type === "wholesalePartner" ? (
+                  <>
+                    <span>₹{product.retail_price}</span>
+                    {product.consumer_price < product.retail_price && (
+                      <span className="original-price">₹{product.consumer_price}</span>
+                    )}
+                    {/* {product.discount && (
         <span className="discount">({product.discount}% off)</span>
       )} */}
-    </>
-  ) : (
-    <>
-      <span>₹{product.consumer_price}</span>
-      {product.mrp > product.consumer_price && (
-        <span className="original-price">₹{product.mrp}</span>
-      )}
-      {product?.discount && (
-        <span className="discount">{product?.discount}% off</span>
-      )}
-    </>
-  )}
-</div>
+                  </>
+                ) : (
+                  <>
+                    <span>₹{product.consumer_price}</span>
+                    {product.mrp > product.consumer_price && (
+                      <span className="original-price">₹{product.mrp}</span>
+                    )}
+                    {product?.discount && (
+                      <span className="discount">{product?.discount}% off</span>
+                    )}
+                  </>
+                )}
+              </div>
 
 
               <div className="delivery-info">
                 <label className="delivery-option" htmlFor="standard">
                   <input type="radio" id="standard" name="delivery" defaultChecked />
                   <span className="delivery-type">Standard Delivery</span>
-                  <span className="delivery-time">3-5 business days</span>
+                  <span className="delivery-time">5-6 business days</span>
                   <span className="delivery-price">FREE</span>
                 </label>
 
@@ -357,11 +357,11 @@ const ProductPage = () => {
               <div className="product-policy">
                 <div className="policy-item">
                   <Package className="policy-icon" size={16} />
-                  <span>Free delivery on orders over ₹500</span>
+                  <span>Free delivery on orders over ₹2000</span>
                 </div>
                 <div className="policy-item">
                   <Shield className="policy-icon" size={16} />
-                  <span>This product cannot be returned for a refund or exchange. <a href="#">View policy</a></span>
+                  <span>This product cannot be returned for a refund or exchange. <Link to="/shipping">View policy</Link></span>
                 </div>
               </div>
             </div>
@@ -405,39 +405,39 @@ const ProductPage = () => {
 
                 <div className="feature-grid">
                   <div className="feature-item">
-                    <div className="feature-icon">
+                    <div className="feature-icon1">
                       <Home size={20} />
                     </div>
                     <div className="feature-text">
                       <h4>Home Remedy</h4>
-                      <p>Trusted natural solution for cough relief</p>
+                      <p>Trusted natural solution for {product?.sub_category}</p>
                     </div>
                   </div>
                   <div className="feature-item">
-                    <div className="feature-icon">
+                    <div className="feature-icon1">
                       <Leaf size={20} />
                     </div>
                     <div className="feature-text">
                       <h4>Natural Ingredients</h4>
-                      <p>Made with 100% natural active ingredients</p>
+                      <p>Made with 99% natural active ingredients</p>
                     </div>
                   </div>
                   <div className="feature-item">
-                    <div className="feature-icon">
+                    <div className="feature-icon1">
                       <User size={20} />
                     </div>
                     <div className="feature-text">
-                      <h4>For All Ages</h4>
-                      <p>Suitable for adults and children above 6 years</p>
+                      <h4>Suitable for</h4>
+                      <p>Suitable for {product?.suitable_for}</p>
                     </div>
                   </div>
                   <div className="feature-item">
-                    <div className="feature-icon">
+                    <div className="feature-icon1">
                       <FlaskConical size={20} />
                     </div>
                     <div className="feature-text">
                       <h4>Lab Tested</h4>
-                      <p>Rigorously tested for safety and efficacy</p>
+                      <p>Rigorously tested for safety and quality</p>
                     </div>
                   </div>
                 </div>
@@ -453,7 +453,7 @@ const ProductPage = () => {
               </div>
             )}
 
-            {activeTab === 'ingredients' && (
+            {/* {activeTab === 'ingredients' && (
               <div className="ingredients-content">
                 <h3>Active Ingredients</h3>
                 <ul className="ingredients-list">
@@ -479,18 +479,18 @@ const ProductPage = () => {
                   <p><strong>Allergy Information:</strong> Contains no common allergens. Manufactured in a facility that also processes tree nuts.</p>
                 </div>
               </div>
-            )}
+            )} */}
 
             {activeTab === 'directions' && (
               <div className="directions-content">
                 <h3>Recommended Use</h3>
-                <p>For temporary relief of minor throat irritation and cough associated with hoarseness, dry throat, and irritants.</p>
+                {/* <p>For temporary relief of minor throat irritation and cough associated with hoarseness, dry throat, and irritants.</p> */}
 
                 <div className="usage-card">
                   <div className="usage-step">
-                    <div className="step-number">1</div>
+                    {/* <div className="step-number">1</div> */}
                     <div className="step-content">
-                      <h4>Dosage</h4>
+                      <h3>Dosage</h3>
                       <p>{product?.dosage}.</p>
                     </div>
                   </div>
@@ -501,13 +501,13 @@ const ProductPage = () => {
                       <p>Do not exceed 10 drops in 24 hours. For children under 12 years, consult a doctor before use.</p>
                     </div>
                   </div> */}
-                  <div className="usage-step">
+                  {/* <div className="usage-step">
                     <div className="step-number">2</div>
                     <div className="step-content">
                       <h4>Method</h4>
                       <p>Allow drop to dissolve slowly in the mouth. Do not chew or swallow whole. For best results, avoid eating or drinking for 15 minutes after use.</p>
                     </div>
-                  </div>
+                  </div> */}
                 </div>
 
                 <div className="precautions">
@@ -655,7 +655,7 @@ const ProductPage = () => {
               <div className="savings">You save ₹50.00 with this combo</div>
             </div>
           </div>
-        </div> */}  
+        </div> */}
 
         {/* Related Products */}
         {/* <ProductCarousel title="You May Also Like" /> */}
