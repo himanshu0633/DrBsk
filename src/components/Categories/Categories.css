@@ -10,6 +10,9 @@
 .cursor-pointer {
   cursor: pointer;
 }
+.categories-wrapper .slick-next{
+  display:block !important;
+}
 
 .categories-title {
   margin-bottom: 20px;

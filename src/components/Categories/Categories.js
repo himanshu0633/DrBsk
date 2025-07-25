@@ -31,12 +31,56 @@ const Categories = () => {
     }
   };
   // slider 1
+  // const settings = {
+  //   dots: false,
+  //   infinite: false,
+  //   // infinite: categoryName.length >= 6,
+  //   speed: 500,
+  //   // slidesToShow: 6,
+  //   slidesToShow: categoryName.length >= 6 ? 6 : categoryName.length,
+  //   slidesToScroll: 1,
+  //   arrow: true,
+  //   initialSlide: 0,
+  //   responsive: [
+  //     {
+  //       breakpoint: 1024,
+  //       settings: {
+  //         slidesToShow: 4,
+  //         slidesToScroll: 1,
+  //         infinite: true,
+  //       }
+  //     },
+  //     {
+  //       breakpoint: 800,
+  //       settings: {
+  //         slidesToShow: 3,
+  //         slidesToScroll: 1,
+  //         // initialSlide: 2,
+  //         infinite: true,
+  //       }
+  //     },
+  //     {
+  //       breakpoint: 600,
+  //       settings: {
+  //         slidesToShow: 2,
+  //         slidesToScroll: 1,
+  //         initialSlide: 2
+  //       }
+  //     },
+  //     {
+  //       breakpoint: 480,
+  //       settings: {
+  //         slidesToShow: 1,
+  //         slidesToScroll: 1
+  //       }
+  //     }
+  //   ]
+  // };
+
   const settings = {
     dots: false,
-    // infinite: true,
-    infinite: categoryName.length >= 6,
+    infinite: categoryName.length > 1,  // Only enable infinite looping if there are more than 1 item
     speed: 500,
-    // slidesToShow: 6,
     slidesToShow: categoryName.length >= 6 ? 6 : categoryName.length,
     slidesToScroll: 1,
     arrow: true,
@@ -47,7 +91,7 @@ const Categories = () => {
         settings: {
           slidesToShow: 4,
           slidesToScroll: 1,
-          infinite: true,
+          infinite: categoryName.length >= 5, // Enable infinite if 5 or more
         }
       },
       {
@@ -55,8 +99,7 @@ const Categories = () => {
         settings: {
           slidesToShow: 3,
           slidesToScroll: 1,
-          // initialSlide: 2,
-          infinite: true,
+          infinite: categoryName.length >= 3, // Enable infinite if 3 or more
         }
       },
       {
@@ -64,18 +107,20 @@ const Categories = () => {
         settings: {
           slidesToShow: 2,
           slidesToScroll: 1,
-          initialSlide: 2
+          infinite: categoryName.length >= 2, // Enable infinite if 2 or more
         }
       },
       {
         breakpoint: 480,
         settings: {
           slidesToShow: 1,
-          slidesToScroll: 1
+          slidesToScroll: 1,
+          infinite: categoryName.length >= 1, // Enable infinite if 1 or more
         }
       }
     ]
   };
+
 
   return (
     <div>
