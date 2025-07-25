@@ -35,7 +35,6 @@ function Dashboard() {
       {/* <ProductCarousel title="New Arrivals" backgroundColor="#fae2c8" /> */}
       {/* <ProductCarousel title="Personal Care" backgroundColor="#f5bac6" />
       <ProductCarousel title="In the spotlight" backgroundColor="#dfdefb" /> */}
-      <div className="banner22"></div>
       <Footer />
    
     </div>

@@ -17,8 +17,8 @@
 .banner-image1 {
     /* width: 100%; */
     width: 100vw;
-    height: 300px;
-    object-fit: cover;
+    /* height: 300px; */
+    object-fit: contain;
     border-radius: 8px;
     aspect-ratio: 1 / 1;
     transition: transform 0.3s ease, box-shadow 0.3s ease;
@@ -30,5 +30,6 @@
 }
 
 .banner-slider-container .slick-list {
-    width: 95% !important;
+    width: 100% !important;
 }
+

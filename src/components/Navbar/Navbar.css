@@ -82,6 +82,10 @@
   transition: all 0.2s ease;
 }
 
+.subcatHeight {
+  height: 350px;
+}
+
 .dropdown a:hover {
   background-color: var(--hover-color);
   color: var(--primary-color);

@@ -51,20 +51,24 @@ const Slider2 = () => {
     fetchData();
   }, []);
 
+
+
   return (
-    <div className="cd-slider-container">
-      <div className={`cd-slider-track ${loaded ? 'animate' : ''}`}>
-        {banners.map((banner, index) => (
-          <div className="cd-slide" key={`banner-${index}`}>
-            <img
-              // src={banner.slider_image[0]}
-                              src={`${API_URL}/${banner.slider_image[0]}`}
-              
-              alt={`Banner ${index + 1}`}
-              className="cd-image"
-            />
-          </div>
-        ))}
+    <div>
+      <div className="cd-slider-container">
+        <div className={`cd-slider-track ${loaded ? 'animate' : ''}`}>
+          {banners.map((banner, index) => (
+            <div className="cd-slide" key={`banner-${index}`}>
+              <img
+                // src={banner.slider_image[0]}
+                src={`${API_URL}/${banner.slider_image[0]}`}
+
+                alt={`Banner ${index + 1}`}
+                className="cd-image"
+              />
+            </div>
+          ))}
+        </div>
       </div>
     </div>
   );
