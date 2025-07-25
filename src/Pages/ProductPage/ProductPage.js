@@ -488,9 +488,9 @@ const ProductPage = () => {
 
                 <div className="usage-card">
                   <div className="usage-step">
-                    <div className="step-number">1</div>
+                    {/* <div className="step-number">1</div> */}
                     <div className="step-content">
-                      <h4>Dosage</h4>
+                      <h3>Dosage</h3>
                       <p>{product?.dosage}.</p>
                     </div>
                   </div>
