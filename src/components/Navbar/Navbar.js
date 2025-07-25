@@ -49,7 +49,8 @@ const Navbar = () => {
                 {category.name} <ChevronDown size={14} className="dropdown-icon" />
               </span>
 
-              <div className="dropdown">
+
+              <div className="dropdown subcatHeight overflow-y-scroll">
                 {subcategoryName
                   .filter(sub => sub.category_id?._id === category._id)
                   .map(sub => (

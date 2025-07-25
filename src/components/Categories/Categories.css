@@ -22,6 +22,9 @@
   width: 100%;
   overflow: hidden;
 }
+.categories-wrapper .cd-slider-container{
+  padding: 0 !important;
+}
 
 .scrolling-content {
   display: flex;

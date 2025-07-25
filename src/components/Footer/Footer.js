@@ -11,11 +11,15 @@ const Footer = () => {
       <div className="fo oter-container footer_flex1">
         {/* Column 1: Logo */}
         <div className="foot er-col footerLogoSec ">
-          <div className=" footerLogo">
+          {/* <div className=" footerLogo">
             <a href="http://drbskhealthcare.in/"><img src={logo} alt="Logo" className="logo" /></a>
-
             <p className="company-tagline">Your Health, Our Priority</p>
-          </div>
+          </div> */}
+
+          <a className='logo_size' href="/">
+            <img src={logo} alt="Logo" className="logo" />
+          </a>
+
           <div>
             <div className="contact-info">
               <div className="contact-item">
@@ -106,10 +110,10 @@ const Footer = () => {
               </li>
               <li> <NavLink to="/pharma-admin">Admin Panel</NavLink></li>
               <li>
-                <a onClick={()=>navigate('/shipping')}>Shipping and Delivery Policy</a>
+                <a onClick={() => navigate('/shipping')}>Shipping and Delivery Policy</a>
               </li>
               <li>
-                <a onClick={()=>navigate('/return')}>Return, Refund and Cancellation Policy</a>
+                <a onClick={() => navigate('/return')}>Return, Refund and Cancellation Policy</a>
               </li>
             </ul>
           </div>

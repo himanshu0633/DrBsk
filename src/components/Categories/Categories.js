@@ -77,46 +77,26 @@ const Categories = () => {
     ]
   };
 
-
   return (
     <div>
-      {/* slider 1 */}
-      <div className="categories-wrapper">
-        {loading ? <CustomLoader /> : <div className="slider_container">
-          <h4 className="categories-title">Popular Human Categories</h4>
-          <Slider {...settings}>
-            {categoryName.map((item, index) => (
-              <div className="category-card cursor-pointer" key={index}
-                onClick={() => navigate('/fever', { state: { categoryId: item._id } })}
-              >
-                <div className="category-image-container" style={{ background: item.bg }}>
-                  <img src={`${API_URL}/${item.image}`} alt={item.name} className="category-image" />
+      {categoryName.length === 0 ? null : (
+        <div className="categories-wrapper">
+          {loading ? <CustomLoader /> : <div className="slider_container">
+            <h4 className="categories-title">Popular Human Categories</h4>
+            <Slider {...settings}>
+              {categoryName.map((item, index) => (
+                <div className="category-card cursor-pointer" key={index}
+                  onClick={() => navigate('/fever', { state: { categoryId: item._id } })}
+                >
+                  <div className="category-image-container" style={{ background: item.bg }}>
+                    <img src={`${API_URL}/${item.image}`} alt={item.name} className="category-image" />
+                  </div>
+                  <p className="category-title">{item.name}</p>
                 </div>
-                <p className="category-title">{item.name}</p>
-              </div>
-            ))}
-          </Slider>
-        </div>}
-      </div>
-
-      {/* animation */}
-      {/* <div className="scrolling-wrapper">
-        {loading ? <CustomLoader /> : (<div className="scrolling-content">
-          {categoryName.map((item, index) => (
-            <div className="category-card cursor-pointer" key={index}
-              // onClick={() => navigate(`/subcategory/${item._id}`)}
-              onClick={() => navigate('/fever', { state: { categoryId: item._id } })}
-
-            >
-              <div className="category-image-container" style={{ background: item.bg }}>
-                <img src={`${API_URL}/${item.image}`} alt={item.name} className="category-image" />
-              </div>
-              <p className="category-title">{item.name}</p>
-            </div>
-          ))}
+              ))}
+            </Slider>
+          </div>}
         </div>)}
-      </div> */}
-
     </div>
   );
 };
