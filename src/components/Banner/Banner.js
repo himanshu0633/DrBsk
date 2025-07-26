@@ -2,7 +2,7 @@ import React, { useEffect, useRef, useState } from "react";
 import "./Banner.css";
 import axiosInstance from "../AxiosInstance";
 import API_URL from "../../config";
-import Slider from 'react-slick'; 
+import Slider from 'react-slick';
 import "slick-carousel/slick/slick.css";
 import "slick-carousel/slick/slick-theme.css";
 
@@ -56,7 +56,7 @@ const Banner = () => {
   };
 
   return (
-    <div className="banner-slider-container">
+    <div className="banner-slider-container ">
       <Slider {...settings}>  {/* Wrap the slides with Slider component */}
         {banners.map((banner, index) => (
           <div className="banner-slide" key={`banner-${index}`}>
