@@ -135,67 +135,68 @@ const AddToCart = () => {
   //   });
   // };
 
-  const handleCheckout = () => {
-    if (!formData.selectedAddress) {
-      toast.warn("Please select an address before checkout.");
-      return;
-    }
+const handleCheckout = () => {
+  if (!formData.selectedAddress) {
+    toast.warn("Please select an address before checkout.");
+    return;
+  }
 
-    const options = {
-      key: "-rzp_live_hgk55iUzVRpKZ1", // Replace with real Razorpay key
-      amount: totalPrice * 100, // In paise
-      currency: "INR",
-      name: "My Shop",
-      description: "Order Payment",
-      handler: async function (response) {
-        try {
-          toast.success("Payment successful!");
+  const options = {
+    key: "rzp_live_hgk55iUzVRpKZ1", // Your Razorpay key
+    amount: totalPrice * 100, // In paise
+    currency: "INR",
+    name: "My Shop",
+    description: "Order Payment",
+    handler: async function (response) {
+      try {
+        toast.success("Payment successful!");
 
-          const userData = JSON.parse(sessionStorage.getItem('userData'));
-          const orderPayload = {
-            userId: userData?._id,
-            items: cartItems.map(item => ({
-              productId: item._id,
-              name: item.name,
-              quantity: item.quantity || 1,
-              price: parseFloat(item.consumer_price || item.price || 0),
-            })),
-            address: formData.selectedAddress,
-            phone: formData.phone || "9999999999",
-            totalAmount: totalPrice,
-            paymentId: response.razorpay_payment_id,
-          };
+        const userData = JSON.parse(sessionStorage.getItem('userData'));
+        const orderPayload = {
+          userId: userData?._id,
+          items: cartItems.map(item => ({
+            productId: item._id,
+            name: item.name,
+            quantity: item.quantity || 1,
+            price: parseFloat(item.consumer_price || item.price || 0),
+          })),
+          address: formData.selectedAddress,
+          phone: formData.phone || "9999999999",
+          totalAmount: totalPrice,
+          paymentId: response.razorpay_payment_id,
+        };
 
-          const res = await axiosInstance.post('/api/createOrder', orderPayload);
+        const res = await axiosInstance.post('/api/createOrder', orderPayload);
 
-          if (res.status === 201) {
-            dispatch(clearProducts());
-            navigate("/success");
-          } else {
-            toast.error("Failed to place order.");
-          }
-        } catch (error) {
-          console.error("Order creation error:", error);
-          toast.error("Something went wrong while placing the order.");
+        if (res.status === 201) {
+          dispatch(clearProducts()); // Clear the cart
+          navigate("/success"); // Redirect to success page
+        } else {
+          toast.error("Failed to place order.");
         }
-      },
+      } catch (error) {
+        console.error("Order creation error:", error);
+        toast.error("Something went wrong while placing the order.");
+      }
+    },
 
-      prefill: {
-        name: "Test User",
-        email: "test@example.com",
-        contact: formData.phone || "9999999999",
-      },
-      notes: {
-        address: formData.selectedAddress,
-      },
-      theme: {
-        color: "#3399cc",
-      },
-    };
-
-    const razorpay = new window.Razorpay(options);
-    razorpay.open();
+    prefill: {
+      name: "Test User",
+      email: "test@example.com",
+      contact: formData.phone || "9999999999",
+    },
+    notes: {
+      address: formData.selectedAddress,
+    },
+    theme: {
+      color: "#3399cc",
+    },
   };
+
+  const razorpay = new window.Razorpay(options); // Instantiate Razorpay
+  razorpay.open(); // Open the Razorpay checkout
+};
+
 
   useEffect(() => {
     fetchData();
