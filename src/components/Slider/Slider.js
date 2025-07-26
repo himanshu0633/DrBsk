@@ -42,7 +42,7 @@ const BannerSlider = () => {
     fetchData();
   }, []);
 
-  
+
   const settings = {
     dots: true,  // Show dots for navigation
     infinite: true,  // Loop the slider
@@ -72,7 +72,7 @@ const BannerSlider = () => {
 
   return (
     <div className="cd-slider-container">
-      <Slider {...settings}>  {/* Wrap the slides with Slider component */}
+      <Slider {...settings}>
         {banners.map((banner, index) => (
           <div className="cd-slide" key={`banner-${index}`}>
             <img

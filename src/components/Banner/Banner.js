@@ -71,7 +71,7 @@ const Banner = () => {
 
   return (
     <div className="banner-slider-container ">
-      <Slider {...settings}>  {/* Wrap the slides with Slider component */}
+      <Slider {...settings}>  
         {banners.map((banner, index) => (
           <div className="banner-slide" key={`banner-${index}`}>
             <img
