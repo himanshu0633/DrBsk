@@ -21,13 +21,26 @@ const Banner = () => {
           banner.slider_image.length > 0
       );
 
-      if (mainBanners.length > 0) {
+      // if (mainBanners.length > 0) {
+      //   setBanners([
+      //     mainBanners[mainBanners.length - 1],
+      //     ...mainBanners,
+      //     mainBanners[0],
+      //   ]);
+      // }
+
+      if (mainBanners.length > 1) {
+        // Add duplicates for looping effect
         setBanners([
           mainBanners[mainBanners.length - 1],
           ...mainBanners,
           mainBanners[0],
         ]);
+      } else {
+        // Just one banner, no duplicates
+        setBanners(mainBanners);
       }
+
     } catch (error) {
       console.error("Error fetching banners:", error);
     }
@@ -46,11 +59,12 @@ const Banner = () => {
 
   const settings = {
     dots: true,  // Show dots for navigation
-    infinite: true,  // Loop the slider
+    // infinite: false,  // Loop the slider
+    infinite: banners.length > 1,  // Enable infinite loop if more than one banner
     speed: 500,  // Transition speed
     slidesToShow: 1,  // Show one slide at a time
     slidesToScroll: 1,  // Scroll one slide at a time
-    autoplay: true,  // Enable autoplay
+    autoplay: banners.length > 1,  // Enable autoplay
     autoplaySpeed: 3000,  // Autoplay interval (in ms)
     arrows: false,  // Disable arrows
   };
