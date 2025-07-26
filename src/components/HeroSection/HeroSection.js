@@ -54,7 +54,7 @@ const HeroSection = () => {
             />
 
             {query.trim() !== '' && results.length > 0 && (
-              <div className="search-results">
+              <div className="search-results searchOverflow">
                 {results.map((product) => (
                   <div
                     key={product._id}
