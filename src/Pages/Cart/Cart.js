@@ -174,9 +174,9 @@ const Cart = () => {
                   )}
                 </form>
 
-                <button type="button" onClick={toggleLoginMethod} className="davaindia-toggle-btn">
+                {/* <button type="button" onClick={toggleLoginMethod} className="davaindia-toggle-btn">
                   {isMobileLogin ? 'Use email instead' : 'Use mobile instead'}
-                </button>
+                </button> */}
 
                 <div className="davaindia-form-footer">
                   Don’t have an account?{' '}
