@@ -17,8 +17,8 @@
 //   const [locationName, setLocationName] = useState('');
 //   const [currentPincode, setCurrentPincode] = useState('');
 
-//   // Get userData from sessionStorage
-//   const storedUser = sessionStorage.getItem('userData');
+//   // Get userData from localStorage
+//   const storedUser = localStorage.getItem('userData');
 //   const userData = storedUser ? JSON.parse(storedUser) : null;
 //   const navigate = useNavigate();
 
@@ -60,9 +60,9 @@
 //   const handleLogout = (e) => {
 //     e.preventDefault();
 //     console.log('Logging out...');
-//     // sessionStorage.clear();
+//     // localStorage.clear();
 //     // window.location.href = '/login';
-//     sessionStorage.removeItem('userData');
+//     localStorage.removeItem('userData');
 //     setShowDropdown(false);
 //     navigate('/login')
 //   };
@@ -249,15 +249,15 @@ const Header = () => {
   const [locationName, setLocationName] = useState('');
   const [currentPincode, setCurrentPincode] = useState('');
 
-  // Get userData from sessionStorage
-  const storedUser = sessionStorage.getItem('userData');
+  // Get userData from localStorage
+  const storedUser = localStorage.getItem('userData');
   const userData = storedUser ? JSON.parse(storedUser) : null;
   const navigate = useNavigate();
 
-  // Retrieve the last pincode and location from sessionStorage if available
+  // Retrieve the last pincode and location from localStorage if available
   useEffect(() => {
-    const storedPincode = sessionStorage.getItem('lastPincode');
-    const storedLocation = sessionStorage.getItem('lastLocation');
+    const storedPincode = localStorage.getItem('lastPincode');
+    const storedLocation = localStorage.getItem('lastLocation');
     if (storedPincode && storedLocation) {
       setCurrentPincode(storedPincode);
       setLocationName(storedLocation);
@@ -301,7 +301,7 @@ const Header = () => {
   const handleLogout = (e) => {
     e.preventDefault();
     console.log('Logging out...');
-    sessionStorage.removeItem('userData');
+    localStorage.removeItem('userData');
     setShowDropdown(false);
     navigate('/login');
   };
@@ -326,25 +326,25 @@ const Header = () => {
         setLocationName(location);
         setCurrentPincode(pincode);
 
-        // Save the pincode and location to sessionStorage
-        sessionStorage.setItem('lastPincode', pincode);
-        sessionStorage.setItem('lastLocation', location);
+        // Save the pincode and location to localStorage
+        localStorage.setItem('lastPincode', pincode);
+        localStorage.setItem('lastLocation', location);
       } else {
         setLocationName("Location not found");
         setCurrentPincode(pincode);
 
-        // Save the invalid pincode and location to sessionStorage
-        sessionStorage.setItem('lastPincode', pincode);
-        sessionStorage.setItem('lastLocation', "Location not found");
+        // Save the invalid pincode and location to localStorage
+        localStorage.setItem('lastPincode', pincode);
+        localStorage.setItem('lastLocation', "Location not found");
       }
     } catch (error) {
       console.error("Error fetching location:", error);
       setLocationName("Error fetching location");
       setCurrentPincode(pincode);
 
-      // Save the invalid pincode and location to sessionStorage
-      sessionStorage.setItem('lastPincode', pincode);
-      sessionStorage.setItem('lastLocation', "Error fetching location");
+      // Save the invalid pincode and location to localStorage
+      localStorage.setItem('lastPincode', pincode);
+      localStorage.setItem('lastLocation', "Error fetching location");
     }
 
     setShowInput(false);
