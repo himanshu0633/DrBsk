@@ -34,10 +34,6 @@
     font-weight: 800;
 }
 
-.descriptionFont {
-    font-size: 14px;
-}
-
 .product_right_image {
     float: right;
     max-width: 500px;
@@ -222,7 +218,7 @@ img {
     color: #333;
     /* margin-bottom: 1.5rem; */
     padding-bottom: 0.5rem;
-    text-align: center !important;  
+    text-align: center !important;
     /* border-bottom: 1px solid #ddd; */
 }
 
@@ -842,10 +838,6 @@ img {
     .aboutTitle {
         font-size: 22px;
         margin: 20px 0;
-    }
-
-    .descriptionFont {
-        font-size: 12px;
     }
 
     .right_image1 .left_centered {
