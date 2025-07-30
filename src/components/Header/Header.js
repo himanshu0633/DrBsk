@@ -453,7 +453,7 @@ const Header = () => {
             {userData?.type === "wholesalePartner" ? null : <a onClick={() => navigate('/Prescription')} className="no-decoration order_5">
               <div className="upload-box">
                 <span className="upload-icon">📄</span>
-                <span className="location-name">Upload Prescription</span>
+                <span className="location-name smlScreenTxtNone">Upload Prescription</span>
               </div>
             </a>}
           </div>

@@ -372,6 +372,16 @@
 
 }
 
+@media(max-width:500px) {
+  .smlScreenTxtNone {
+    display: none;
+  }
+
+  .upload-icon {
+    margin-right: 0;
+  }
+}
+
 @media (max-width:430px) {
 
   .location-name,
@@ -384,7 +394,7 @@
   }
 
   .upload-box {
-    padding: 8px 4px;
+    padding: 8px;
   }
 
   .w_200 {
