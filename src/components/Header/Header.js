@@ -443,12 +443,19 @@ const Header = () => {
               <span className="location-name">{locationName}</span>
               <span className="dropdown-icon">▼</span>
             </div>
-            <a href="/Prescription" className="no-decoration order_5">
+            {/* <a href="/Prescription" className="no-decoration order_5">
               <div className="upload-box">
                 <span className="upload-icon">📄</span>
                 <span className="location-name">Upload Prescription</span>
               </div>
-            </a>
+            </a> */}
+
+            {userData?.type === "wholesalePartner" ? null : <a onClick={() => navigate('/Prescription')} className="no-decoration order_5">
+              <div className="upload-box">
+                <span className="upload-icon">📄</span>
+                <span className="location-name">Upload Prescription</span>
+              </div>
+            </a>}
           </div>
         </div>
       </header>

@@ -30,7 +30,6 @@ const PersonalCareSlider = () => {
     }
   };
 
-
   const settings = {
     dots: false,
     infinite: VetcategoryName.length > 1,
@@ -66,8 +65,6 @@ const PersonalCareSlider = () => {
       }
     ]
   };
-
-
 
   return (
     <div>
