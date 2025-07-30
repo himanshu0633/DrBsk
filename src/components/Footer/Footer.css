@@ -276,7 +276,7 @@ address {
 
 @media (max-width:670px) {
   .footer_flex {
-    gap: 20px;
+    gap: 50px;
     justify-content: center;
   }
 
