@@ -42,7 +42,7 @@
 .search-section {
   /* background: linear-gradient(to right, #009e51, #00b894); */
   background-color: #68171b;
-  padding: 70px 20px 40px;
+  padding: 70px 0px 40px ;
   border-radius: 16px;
   margin: 20px auto;
   width: 100%;
@@ -221,16 +221,16 @@
   }
 
   .search-input {
-    padding: 15px 20px;
+    padding: 8px 10px;
     border-radius: 25px;
   }
 
   .search-icon {
-    /* display: none; */
-    position: absolute;
+    display: none;
+    /* position: absolute;
     left: 0px;
     font-size: 1rem;
-    margin-right: 10px;
+    margin-right: 10px; */
   }
 
   .search-button {

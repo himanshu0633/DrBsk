@@ -61,7 +61,7 @@ const Head = () => {
         <a onClick={() => navigate('/')}>Home</a>
         <a onClick={() => navigate('/aboutus')}>About Us</a>
         <a onClick={() => navigate('/products')}>Products</a>
-        <a onClick={() => navigate('/store')}>Stores</a>
+        {/* <a onClick={() => navigate('/store')}>Stores</a> */}
         <a onClick={() => navigate('/contactus')}>Contact</a>
 
         <div className="mobile-buttons">
