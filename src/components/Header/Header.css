@@ -377,6 +377,10 @@
     display: none;
   }
 
+  .cart-link {
+    display: none;
+  }
+
   .upload-icon {
     margin-right: 0;
   }
@@ -459,4 +463,144 @@
   font-size: 12px;
   padding: 2px 6px;
   border-radius: 50%;
+}
+
+
+.mobile-header-row {
+  display: none;
+}
+
+@media (max-width: 500px) {
+
+  .header1,
+  .navbarIconFlex,
+  .cart-link,
+  .signin-dropdown-wrapper,
+  .top-nav {
+    display: none !important;
+  }
+
+  .header-container {
+    box-shadow: none !important;
+    padding: 0 !important;
+  }
+
+  .mobile-header-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    /* background: #42110e; */
+    width: 100%;
+    padding: 8px 4px 8px 6px;
+    height: 50px;
+    z-index: 999;
+    position: relative;
+  }
+
+  .mobile-menu-btn {
+    background: none;
+    border: none;
+    margin-right: 7px;
+    color: #fff;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+  }
+
+  .mobile-header-center {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .logo_size {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0;
+  }
+
+  .logo {
+    height: 34px;
+    width: auto;
+  }
+
+  .mobile-location-prescription {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+  }
+
+  .upload-box {
+    padding: 4px 9px;
+    font-size: 13px;
+    margin-left: 4px;
+    border-radius: 15px;
+    background: #f9f6ee;
+    color: #68171b;
+    display: flex;
+    align-items: center;
+    gap: 3px;
+    border: 1px solid #eee;
+  }
+
+  .upload-icon {
+    font-size: 13px;
+    background: #68171b;
+    color: #fff;
+    padding: 2px;
+    border-radius: 50%;
+    margin-right: 2px;
+  }
+
+  .mobile-header-contact-icons {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+  }
+
+  .mobile-header-contact-icons a {
+    color: #fff;
+    font-size: 22px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0;
+  }
+
+  .location-box {
+    padding: 4px 11px;
+    border-radius: 20px;
+    background: #fff;
+    color: #68171b;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    font-size: 12px;
+    margin-left: 8px;
+  }
+
+  .dropdown-icon {
+    margin-left: 2px;
+    font-size: 10px;
+  }
+
+  .location-name,
+  .pincode {
+    font-size: 12px;
+  }
+}
+
+@media (max-width: 390px) {
+
+  .mobile-header-center,
+  .mobile-location-prescription {
+    flex-direction: column;
+    gap: 3px;
+    align-items: center;
+  }
+
+  .mobile-header-row {
+    padding: 6px 0 6px 2px;
+  }
 }

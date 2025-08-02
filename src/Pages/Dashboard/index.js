@@ -20,7 +20,7 @@ function Dashboard() {
     <div className="App">
       <Header />
       <div className="header-spacer"></div>
-      <Navbar />
+      {/* <Navbar /> */}
       <HeroSection />
       <Banner />
       <Features />
