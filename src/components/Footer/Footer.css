@@ -254,6 +254,10 @@ address {
   .payment-methods {
     justify-content: center;
   }
+
+  .footer_flex {
+    padding: 0 50px;
+  }
 }
 
 .footer_flex {
@@ -289,10 +293,6 @@ address {
   .contact-item {
     justify-content: center;
   }
-
-  /* .footer_flex {
-    justify-content: space-between;
-  } */
 }
 
 @media (min-width:800px) {

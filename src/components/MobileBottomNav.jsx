@@ -33,7 +33,7 @@ export const MobileBottomNav = () => {
                 transform: "translateX(-50%)",
                 width: "100vw",
                 maxWidth: 600,
-                bgcolor: "#44170D !important",
+                bgcolor: "#68171b !important",
                 boxShadow: "0 0 16px 0 rgba(0,0,0,0.12), 0 0.5px 1.5px rgba(0,0,0,0.08)",
                 zIndex: 1500,
                 px: 0,
@@ -45,7 +45,7 @@ export const MobileBottomNav = () => {
                 value={value}
                 onChange={(_, newValue) => setValue(newValue)}
                 sx={{
-                    bgcolor: "#44170D",
+                    bgcolor: "#68171b",
                     borderRadius: 2,
                     "& .MuiSvgIcon-root": {
                         color: "#fff",
