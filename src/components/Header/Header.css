@@ -380,6 +380,19 @@
   .upload-icon {
     margin-right: 0;
   }
+
+  .pincodeUi {
+    padding: 10px;
+  }
+
+  .pincodeLabel {
+    font-size: 12px;
+  }
+
+  .chooseLocationHead {
+    font-size: 14px;
+    font-weight: bold;
+  }
 }
 
 @media (max-width:430px) {

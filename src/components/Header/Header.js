@@ -437,19 +437,41 @@ const Header = () => {
             </div>
           </div>
           <div className='headerLocationShowSmlScreen flexProp'>
-            <div className="location-box order_4">
+            {/* <div className="location-box order_4">
               <span className="location-icon">📍</span>
               <span className="pincode">{currentPincode}</span>
               <span className="location-name">{locationName}</span>
               <span className="dropdown-icon">▼</span>
-            </div>
+            </div> */}
             {/* <a href="/Prescription" className="no-decoration order_5">
               <div className="upload-box">
                 <span className="upload-icon">📄</span>
                 <span className="location-name">Upload Prescription</span>
               </div>
             </a> */}
-
+            <div className='position_relative'>
+              <div className="location-box order_4" onClick={handleDivClick}>
+                <span className="location-icon">📍</span>
+                <span className="pincode">{currentPincode}</span>
+                <span className="location-name">{locationName}</span>
+                <span className="dropdown-icon">▼</span>
+              </div>
+              {showInput && (
+                <form onSubmit={handleSubmit} className='pincodeUi'>
+                  <h2 className='chooseLocationHead'>Choose Location</h2>
+                  <div className='borderlocation'></div>
+                  <h2 className='pincodeLabel'>Enter Pincode:</h2>
+                  <input
+                    type="text"
+                    placeholder="Enter pincode"
+                    value={pincode}
+                    onChange={handleInputChange}
+                    className='pincodeInput'
+                  />
+                  <button type="submit" className='submitBtnForm'>Submit</button>
+                </form>
+              )}
+            </div>
             {userData?.type === "wholesalePartner" ? null : <a onClick={() => navigate('/Prescription')} className="no-decoration order_5">
               <div className="upload-box">
                 <span className="upload-icon">📄</span>
