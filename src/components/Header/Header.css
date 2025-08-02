@@ -419,7 +419,7 @@
   .headerLocationShowSmlScreen {
     display: flex !important;
     justify-content: center;
-    padding: 20px 0px;
+    padding: 10px 0px;
   }
 
   .headerLocationHideLgScreen {

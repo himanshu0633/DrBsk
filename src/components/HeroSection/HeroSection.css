@@ -226,7 +226,11 @@
   }
 
   .search-icon {
-    display: none;
+    /* display: none; */
+    position: absolute;
+    left: 0px;
+    font-size: 1rem;
+    margin-right: 10px;
   }
 
   .search-button {
