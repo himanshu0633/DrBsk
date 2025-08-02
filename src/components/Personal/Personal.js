@@ -1,3 +1,100 @@
+// import React, { useEffect, useState } from 'react';
+// import './Personal.css';
+// import CustomLoader from '../CustomLoader';
+// import axiosInstance from '../AxiosInstance';
+// import API_URL from '../../config';
+// import { useNavigate } from 'react-router-dom';
+// import Slider from "react-slick";
+// import '../Categories/Categories.css'
+
+
+// const PersonalCareSlider = () => {
+//   const [VetcategoryName, setVetCategoryName] = useState([]);
+//   const [loading, setLoading] = useState(true);
+//   const navigate = useNavigate();
+
+//   useEffect(() => {
+//     fetchVetCategories();
+//   }, []);
+
+//   const fetchVetCategories = async () => {
+//     try {
+//       const response = await axiosInstance.get(`/user/allcategories`);
+//       const veterinaryCategories = response?.data?.filter(
+//         (item) => item.variety === 'Veterinary'
+//       );
+//       setVetCategoryName(veterinaryCategories);
+//       setLoading(false);
+//     } catch (error) {
+//       console.error("Error fetching Vet categories:", error);
+//     }
+//   };
+
+//   const settings = {
+//     dots: false,
+//     infinite: VetcategoryName.length > 1,
+//     speed: 500,
+//     slidesToShow: VetcategoryName.length >= 6 ? 6 : VetcategoryName.length,
+//     slidesToScroll: 1,
+//     arrow: true,
+//     initialSlide: 0,
+//     responsive: [
+//       {
+//         breakpoint: 1024,
+//         settings: {
+//           slidesToShow: 4,
+//           slidesToScroll: 1,
+//           infinite: VetcategoryName.length >= 5, // Enable infinite if 5 or more
+//         }
+//       },
+//       {
+//         breakpoint: 800,
+//         settings: {
+//           slidesToShow: 3,
+//           slidesToScroll: 1,
+//           infinite: VetcategoryName.length >= 3, // Enable infinite if 3 or more
+//         }
+//       },
+//       {
+//         breakpoint: 600,
+//         settings: {
+//           slidesToShow: 1,
+//           slidesToScroll: 1,
+//           infinite: VetcategoryName.length > 1, // Ensure infinite works on small screens if more than 1 item
+//         }
+//       }
+//     ]
+//   };
+
+//   return (
+//     <div>
+
+//       {VetcategoryName.length === 0 ? null : (
+//         <div className="categories-wrapper">
+//           {loading ? <CustomLoader /> : <div className="slider_container">
+//             <h4 className="categories-title">Popular Veterinary Categories</h4>
+//             <Slider {...settings}>
+//               {VetcategoryName.map((item, index) => (
+//                 <div className="category-card cursor-pointer" key={index}
+//                   onClick={() => navigate('/fever', { state: { categoryId: item._id } })}
+//                 >
+//                   <div className="category-image-container" style={{ background: item.bg }}>
+//                     <img src={`${API_URL}/${item.image}`} alt={item.name} className="category-image" />
+//                   </div>
+//                   <p className="category-title">{item.name}</p>
+//                 </div>
+//               ))}
+//             </Slider>
+//           </div>}
+//         </div>)}
+//     </div>
+//   );
+// };
+
+// export default PersonalCareSlider;
+
+
+
 import React, { useEffect, useState } from 'react';
 import './Personal.css';
 import CustomLoader from '../CustomLoader';
@@ -5,11 +102,10 @@ import axiosInstance from '../AxiosInstance';
 import API_URL from '../../config';
 import { useNavigate } from 'react-router-dom';
 import Slider from "react-slick";
-import '../Categories/Categories.css'
+import '../Categories/Categories.css';
 
-
-const PersonalCareSlider = () => {
-  const [VetcategoryName, setVetCategoryName] = useState([]);
+const Personal = () => {
+  const [vetCategories, setVetCategories] = useState([]);
   const [loading, setLoading] = useState(true);
   const navigate = useNavigate();
 
@@ -23,18 +119,19 @@ const PersonalCareSlider = () => {
       const veterinaryCategories = response?.data?.filter(
         (item) => item.variety === 'Veterinary'
       );
-      setVetCategoryName(veterinaryCategories);
-      setLoading(false);
+      setVetCategories(veterinaryCategories);
     } catch (error) {
       console.error("Error fetching Vet categories:", error);
+    } finally {
+      setLoading(false);
     }
   };
 
   const settings = {
     dots: false,
-    infinite: VetcategoryName.length > 1,
+    infinite: vetCategories.length > 1,
     speed: 500,
-    slidesToShow: VetcategoryName.length >= 6 ? 6 : VetcategoryName.length,
+    slidesToShow: vetCategories.length >= 6 ? 6 : vetCategories.length,
     slidesToScroll: 1,
     arrow: true,
     initialSlide: 0,
@@ -44,7 +141,7 @@ const PersonalCareSlider = () => {
         settings: {
           slidesToShow: 4,
           slidesToScroll: 1,
-          infinite: VetcategoryName.length >= 5, // Enable infinite if 5 or more
+          infinite: vetCategories.length >= 5
         }
       },
       {
@@ -52,7 +149,7 @@ const PersonalCareSlider = () => {
         settings: {
           slidesToShow: 3,
           slidesToScroll: 1,
-          infinite: VetcategoryName.length >= 3, // Enable infinite if 3 or more
+          infinite: vetCategories.length >= 3
         }
       },
       {
@@ -60,35 +157,39 @@ const PersonalCareSlider = () => {
         settings: {
           slidesToShow: 1,
           slidesToScroll: 1,
-          infinite: VetcategoryName.length > 1, // Ensure infinite works on small screens if more than 1 item
+          infinite: vetCategories.length > 1
         }
       }
     ]
   };
 
-  return (
-    <div>
+  if (vetCategories.length === 0) return null;
 
-      {VetcategoryName.length === 0 ? null : (
-        <div className="categories-wrapper">
-          {loading ? <CustomLoader /> : <div className="slider_container">
-            <h4 className="categories-title">Popular Veterinary Categories</h4>
-            <Slider {...settings}>
-              {VetcategoryName.map((item, index) => (
-                <div className="category-card cursor-pointer" key={index}
-                  onClick={() => navigate('/fever', { state: { categoryId: item._id } })}
-                >
-                  <div className="category-image-container" style={{ background: item.bg }}>
-                    <img src={`${API_URL}/${item.image}`} alt={item.name} className="category-image" />
-                  </div>
-                  <p className="category-title">{item.name}</p>
+  return (
+    <div className="categories-wrapper">
+      {loading ? <CustomLoader /> : (
+        <div className="slider_container">
+          <h4 className="categories-title">Popular Veterinary Categories</h4>
+          <Slider {...settings}>
+            {vetCategories.map((item) => (
+              <div
+                className="category-card cursor-pointer"
+                key={item._id}
+                onClick={() => navigate('/fever', { state: { categoryId: item._id } })}
+              >
+                <div className="category-image-container" style={{ background: item.bg }}>
+                  <img src={`${API_URL}/${item.image}`} alt={item.name} className="category-image" />
                 </div>
-              ))}
-            </Slider>
-          </div>}
-        </div>)}
+                <p className="category-title">{item.name}</p>
+              </div>
+            ))}
+          </Slider>
+        </div>
+      )}
     </div>
   );
 };
 
-export default PersonalCareSlider;
+export default Personal;
+
+

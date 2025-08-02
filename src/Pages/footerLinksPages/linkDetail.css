@@ -776,10 +776,10 @@ img {
     list-style-type: none;
 }
 
-.testimonials_column .slick-prev,
+/* .testimonials_column .slick-prev,
 .slick-next {
     display: none !important;
-}
+} */
 
 .contact_page {
     padding: 40px 0;
