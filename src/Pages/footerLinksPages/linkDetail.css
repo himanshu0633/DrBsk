@@ -372,8 +372,8 @@ img {
 .footer-wrapper {
     margin-top: 0;
     padding-top: 0;
-    position: relative;
-    z-index: 1;
+    /* position: relative;
+    z-index: 1; */
 }
 
 /* Ensure footer doesn't inherit unwanted styles */

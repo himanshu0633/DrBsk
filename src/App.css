@@ -424,7 +424,7 @@ a {
   color: #68171b;
 }
 
-::-webkit-scrollbar {
+/* ::-webkit-scrollbar {
   color: #68171b;
   width: 8px;
   height: 30px;
@@ -433,7 +433,7 @@ a {
 ::-webkit-scrollbar-thumb {
   background-color: #68171b;
   border-radius: 10px;
-}
+} */
 .pt_h{
   padding-top: 65px;
 }
