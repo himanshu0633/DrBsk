@@ -291,8 +291,7 @@ const ProductPage = () => {
                   </>
                 )}
               </div>
-
-
+              <div className="bg-red-gst">Including GST</div>
               <div className="delivery-info">
                 <label className="delivery-option" htmlFor="standard">
                   <input type="radio" id="standard" name="delivery" defaultChecked />

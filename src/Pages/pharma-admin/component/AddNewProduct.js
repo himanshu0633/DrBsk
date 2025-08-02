@@ -201,101 +201,6 @@ const AddNewProduct = () => {
         return Object.keys(newErrors).length === 0;
     };
 
-    // option 1 : sending data as json+formData
-
-    // const handleSubmit = async (e) => {
-    //     e.preventDefault();
-    //     if (!validateForm()) return;
-
-    //     let productId = id;
-
-    //     try {
-    //         // Step 1: send all fields except media as JSON
-    //         const jsonPayload = { ...formData };
-    //         delete jsonPayload.media;
-
-    //         if (isEditMode) {
-    //             await axiosInstance.put(`/user/updateProduct/${id}`, jsonPayload);
-    //             toast.success('Product updated successfully!');
-    //         } else {
-    //             const res = await axiosInstance.post(`/user/createProduct`, jsonPayload);
-    //             productId = res.data._id || res.data.product?._id;
-    //             toast.success('Product added successfully!');
-    //         }
-
-    //         // Step 2: send only new media files (file is present)
-    //         const newMedia = formData.media.filter(m => m.file);
-    //         if (newMedia.length > 0) {
-    //             const uploadData = new FormData();
-    //             newMedia.forEach(media => {
-    //                 uploadData.append('media', media.file);
-    //             });
-
-    //             await axiosInstance.post(`/user/uploadProductMedia/${productId}`, uploadData, {
-    //                 headers: { 'Content-Type': 'multipart/form-data' }
-    //             });
-
-    //             toast.success('Media uploaded successfully!');
-    //         }
-
-    //         navigate("/pharma-admin/products");
-
-    //     } catch (error) {
-    //         toast.error('Something went wrong. Please try again.');
-    //         console.error('Submit Error:', error);
-    //     }
-    // };
-
-
-    // option 2 : sending data as FormData+json
-
-    // const handleSubmit = async (e) => {
-    //     e.preventDefault();
-    //     if (!validateForm()) return;
-
-    //     let productId = id;
-
-    //     try {
-    //         // Step 1: Prepare JSON payload (exclude media)
-    //         const { media, ...jsonPayload } = formData;
-
-    //         if (isEditMode) {
-    //             await axiosInstance.put(`/user/updateProduct/${productId}`, jsonPayload);
-    //             toast.success('Product updated successfully!');
-    //         } else {
-    //             const res = await axiosInstance.post(`/user/createProduct`, jsonPayload);
-    //             productId = res.data._id || res.data.product?._id;
-    //             toast.success('Product added successfully!');
-    //         }
-
-    //         // Step 2: Always send media separately via FormData if any exists
-    //         if (media?.length > 0) {
-    //             const uploadData = new FormData();
-    //             media.forEach(item => {
-    //                 if (item?.file) {
-    //                     uploadData.append('media', item.file);
-    //                 }
-    //             });
-
-    //             if ([...uploadData].length > 0) {
-    //                 await axiosInstance.post(`/user/createProduct/${productId}`, uploadData, {
-    //                     headers: { 'Content-Type': 'multipart/form-data' }
-    //                 });
-
-    //                 toast.success('Media uploaded successfully!');
-    //             }
-    //         }
-
-    //         navigate("/pharma-admin/products");
-
-    //     } catch (error) {
-    //         toast.error('Something went wrong. Please try again.');
-    //         console.error('Submit Error:', error);
-    //     }
-    // };
-
-
-    // option 3 : sending data as FormData
     const handleSubmit = async (e) => {
         e.preventDefault();
         if (!validateForm()) return;
@@ -614,7 +519,7 @@ const AddNewProduct = () => {
                                         name="expires_on"
                                         value={formData.expires_on}
                                         onChange={handleChange}
-                                        // min={new Date().toISOString().split('T')[0]}
+                                    // min={new Date().toISOString().split('T')[0]}
                                     />
                                     {errors.expires_on && <span className="herbal-error">{errors.expires_on}</span>}
                                 </div>
