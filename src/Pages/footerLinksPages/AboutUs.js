@@ -35,7 +35,7 @@ const AboutUs = () => {
                 <div className="container">
                     <div className="row">
                         <div className="col-xxl-12 col-xl-12 col-lg-12 col-md-12 col-sm-12 col-12 text-center">
-                            <h1 className="cat_title">About UK German Pharmaceuticals</h1>
+                            <h1 className="cat_title">About Us</h1>
                             <div className="clearfix"></div>
                         </div>
                     </div>
