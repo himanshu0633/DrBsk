@@ -455,7 +455,7 @@ const Header = () => {
       {/* --- MOBILE HEADER ROW --- */}
       <div className="mobile-header-row">
         <div className='d-flex align-items-center'>
-          <button onClick={toggleMenu} aria-label="Toggle menu" className="mobile-menu-btn" style={{ background: 'none', border: 'none', padding: 0 }}>
+          {/* <button onClick={toggleMenu} aria-label="Toggle menu" className="mobile-menu-btn" style={{ background: 'none', border: 'none', padding: 0 }}>
             <Menu size={28} />
           </button>
           {menuOpen && (
@@ -477,7 +477,34 @@ const Header = () => {
                 </div>
               ))}
             </div>
-          )}
+          )} */}
+
+          <div className="sml-mobile-header-left"> 
+            <button onClick={toggleMenu} aria-label="Toggle menu" className="mobile-menu-btn" style={{ background: 'none', border: 'none', padding: 0 }}>
+              <Menu size={28} />
+            </button>
+            {menuOpen && (
+              <div className='smlScreenNavSet'>
+                {categoryName?.slice(0, 4).map((category) => (
+                  <div className="nav-item" key={category._id}>
+                    <span>
+                      {category.name} <ChevronDown size={14} className="dropdown-icon" />
+                    </span>
+                    <div className="dropdown subcatHeight overflow-y-scroll">
+                      {subcategoryName
+                        .filter(sub => sub.category_id?._id === category._id)
+                        .map(sub => (
+                          <Link key={sub._id} to={`/subcategory/${sub.name}`}>
+                            {sub.name}
+                          </Link>
+                        ))}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+
           <a className='logo_size' href="/">
             <img src={logo} alt="Logo" className="logo" />
           </a>
@@ -498,7 +525,7 @@ const Header = () => {
 
       {/* --- DESKTOP & TABLET HEADER --- */}
       <header className="header-container">
-        <div className="">
+        <div>
           <div className='header1'>
             <a className='logo_size' href="/">
               <img src={logo} alt="Logo" className="logo" />

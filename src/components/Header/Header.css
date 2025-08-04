@@ -3,7 +3,7 @@
   position: sticky;
   top: 0;
   /* height: 0px; */
-  z-index: 1000;
+  /* z-index: 10; */
   background-color: #ffffff;
   width: 100%;
 }
@@ -493,7 +493,7 @@
     width: 100%;
     padding: 8px 4px 8px 6px;
     height: 50px;
-    z-index: 999;
+    z-index: 10;
     position: relative;
   }
 
@@ -632,7 +632,7 @@
     width: 100%;
     padding: 8px 4px 8px 6px;
     height: 60px;
-    z-index: 999;
+    z-index: 10;
     position: relative;
   }
 
@@ -722,6 +722,17 @@
   .location-name,
   .pincode {
     font-size: 12px;
+  }
+
+  /* .sml-mobile-header-left {
+    position: relative;
+  } */
+
+  .smlScreenNavSet {
+    position: absolute;
+    background-color: #fff;
+    top: 55px;
+    z-index: 9999 !important;
   }
 }
 
