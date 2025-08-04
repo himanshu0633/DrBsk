@@ -19,8 +19,6 @@ function Dashboard() {
   return (
     <div className="App">
       <Header />
-      <div className="header-spacer"></div>
-      {/* <Navbar /> */}
       <HeroSection />
       <Banner />
       <Features />
@@ -36,7 +34,7 @@ function Dashboard() {
       {/* <ProductCarousel title="Personal Care" backgroundColor="#f5bac6" />
       <ProductCarousel title="In the spotlight" backgroundColor="#dfdefb" /> */}
       <Footer />
-   
+
     </div>
   );
 }

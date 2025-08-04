@@ -187,7 +187,6 @@ const Fever = () => {
   return (
     <>
       <Header />
-      <Navbar />
       <div className="fever-container">
         <button className="mobile-filter-btn" onClick={toggleMobileFilters}>
           {mobileFiltersOpen ? "Hide Filters" : "Show Filters"}

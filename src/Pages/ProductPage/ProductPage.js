@@ -123,7 +123,6 @@ const ProductPage = () => {
   return (
     <>
       <Header />
-      <Navbar />
       <div className="product-page">
         {/* Breadcrumb Navigation */}
         {/* <div className="breadcrumb">
