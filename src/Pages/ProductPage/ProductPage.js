@@ -42,6 +42,27 @@ const ProductPage = () => {
   const [addedToCart, setAddedToCart] = useState(false);
   const [selectedImageIndex, setSelectedImageIndex] = useState(0);
   const navigate = useNavigate();
+  const [isZoomActive, setIsZoomActive] = useState(false);
+  const [zoomPosition, setZoomPosition] = useState({ x: 0, y: 0 });
+
+  const handleMouseMove = (e) => {
+    const { left, top, width, height } = e.currentTarget.getBoundingClientRect();
+
+    // Calculate cursor position as a percentage of image dimensions
+    const x = ((e.pageX - window.pageXOffset - left) / width) * 100;
+    const y = ((e.pageY - window.pageYOffset - top) / height) * 100;
+
+    setZoomPosition({ x, y });
+  };
+
+  const handleMouseEnter = () => {
+    setIsZoomActive(true);
+  };
+
+  const handleMouseLeave = () => {
+    setIsZoomActive(false);
+  };
+
 
 
 
@@ -140,7 +161,7 @@ const ProductPage = () => {
           <div className="product-wrapper">
             {/* Product Image Section */}
             <div className="product-image-container">
-              <div className="image-wrapper">
+              {/* <div className="image-wrapper">
                 <img src={`${API_URL}${product.media[selectedImageIndex]?.url}`} alt="Cough Drops Jar" className="product-image1" />
                 <div className="product-badge natural-badge">
                   <Leaf className="badge-icon" size={16} />
@@ -150,7 +171,53 @@ const ProductPage = () => {
                   <Bolt className="badge-icon" size={16} />
                   <span>Bestseller</span>
                 </div>
+              </div> */}
+
+              <div
+                className="image-wrapper"
+                onMouseMove={handleMouseMove}
+                onMouseEnter={handleMouseEnter}
+                onMouseLeave={handleMouseLeave}
+                style={{ position: 'relative', cursor: 'crosshair' }}
+              >
+                <img
+                  src={`${API_URL}${product.media[selectedImageIndex]?.url}`}
+                  alt="Product"
+                  className="product-image1"
+                />
+
+                {/* Zoom Lens */}
+                {isZoomActive && (
+                  <div
+                    className="zoom-lens"
+                    style={{
+                      position: 'absolute',
+                      top: 0,
+                      left: '105%',  // Offset right side of image
+                      width: '300px',
+                      height: '300px',
+                      border: '1px solid #ccc',
+                      backgroundImage: `url(${API_URL}${product.media[selectedImageIndex]?.url})`,
+                      backgroundRepeat: 'no-repeat',
+                      backgroundSize: '200%',  // Adjust zoom level here
+                      backgroundPosition: `${zoomPosition.x}% ${zoomPosition.y}%`,
+                      zIndex: 100,
+                    }}
+                  />
+                )}
+
+                {/* Your badges remain here */}
+                <div className="product-badge natural-badge">
+                  <Leaf className="badge-icon" size={16} />
+                  <span>Natural</span>
+                </div>
+                <div className="product-badge bestseller-badge">
+                  <Bolt className="badge-icon" size={16} />
+                  <span>Bestseller</span>
+                </div>
               </div>
+
+
               <div className="image-thumbnails">
                 {product.media.map((mediaItem, index) => (
                   <div

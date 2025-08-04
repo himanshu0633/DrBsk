@@ -1,4 +1,9 @@
-/* ProductPage.css */
+.zoom-lens {
+  box-shadow: 0 0 8px rgba(0,0,0,0.3);
+  border-radius: 4px;
+  pointer-events: none; /* So it doesn't block mouse events */
+}
+
 
 /* Base Styles */
 .product-page {
