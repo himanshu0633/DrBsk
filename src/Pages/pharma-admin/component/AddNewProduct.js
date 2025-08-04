@@ -19,7 +19,8 @@ const AddNewProduct = () => {
         consumer_price: "",
         discount: "",
         mrp: "",
-        quantity: "",
+        gst: "",
+        quantity: [],
         category: "",
         productvariety: "",
         sub_category: "",
@@ -101,10 +102,19 @@ const AddNewProduct = () => {
 
     // const handleChange = (e) => {
     //     const { name, value } = e.target;
-    //     setFormData(prev => ({
-    //         ...prev,
-    //         [name]: value
-    //     }));
+    //     setFormData(prev => {
+    //         const updatedData = { ...prev, [name]: value };
+
+    //         // Calculate consumer_price whenever 'mrp' or 'discount' changes
+    //         if (name === 'mrp' || name === 'discount') {
+    //             const { mrp, discount } = updatedData;
+    //             if (mrp && discount) {
+    //                 const consumerPrice = mrp - (mrp * (discount / 100));
+    //                 updatedData.consumer_price = consumerPrice.toFixed(2); // rounding to two decimal places
+    //             }
+    //         }
+    //         return updatedData;
+    //     });
 
     //     if (name === "category") {
     //         setFormData(prev => ({ ...prev, sub_category: "" })); // Reset subcategory
@@ -117,22 +127,41 @@ const AddNewProduct = () => {
         setFormData(prev => {
             const updatedData = { ...prev, [name]: value };
 
-            // Calculate consumer_price whenever 'mrp' or 'discount' changes
-            if (name === 'mrp' || name === 'discount') {
-                const { mrp, discount } = updatedData;
-                if (mrp && discount) {
-                    const consumerPrice = mrp - (mrp * (discount / 100));
-                    updatedData.consumer_price = consumerPrice.toFixed(2); // rounding to two decimal places
+            // Parse numeric values safely
+            const mrp = parseFloat(updatedData.mrp);
+            const discount = parseFloat(updatedData.discount);
+            const gst = parseFloat(updatedData.gst);
+
+            // Calculate base discounted price
+            let discountedPrice = 0;
+            if (!isNaN(mrp) && !isNaN(discount)) {
+                discountedPrice = mrp - (mrp * (discount / 100));
+            }
+
+            // Calculate consumer_price based on GST presence
+            if (!isNaN(gst) && gst > 0) {
+                // Add GST on top of discounted price
+                const finalPrice = discountedPrice + (discountedPrice * (gst / 100));
+                updatedData.consumer_price = finalPrice.toFixed(2);
+            } else {
+                // No GST, consumer_price is just discounted price
+                if (discountedPrice > 0) {
+                    updatedData.consumer_price = discountedPrice.toFixed(2);
+                } else {
+                    updatedData.consumer_price = "";
                 }
             }
+
+            // Reset sub_category if category changes
+            if (name === "category") {
+                updatedData.sub_category = "";
+                fetchSubCategories(value);
+            }
+
             return updatedData;
         });
-
-        if (name === "category") {
-            setFormData(prev => ({ ...prev, sub_category: "" })); // Reset subcategory
-            fetchSubCategories(value);
-        }
     };
+
 
 
     const handleMediaChange = (e) => {
@@ -312,6 +341,33 @@ const AddNewProduct = () => {
         }
     };
 
+    // Handle change for a particular quantity input
+    const handleQuantityChange = (index, value) => {
+        setFormData(prev => {
+            const newQuantities = [...prev.quantity];
+            newQuantities[index] = value;
+            return { ...prev, quantity: newQuantities };
+        });
+    };
+
+    // Add another empty quantity input field
+    const addQuantityField = () => {
+        setFormData(prev => ({
+            ...prev,
+            quantity: [...prev.quantity, ""]
+        }));
+    };
+
+    // Remove quantity input at given index
+    const removeQuantityField = (index) => {
+        setFormData(prev => {
+            const newQuantities = [...prev.quantity];
+            newQuantities.splice(index, 1);
+            return { ...prev, quantity: newQuantities };
+        });
+    };
+
+
     return (
         <div>
             <div className="herbal-form-container">
@@ -454,22 +510,36 @@ const AddNewProduct = () => {
                                     />
                                 </div>
 
-                                {/* <div className="herbal-form-group">
-                                    <label>Consumer Price*</label>
+                                <div className="herbal-form-group">
+                                    <label>Discounted Price</label>
                                     <input
                                         type="number"
                                         name="consumer_price"
                                         value={formData.consumer_price}
-                                        onChange={handleChange}
-                                        placeholder="Enter consumer price"
+                                        readOnly
+                                        placeholder="Calculated consumer price"
                                         min="0"
                                         step="0.01"
                                     />
-                                    {errors.consumer_price && <span className="herbal-error">{errors.consumer_price}</span>}
-                                </div> */}
+                                </div>
+
 
                                 <div className="herbal-form-group">
-                                    <label>Consumer Price</label>
+                                    <label>GST</label>
+                                    <input
+                                        type="number"
+                                        name="gst"
+                                        value={formData.gst}
+                                        onChange={handleChange}
+                                        placeholder="Enter GST %"
+                                        min="0"
+                                        step="0.01"
+                                    />
+
+                                </div>
+
+                                <div className="herbal-form-group">
+                                    <label>Final Consumer Price</label>
                                     <input
                                         type="number"
                                         name="consumer_price"
@@ -499,7 +569,7 @@ const AddNewProduct = () => {
                                     {errors.retail_price && <span className="herbal-error">{errors.retail_price}</span>}
                                 </div>
 
-                                <div className="herbal-form-group">
+                                {/* <div className="herbal-form-group">
                                     <label>Quantity*</label>
                                     <input
                                         type="text"
@@ -508,6 +578,59 @@ const AddNewProduct = () => {
                                         onChange={handleChange}
                                         placeholder="e.g., 100ml, 50g"
                                     />
+                                    {errors.quantity && <span className="herbal-error">{errors.quantity}</span>}
+                                </div> */}
+
+                                <div className="herbal-form-group">
+                                    <label>Quantities*</label>
+                                    {formData.quantity.length === 0 && (
+                                        <p>No quantities added yet. Click 'Add Quantity' to start.</p>
+                                    )}
+                                    {formData.quantity.map((qty, index) => (
+                                        <div key={index} style={{ display: 'flex', alignItems: 'center', marginBottom: '8px' }}>
+                                            <input
+                                                type="text"
+                                                value={qty}
+                                                onChange={(e) => handleQuantityChange(index, e.target.value)}
+                                                placeholder="Enter quantity"
+                                                style={{ flexGrow: 1 }}
+                                            />
+                                            <button
+                                                type="button"
+                                                onClick={() => removeQuantityField(index)}
+                                                aria-label="Remove quantity"
+                                                style={{
+                                                    marginLeft: '8px',
+                                                    backgroundColor: '#f44336',
+                                                    color: '#fff',
+                                                    border: 'none',
+                                                    padding: '0 8px',
+                                                    cursor: 'pointer',
+                                                    borderRadius: '4px',
+                                                    height: '32px'
+                                                }}
+                                            >
+                                                ×
+                                            </button>
+                                        </div>
+                                    ))}
+
+                                    <button
+                                        type="button"
+                                        onClick={addQuantityField}
+                                        style={{
+                                            marginTop: '8px',
+                                            backgroundColor: '#4CAF50',
+                                            color: 'white',
+                                            border: 'none',
+                                            padding: '8px 12px',
+                                            cursor: 'pointer',
+                                            borderRadius: '4px'
+                                        }}
+                                    >
+                                        Add Quantity
+                                    </button>
+
                                     {errors.quantity && <span className="herbal-error">{errors.quantity}</span>}
                                 </div>
 
