@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { ClipboardList, ShoppingCart } from 'lucide-react';
+import { ClipboardList, Menu, ShoppingCart } from 'lucide-react';
 import logo from '../../logo/logo1.jpg';
 import './Head.css'
 import { NavLink, useNavigate } from 'react-router-dom';
@@ -46,10 +46,8 @@ const Head = () => {
           }}>  <ShoppingCart size={16} /> Buy Medicines</a>
         </div>
 
-        <div className={`hamburger ${mobileMenuActive ? 'active' : ''}`} onClick={toggleMobileMenu}>
-          <span></span>
-          <span></span>
-          <span></span>
+        <div className={`${mobileMenuActive ? 'active' : ''}`} onClick={toggleMobileMenu}>
+          <Menu size={28} />
         </div>
       </header>
 
@@ -58,9 +56,9 @@ const Head = () => {
         <button className="close-menu-btn" onClick={toggleMobileMenu}>
           ✕
         </button>
-        <a onClick={() => navigate('/')}>Home</a>
+        <a onClick={() => navigate('/homepage')}>Home</a>
         <a onClick={() => navigate('/aboutus')}>About Us</a>
-        <a onClick={() => navigate('/products')}>Products</a>
+        <a onClick={() => navigate('/fever')}>Products</a>
         {/* <a onClick={() => navigate('/store')}>Stores</a> */}
         <a onClick={() => navigate('/contactus')}>Contact</a>
 

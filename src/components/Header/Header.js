@@ -325,6 +325,7 @@
 
 // export default Header;
 
+
 import React, { useState, useEffect, useRef } from 'react';
 import './Header.css';
 import '../../App.css';
@@ -349,6 +350,10 @@ const Header = () => {
   const navigate = useNavigate();
   const [categoryName, setCategoryName] = useState([]);
   const [subcategoryName, setSubCategoryName] = useState([]);
+  const [menuOpen, setMenuOpen] = useState(false);
+  const toggleMenu = () => {
+    setMenuOpen((prev) => !prev);
+  };
 
   useEffect(() => {
     fetchData();
@@ -449,12 +454,34 @@ const Header = () => {
     <div>
       {/* --- MOBILE HEADER ROW --- */}
       <div className="mobile-header-row">
-        <button className="mobile-menu-btn" style={{ background: 'none', border: 'none', padding: 0 }}>
-          <Menu size={28} />
-        </button>
-        <a className='logo_size' href="/">
-          <img src={logo} alt="Logo" className="logo" />
-        </a>
+        <div className='d-flex align-items-center'>
+          <button onClick={toggleMenu} aria-label="Toggle menu" className="mobile-menu-btn" style={{ background: 'none', border: 'none', padding: 0 }}>
+            <Menu size={28} />
+          </button>
+          {menuOpen && (
+            <div className="nav-left">
+              {categoryName?.slice(0, 4).map((category) => (
+                <div className="nav-item" key={category._id}>
+                  <span>
+                    {category.name} <ChevronDown size={14} className="dropdown-icon" />
+                  </span>
+                  <div className="dropdown subcatHeight overflow-y-scroll">
+                    {subcategoryName
+                      .filter(sub => sub.category_id?._id === category._id)
+                      .map(sub => (
+                        <Link key={sub._id} to={`/subcategory/${sub.name}`}>
+                          {sub.name}
+                        </Link>
+                      ))}
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+          <a className='logo_size' href="/">
+            <img src={logo} alt="Logo" className="logo" />
+          </a>
+        </div>
         <div className="mobile-header-contact-icons">
           <a className="header-app" onClick={() => navigate('/phone')} title="Get the App">
             <Smartphone size={22} className="icon" />
@@ -467,6 +494,8 @@ const Header = () => {
           </a>
         </div>
       </div>
+
+
       {/* --- DESKTOP & TABLET HEADER --- */}
       <header className="header-container">
         <div className="">
@@ -627,5 +656,7 @@ const Header = () => {
 };
 
 export default Header;
+
+
 
 
