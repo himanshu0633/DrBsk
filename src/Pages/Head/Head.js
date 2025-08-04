@@ -46,7 +46,7 @@ const Head = () => {
           }}>  <ShoppingCart size={16} /> Buy Medicines</a>
         </div>
 
-        <div className={`${mobileMenuActive ? 'active' : ''}`} onClick={toggleMobileMenu}>
+        <div className={`menuHideSml ${mobileMenuActive ? 'active' : ''}`} onClick={toggleMobileMenu}>
           <Menu size={28} />
         </div>
       </header>
