@@ -3,7 +3,7 @@
   position: sticky;
   top: 0;
   /* height: 0px; */
-  /* z-index: 10; */
+  z-index: 10;
   background-color: #ffffff;
   width: 100%;
 }
@@ -54,7 +54,7 @@
   width: 300px;
   border: 1px solid #ddd;
   padding: 15px;
-  z-index: 3000;
+  /* z-index: 3000; */
 }
 
 .pincodeInput {
@@ -246,7 +246,7 @@
   border-radius: 5px;
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
   min-width: 200px;
-  z-index: 1000;
+  /* z-index: 1000; */
   border: 3px solid red;
   padding: 10px;
 }
@@ -490,12 +490,9 @@
   .header1 {
     overflow: visible !important;
     position: relative;
-    z-index: 999;
-  }
+    /* z-index: 999; */
+  } 
 
-  .header1 {
-    z-index: 998;
-  }
 
   .mobile-header-row {
     display: flex;
@@ -505,7 +502,7 @@
     width: 100%;
     padding: 8px 4px 8px 6px;
     height: 50px;
-    z-index: 1000;
+    /* z-index: 1000; */
     position: relative;
   }
 
@@ -728,7 +725,7 @@
     position: absolute;
     background-color: #fff;
     top: 120px;
-    z-index: 2000;
+    /* z-index: 2000; */
   }
 }
 
