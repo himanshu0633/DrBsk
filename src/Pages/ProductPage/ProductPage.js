@@ -263,11 +263,8 @@ const ProductPage = () => {
               </div>
 
               <div className="product-meta">
+                <h4>Size:</h4>
                 <span className="product-pack">{product?.quantity || "Loading..."}</span>
-
-                {/* <span className="product-rating">
-                  ★★★★☆ <span className="rating-count">(128 reviews)</span>
-                </span> */}
               </div>
 
               <div className="stock-status in-stock">

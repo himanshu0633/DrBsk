@@ -54,6 +54,7 @@
   width: 300px;
   border: 1px solid #ddd;
   padding: 15px;
+  z-index: 3000;
 }
 
 .pincodeInput {
@@ -485,6 +486,17 @@
     padding: 0 !important;
   }
 
+  .header-container,
+  .header1 {
+    overflow: visible !important;
+    position: relative;
+    z-index: 999;
+  }
+
+  .header1 {
+    z-index: 998;
+  }
+
   .mobile-header-row {
     display: flex;
     align-items: center;
@@ -493,7 +505,7 @@
     width: 100%;
     padding: 8px 4px 8px 6px;
     height: 50px;
-    z-index: 10;
+    z-index: 1000;
     position: relative;
   }
 
@@ -591,24 +603,6 @@
   }
 }
 
-@media (max-width: 390px) {
-
-  .mobile-header-center,
-  .mobile-location-prescription {
-    flex-direction: column;
-    gap: 3px;
-    align-items: center;
-  }
-
-  .mobile-header-row {
-    padding: 6px 0 6px 2px;
-  }
-}
-
-.mobile-header-row {
-  display: none;
-}
-
 @media (max-width: 500px) {
 
   .header1,
@@ -628,19 +622,21 @@
     display: flex;
     align-items: center;
     justify-content: space-between;
-    background: #42110e;
+    background: #fff;
     width: 100%;
     padding: 8px 4px 8px 6px;
     height: 60px;
-    z-index: 10;
     position: relative;
+    z-index: 5;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    border-bottom: 1px solid #eee;
   }
 
   .mobile-menu-btn {
     background: none;
     border: none;
     margin-right: 7px;
-    color: #fff;
+    color: #68171b;
     cursor: pointer;
     display: flex;
     align-items: center;
@@ -694,7 +690,7 @@
   }
 
   .mobile-header-contact-icons a {
-    color: #fff;
+    color: #68171b;
     font-size: 22px;
     display: inline-flex;
     align-items: center;
@@ -731,8 +727,8 @@
   .smlScreenNavSet {
     position: absolute;
     background-color: #fff;
-    top: 55px;
-    z-index: 9999 !important;
+    top: 120px;
+    z-index: 2000;
   }
 }
 

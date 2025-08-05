@@ -651,8 +651,8 @@ const AddNewProduct = () => {
                                 </div>
 
                                 <div className="herbal-form-group">
-                                    <label >Stock</label>
-                                    <select name="stock" value={formData.stock} onChange={handleChange} >
+                                    <label >Stock *</label>
+                                    <select name="stock" required value={formData.stock} onChange={handleChange} >
                                         <option value="yes">Yes</option>
                                         <option value="no">No</option>
                                     </select>
@@ -695,6 +695,7 @@ const AddNewProduct = () => {
                                         name="category"
                                         value={formData.category}
                                         onChange={handleChange}
+                                        required
                                     >
                                         <option value="">Select Category</option>
                                         {categoryList
@@ -714,6 +715,7 @@ const AddNewProduct = () => {
                                         name="sub_category"
                                         value={formData.sub_category}
                                         onChange={handleChange}
+                                        required
                                     >
                                         <option value="">Select subcategory</option>
                                         {subCategoryList.map((sub, index) => (
