@@ -357,7 +357,8 @@ const PharmaProducts = () => {
                   </Grid>
                   <Grid item xs={6}>
                     <Typography variant="subtitle2">Stock:</Typography>
-                    <Typography>{selectedProduct.stock}</Typography>
+                    {/* <Typography>{selectedProduct.stock}</Typography> */}
+                    <Typography>{selectedProduct.stock || "N/A"}</Typography>
                   </Grid>
                   <Grid item xs={6}>
                     <Typography variant="subtitle2">Quantity:</Typography>

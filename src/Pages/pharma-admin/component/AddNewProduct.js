@@ -20,7 +20,7 @@ const AddNewProduct = () => {
         discount: "",
         mrp: "",
         gst: "",
-        stock: "",
+        stock: "yes",
         quantity: [],
         category: "",
         productvariety: "",
@@ -58,6 +58,18 @@ const AddNewProduct = () => {
                         setSubCategoryList(subCategoryResponse.data);
                     }
 
+                    // setFormData({
+                    //     ...product,
+                    //     expires_on: product.expires_on?.split('T')[0],
+                    //     media: product.media.map(m => ({
+                    //         ...m,
+                    //         url: m.url.startsWith('http') ? m.url : `${m.url}`,
+                    //         type: m.type.includes('video') ? 'video' : 'image',
+                    //         file: null
+                    //     }))
+                    // });
+
+
                     setFormData({
                         ...product,
                         expires_on: product.expires_on?.split('T')[0],
@@ -66,8 +78,23 @@ const AddNewProduct = () => {
                             url: m.url.startsWith('http') ? m.url : `${m.url}`,
                             type: m.type.includes('video') ? 'video' : 'image',
                             file: null
-                        }))
+                        })),
+                        quantity: Array.isArray(product.quantity)
+                            ? product.quantity
+                            : (typeof product.quantity === 'string' && product.quantity.length > 0
+                                ? [product.quantity]
+                                : []),
+                        stock: (() => {
+                            const s = (product.stock ?? '').toLowerCase().trim();
+                            console.log("Stock value:", s);
+                            return s === 'yes' ? 'yes'
+                                : s === 'no' ? 'no'
+                                    : 'yes';
+                        })(),
+
                     });
+
+
                 }
             } catch (error) {
                 console.error("Error during initialization:", error);
@@ -586,10 +613,10 @@ const AddNewProduct = () => {
 
                                 <div className="herbal-form-group">
                                     <label>Quantities*</label>
-                                    {formData.quantity.length === 0 && (
+                                    {formData.quantity?.length === 0 && (
                                         <p>No quantities added yet. Click 'Add Quantity' to start.</p>
                                     )}
-                                    {formData.quantity.map((qty, index) => (
+                                    {formData.quantity?.map((qty, index) => (
                                         <div key={index} style={{ display: 'flex', alignItems: 'center', marginBottom: '8px' }}>
                                             <input
                                                 type="text"
