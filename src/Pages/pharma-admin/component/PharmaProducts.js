@@ -156,7 +156,8 @@ const PharmaProducts = () => {
                   <TableCell sx={{ color: 'white', fontWeight: 'bold' }}>Category</TableCell>
                   <TableCell sx={{ color: 'white', fontWeight: 'bold' }}>Price (Retail)</TableCell>
                   <TableCell sx={{ color: 'white', fontWeight: 'bold' }}>MRP (Consumer)</TableCell>
-                  <TableCell sx={{ color: 'white', fontWeight: 'bold' }}>Stock</TableCell>
+                  <TableCell sx={{ color: 'white', fontWeight: 'bold' }}>Quantity</TableCell>
+                  {/* <TableCell sx={{ color: 'white', fontWeight: 'bold' }}>Stock</TableCell> */}
                   <TableCell sx={{ color: 'white', fontWeight: 'bold' }}>Status</TableCell>
                   <TableCell sx={{ color: 'white', fontWeight: 'bold' }}>Actions</TableCell>
                 </TableRow>
@@ -206,18 +207,24 @@ const PharmaProducts = () => {
                     </TableCell>
                     <TableCell>
                       <Typography
-                        color={product.quantity > 0 ? 'success.main' : 'error.main'}
                         fontWeight="medium"
                       >
                         {product.quantity}
                       </Typography>
                     </TableCell>
+                    {/* <TableCell>
+                      <Typography
+                        color={product.quantity > 0 ? 'success.main' : 'error.main'}
+                        fontWeight="medium"
+                      >
+                        {product.stock}
+                      </Typography>
+                    </TableCell> */}
                     <TableCell>
                       <StatusChip
                         label={product.deleted_at ? 'Inactive' : 'Active'}
                         status={product.deleted_at ? 'inactive' : 'active'}
                         sx={{ pointerEvents: 'none' }}
-                      // onClick={() => { }}
                       />
                     </TableCell>
                     <TableCell>
@@ -345,6 +352,14 @@ const PharmaProducts = () => {
                     <Typography>{selectedProduct.discount}%</Typography>
                   </Grid>
                   <Grid item xs={6}>
+                    <Typography variant="subtitle2">GST:</Typography>
+                    <Typography>{selectedProduct.gst}%</Typography>
+                  </Grid>
+                  <Grid item xs={6}>
+                    <Typography variant="subtitle2">Stock:</Typography>
+                    <Typography>{selectedProduct.stock}</Typography>
+                  </Grid>
+                  <Grid item xs={6}>
                     <Typography variant="subtitle2">Quantity:</Typography>
                     <Typography
                       color={selectedProduct.quantity > 0 ? 'success.main' : 'error.main'}
@@ -375,7 +390,6 @@ const PharmaProducts = () => {
                   <Grid item xs={12}>
                     <Typography variant="subtitle2">Expires On:</Typography>
                     <Typography>
-                      {/* {new Date(selectedProduct.expires_on).toLocaleDateString()} */}
                       {selectedProduct.expires_on}
                     </Typography>
                   </Grid>
