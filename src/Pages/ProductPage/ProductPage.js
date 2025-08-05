@@ -272,7 +272,10 @@ const ProductPage = () => {
 
               <div className="stock-status in-stock">
                 <div className="status-indicator"></div>
-                <span>In Stock - Ready to Ship</span>
+                {/* <span>In Stock - Ready to Ship</span> */}
+                <span style={{
+                  color: product.stock === 'yes' ? '#2ecc40' : '#ff4136'
+                }}>{product.stock === 'yes' ? 'In Stock - Ready to Ship' : 'Out of Stock'}</span>
               </div>
 
               <div className="product-highlights">
@@ -357,7 +360,7 @@ const ProductPage = () => {
                   </>
                 )}
               </div>
-              <div className="bg-red-gst">Including GST</div>
+              {/* <div className="bg-red-gst">Including GST</div> */}
               <div className="delivery-info">
                 <label className="delivery-option" htmlFor="standard">
                   <input type="radio" id="standard" name="delivery" defaultChecked />

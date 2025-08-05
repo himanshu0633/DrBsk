@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from "react";
 import Header from "../../components/Header/Header";
-import Navbar from "../../components/Navbar/Navbar";
 import "./Fever.css";
 import { Link, useParams, useLocation, useNavigate } from "react-router-dom";
 import Footer from "../../components/Footer/Footer";
@@ -366,7 +365,10 @@ const Fever = () => {
                             </div>
                             <div className="product-details">
                               <h3 className="product-title">{product.name}</h3>
-                              <p className="product-quantity">{product.quantity}</p>
+                              {/* <p className="product-quantity">{product.quantity}</p> */}
+                              <p className="product-quantity" style={{
+                                color: product.stock === 'yes' ? '#2ecc40' : '#ff4136'
+                              }}>{product.stock === 'no' ? 'Out of Stock' : null}</p>
                               <div className="product-price">
                                 {isWholesaler ? (
                                   <>
@@ -402,13 +404,14 @@ const Fever = () => {
                                 </button>
                               </div>
                             ) : (
-                              <button
-                                onClick={() => handleAddToCart(product)}
-                                className="add-to-cart-btn"
-                              >
-                                🛒 Add to Cart
-                              </button>
-                            )}
+                              product.stock === 'yes' ? (
+                                <button
+                                  onClick={() => handleAddToCart(product)}
+                                  className="add-to-cart-btn"
+                                >
+                                  🛒 Add to Cart
+                                </button>
+                              ) : null)}
                           </div>
                         </div>
                       );
