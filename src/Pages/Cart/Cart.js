@@ -80,8 +80,8 @@ const Cart = () => {
 
       if (response.status === 200) {
         // Store login data in session storage
-        sessionStorage.setItem('authToken', response.data.token);
-        sessionStorage.setItem('userData', JSON.stringify(response.data.data));
+        localStorage.setItem('authToken', response.data.token);
+        localStorage.setItem('userData', JSON.stringify(response.data.data));
 
         // Redirect to dashboard
         // window.location.href = '/';
