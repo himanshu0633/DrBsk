@@ -406,10 +406,11 @@ const ProductPage = () => {
                     Go to Cart
                   </button>
                 ) : (
-                  <button className="add-to-cart-btn" onClick={handleAddToCart}>
-                    <ShoppingCart className="btn-icon" size={18} />
-                    Add to Cart
-                  </button>
+                  product.stock === 'yes' ?
+                    (<button className="add-to-cart-btn" onClick={handleAddToCart}>
+                      <ShoppingCart className="btn-icon" size={18} />
+                      Add to Cart
+                    </button>) : null
                 )}
 
                 {/* Removed "Buy Now" button */}
