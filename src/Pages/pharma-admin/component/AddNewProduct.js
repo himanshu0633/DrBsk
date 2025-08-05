@@ -20,6 +20,7 @@ const AddNewProduct = () => {
         discount: "",
         mrp: "",
         gst: "",
+        stock: "",
         quantity: [],
         category: "",
         productvariety: "",
@@ -297,7 +298,9 @@ const AddNewProduct = () => {
             consumer_price: "",
             discount: "",
             mrp: "",
-            quantity: "",
+            stock: "",
+            gst: "",
+            quantity: [],
             category: "",
             sub_category: "",
             productvariety: "",
@@ -645,6 +648,14 @@ const AddNewProduct = () => {
                                     // min={new Date().toISOString().split('T')[0]}
                                     />
                                     {errors.expires_on && <span className="herbal-error">{errors.expires_on}</span>}
+                                </div>
+
+                                <div className="herbal-form-group">
+                                    <label >Stock</label>
+                                    <select name="stock" value={formData.stock} onChange={handleChange} >
+                                        <option value="yes">Yes</option>
+                                        <option value="no">No</option>
+                                    </select>
                                 </div>
                             </div>
                         </div>
