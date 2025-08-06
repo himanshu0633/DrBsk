@@ -1,7 +1,8 @@
 .zoom-lens {
-  box-shadow: 0 0 8px rgba(0,0,0,0.3);
+  box-shadow: 0 0 8px rgba(0, 0, 0, 0.3);
   border-radius: 4px;
-  pointer-events: none; /* So it doesn't block mouse events */
+  pointer-events: none;
+  /* So it doesn't block mouse events */
 }
 
 
@@ -226,15 +227,22 @@
   font-size: 0.9rem;
 }
 
-.stock-status.in-stock {
+/* .stock-status.in-stock {
   background-color: #e3f7e8;
-  color: #28a745;
+} */
+
+.bg-red {
+  background-color: rgba(255, 0, 0, 0.534);
+}
+
+.bg-green {
+  background-color: rgba(0, 128, 0, 0.452);
 }
 
 .status-indicator {
   width: 10px;
   height: 10px;
-  background-color: #28a745;
+  /* background-color: red; */
   border-radius: 50%;
   margin-right: 8px;
 }
@@ -566,10 +574,10 @@
 
 .bg-red-gst {
   background-color: red;
-    font-size: 12px;
+  font-size: 12px;
   font-weight: 300;
   color: #fff !important;
-  padding:4px;
+  padding: 4px;
   display: inline;
 }
 

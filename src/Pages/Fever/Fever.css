@@ -204,7 +204,7 @@
   background: white;
   border-radius: 0.75rem;
   overflow: hidden;
-  box-shadow: 2px 2px 6px  #d1cfcf;
+  box-shadow: 2px 2px 6px #d1cfcf;
   transition: transform 0.2s ease, box-shadow 0.2s ease;
   position: relative;
   display: flex;
@@ -387,6 +387,11 @@
 
 .add-to-cart-btn:hover {
   background-color: #68171b;
+}
+
+.add-to-cart-btn:disabled {
+  cursor: not-allowed;
+  opacity: 0.6;
 }
 
 .cart-icon {

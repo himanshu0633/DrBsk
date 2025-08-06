@@ -404,14 +404,27 @@ const Fever = () => {
                                 </button>
                               </div>
                             ) : (
-                              product.stock === 'yes' ? (
-                                <button
-                                  onClick={() => handleAddToCart(product)}
-                                  className="add-to-cart-btn"
-                                >
-                                  🛒 Add to Cart
-                                </button>
-                              ) : null)}
+                              // product.stock === 'yes' ? (
+                              //   <button
+                              //     onClick={() => handleAddToCart(product)}
+                              //     className={`add-to-cart-btn ${product.stock === 'no' ? 'disabled cursor-not-allowed' : ''}`}
+                              //   // disabled
+                              //   >
+                              //     🛒 Add to Cart
+                              //   </button>
+                              // ) : null
+
+                              <button
+                                onClick={() => handleAddToCart(product)}
+                                className="add-to-cart-btn"
+                                disabled={product.stock === 'no'}
+                              >
+                                🛒 Add to Cart
+                              </button>
+
+
+                            )
+                            }
                           </div>
                         </div>
                       );
@@ -430,7 +443,7 @@ const Fever = () => {
             </div>
           </div>
         )}
-      </div>
+      </div >
       <Footer />
     </>
   );

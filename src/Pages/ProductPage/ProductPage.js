@@ -264,15 +264,13 @@ const ProductPage = () => {
 
               <div className="product-meta">
                 <h4>Size:</h4>
-                <span className="product-pack">{product?.quantity || "Loading..."}</span>
+                <span className="product-pack">{product?.quantity}</span>
               </div>
 
-              <div className="stock-status in-stock">
-                <div className="status-indicator"></div>
+              <div className={`stock-status ${product.stock === 'no' ? 'bg-red' : 'bg-green'} `}>
+                <div className={`status-indicator ${product.stock === 'no' ? 'bg-red' : 'bg-green'} `}></div>
                 {/* <span>In Stock - Ready to Ship</span> */}
-                <span style={{
-                  color: product.stock === 'yes' ? '#2ecc40' : '#ff4136'
-                }}>{product.stock === 'yes' ? 'In Stock - Ready to Ship' : 'Out of Stock'}</span>
+                <span style={{ color: "white", fontWeight: "bold" }}>{product.stock === 'no' ? 'Out of Stock ' : 'In Stock - Ready to Ship'}</span>
               </div>
 
               <div className="product-highlights">
@@ -406,11 +404,20 @@ const ProductPage = () => {
                     Go to Cart
                   </button>
                 ) : (
-                  product.stock === 'yes' ?
-                    (<button className="add-to-cart-btn" onClick={handleAddToCart}>
-                      <ShoppingCart className="btn-icon" size={18} />
-                      Add to Cart
-                    </button>) : null
+                  // product.stock === 'yes' ?
+                  //   (<button className="add-to-cart-btn" onClick={handleAddToCart}>
+                  //     <ShoppingCart className="btn-icon" size={18} />
+                  //     Add to Cart
+                  //   </button>) : null
+
+                  <button
+                    onClick={() => handleAddToCart(product)}
+                    className="add-to-cart-btn"
+                    disabled={product.stock === 'no'}
+                  >
+                    🛒 Add to Cart
+                  </button>
+
                 )}
 
                 {/* Removed "Buy Now" button */}
