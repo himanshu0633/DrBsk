@@ -21,14 +21,6 @@ const Banner = () => {
           banner.slider_image.length > 0
       );
 
-      // if (mainBanners.length > 0) {
-      //   setBanners([
-      //     mainBanners[mainBanners.length - 1],
-      //     ...mainBanners,
-      //     mainBanners[0],
-      //   ]);
-      // }
-
       if (mainBanners.length > 1) {
         // Add duplicates for looping effect
         setBanners([
@@ -49,12 +41,6 @@ const Banner = () => {
   useEffect(() => {
     fetchData();
   }, []);
-
-  // if (banners.length === 0) {
-  //   return <div className="banner-carousel-loading">No Banners</div>;
-  // }
-
-  // const originalBanners = banners.slice(1, banners.length - 1);
 
 
   const settings = {

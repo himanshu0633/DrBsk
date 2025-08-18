@@ -254,7 +254,7 @@ const PharmaProducts = () => {
               </TableBody>
             </Table>
             <TablePagination
-              rowsPerPageOptions={[10, 20, 30]}
+              rowsPerPageOptions={[10, 20, 30, 40, 50, 60, 70, 80, 100, 110, 120, 130, 140, 150, 160, 170, 180, 190, 200]}
               component="div"
               count={products.length}
               rowsPerPage={rowsPerPage}
@@ -265,6 +265,7 @@ const PharmaProducts = () => {
                 backgroundColor: '#f5f5f5',
                 borderBottomLeftRadius: '8px',
                 borderBottomRightRadius: '8px',
+                width: '100%',
               }}
             />
           </StyledTableContainer>

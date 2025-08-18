@@ -63,9 +63,6 @@ const ProductPage = () => {
     setIsZoomActive(false);
   };
 
-
-
-
   const increaseQty = () => {
     setQuantity(prev => prev + 1);
   };
@@ -81,20 +78,36 @@ const ProductPage = () => {
   };
   const fetchData = async () => {
     setLoading(true);
+    let fetchedProduct;
     try {
-      // console.log("Calling:", /user/product/${id});
       const response = await axiosInstance.get(`/user/product/${id}`);
       const p = response.data;
-      console.log("Fetched product:", p);
+      console.log("Fetched product (raw):", p);
 
-      const fetchedProduct = {
+      // PATCH: handle stringified array in quantity field!
+      let quantityVariants = [];
+      if (Array.isArray(p.quantity) && typeof p.quantity[0] === "string") {
+        try {
+          quantityVariants = JSON.parse(p.quantity);
+        } catch (e) {
+          console.error("Failed to parse product.quantity", e, p.quantity);
+          quantityVariants = [];
+        }
+      } else if (Array.isArray(p.quantity)) {
+        quantityVariants = p.quantity;
+      }
+
+      fetchedProduct = {
         ...p,
+        quantity: quantityVariants,
         price: parseFloat(p.consumer_price),
         originalPrice: parseFloat(p.retail_price),
-        // discount: parseFloat(p.retail_price) - parseFloat(p.consumer_price),
       };
 
       setProduct(fetchedProduct);
+
+      // Logging for sanity check
+      console.log("Fetched product after handling:", fetchedProduct);
     } catch (error) {
       console.error("Error fetching data:", error);
     } finally {
@@ -263,9 +276,34 @@ const ProductPage = () => {
               </div>
 
               <div className="product-meta">
-                <h4>Size:</h4>
-                <span className="product-pack">{product?.quantity}</span>
+                {/* <h4>Size:</h4>
+                <span className="product-pack">{product?.quantity}</span> */}
+                {/* {console.log(product.quantity,"lsdflksjflksj")}
+                {product?.quantity.map((size, index) => (
+                  <span key={index} className="product-pack">{size}</span>
+                ))} */}
               </div>
+
+              {/* Display Price & Quantity Cards */}
+              <div className="product-options">
+                {product.quantity && product.quantity.length > 0 ? (
+                  product.quantity.map((size, index) => (
+                    <div className="product-card1" key={index}>
+                      <div className="product-size">{size.label}</div>
+                      <div className="product-price">₹{size.final_price}</div>
+                      <div className="product-mrp">MRP: ₹{size.mrp}</div>
+                      <div className="product-discount">{size.discount}% OFF</div>
+                      <div className="product-gst">GST: {size.gst}%</div>
+                      <div className={`stock-status ${size.in_stock === 'yes' ? 'in-stock' : 'out-of-stock'}`}>
+                        {size.in_stock === 'yes' ? 'In Stock' : 'Out of Stock'}
+                      </div>
+                    </div>
+                  ))
+                ) : (
+                  <div>No variant data available</div>
+                )}
+              </div>
+
 
               <div className={`stock-status ${product.stock === 'no' ? 'bg-red' : 'bg-green'} `}>
                 <div className={`status-indicator ${product.stock === 'no' ? 'bg-red' : 'bg-green'} `}></div>
@@ -742,3 +780,6 @@ const ProductPage = () => {
 };
 
 export default ProductPage;
+
+
+

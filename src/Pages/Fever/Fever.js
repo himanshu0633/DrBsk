@@ -421,8 +421,6 @@ const Fever = () => {
                               >
                                 🛒 Add to Cart
                               </button>
-
-
                             )
                             }
                           </div>
