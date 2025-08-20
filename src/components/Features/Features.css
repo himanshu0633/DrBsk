@@ -85,9 +85,11 @@
     justify-content: flex-start;
     padding: 15px;
   }
-.featurs_item1 {
-  flex-direction: row;
-}
+
+  .featurs_item1 {
+    flex-direction: row;
+  }
+
   .featurs-icon {
     width: 60px;
     height: 60px;
@@ -96,8 +98,8 @@
   }
 
   .featurs-icon img {
-    width: 40px;
-    height: 40px;
+    width: 50px;
+    height: 50px;
   }
 
   .featurs-content h5 {
@@ -121,8 +123,8 @@
     margin-right: 10px;
   }
 
-  .featurs-icon img {
+  /* .featurs-icon img {
     width: 30px;
     height: 30px;
-  }
+  } */
 }

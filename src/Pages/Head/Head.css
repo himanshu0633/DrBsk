@@ -50,7 +50,8 @@
   position: relative;
   overflow: hidden;
 }
-.logodivWidth{
+
+.logodivWidth {
   width: 40%;
 }
 
@@ -118,4 +119,10 @@
 .hamburger.active span:nth-child(3) {
   transform: rotate(-45deg);
   top: 10px;
+}
+
+@media (min-width:768px) {
+  .menuHideSml {
+    display: none;
+  }
 }

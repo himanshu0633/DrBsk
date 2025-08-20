@@ -12,9 +12,11 @@
   width: 100%;
   height: 100% !important;
 }
-a{
+
+a {
   cursor: pointer;
 }
+
 @media (prefers-reduced-motion: no-preference) {
   .App-logo {
     animation: App-logo-spin infinite 20s linear;
@@ -306,6 +308,12 @@ a{
   margin: 15px 0px;
 }
 
+@media (max-width:600px) {
+  .pt_h {
+    padding-top: 65px;
+  }
+}
+
 /* Responsive adjustments */
 @media (max-width: 480px) {
   .order-summary-wrapper {
@@ -421,3 +429,14 @@ a{
 .clrLogo {
   color: #68171b;
 }
+
+/* ::-webkit-scrollbar {
+  color: #68171b;
+  width: 8px;
+  height: 30px;
+}
+
+::-webkit-scrollbar-thumb {
+  background-color: #68171b;
+  border-radius: 10px;
+} */

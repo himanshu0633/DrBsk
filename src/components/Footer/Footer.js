@@ -90,7 +90,7 @@ const Footer = () => {
             <ul className="footer-links">
               <li><a onClick={() => navigate('/aboutus')}>About us</a></li>
               <li><a onClick={() => navigate('/fever')}>Our Products</a></li>
-              <li><a onClick={() => navigate('/testimonial')}>Customer Speaks</a></li>
+              {/* <li><a onClick={() => navigate('/testimonial')}>Customer Speaks</a></li> */}
               <li><a onClick={() => navigate('/video')}>Video Gallery</a></li>
               <li><a onClick={() => navigate('/photo')}>Photo Gallery</a></li>
               <li><a onClick={() => navigate('/blogs')}>Blogs</a></li>

@@ -10,7 +10,7 @@ const ContactusForm = () => {
                 <div className="container">
                     <div className="row">
                         <div className="col-xxl-12 col-xl-12 col-lg-12 col-md-12 col-sm-12 col-12 text-center">
-                            <h1 className="cat_title">UK German Pharmaceuticals</h1>
+                            <h1 className="cat_title">Contact Us</h1>
                             <div className="clearfix"></div>
                         </div>
                     </div>
@@ -30,18 +30,18 @@ const ContactusForm = () => {
                                 </svg> UK German Pharmaceuticals, Akal Academy Road, Opp. Malwa Gramin Bank, Cheema Mandi -148029, Distt. Sangrur (Punjab) India</div>
                                 <div className="d-flex">
                                     <span className="contact-icon">📞</span>
-                                    <p>+91-911-551-3759 </p>
+                                    <a className="text-black textDecorNone" href="tel:+919115513759">+91-911-551-3759 </a>
                                 </div>
                                 <div className="d-flex">
                                     <span className="contact-icon">📞</span>
-                                    <p>+91-911-591-5933 </p>
+                                    <a className="text-black textDecorNone" href="tel:+919115915933">+91-911-591-5933 </a>
                                 </div>
 
                                 <h3 className="clrLogo mt-3">Get in Touch</h3>
                                 <div>
                                     <div className="mt-4"> <div className="contact-item">
                                         <span className="contact-icon">✉️</span>
-                                        <span>ukgermanpharmaceutical@gmail.com</span>
+                                        <a className="text-black textDecorNone" href="mailto:ukgermanpharmaceutical@gmail.com">ukgermanpharmaceutical@gmail.com</a>
                                     </div>
                                     </div>
                                     <div className="social-icons">

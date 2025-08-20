@@ -107,34 +107,39 @@
   .promo-section {
     flex-direction: column;
   }
-  
+
   .promo-video {
     width: 100%;
   }
-  
+
   .promo-video iframe {
     height: 200px;
   }
-  
+
   .promo-header {
     flex-direction: column;
     align-items: flex-start;
     gap: 10px;
   }
-  
+
   .promo-header h2 {
     min-width: 100%;
   }
-  
+
   .benefit-item {
     min-width: 100%;
   }
 }
 
-@media (max-width: 480px) {
+@media (max-width: 500px) {
   .promo-content a {
     display: inline-block;
     margin-left: 0;
     margin-top: 5px;
+  }
+
+  .benefitsMarginText {
+    text-align: start !important;
+    margin-left: 30px;
   }
 }

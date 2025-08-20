@@ -1,5 +1,4 @@
 import React, { useState } from 'react';
-import Header from '../../components/Header/Header';
 import Footer from '../../components/Footer/Footer';
 import Testimonial from './component/Testimonial';
 import Head from '../Head/Head';
@@ -54,7 +53,7 @@ const PhotoGallery = () => {
         <div>
             <Head />
 
-            <section className="heading_banner contactusBackground" >
+            <section className="heading_banner PhotoUkBackground" >
                 <div className="container">
                     <div className="row">
                         <div className="col-xxl-12 col-xl-12 col-lg-12 col-md-12 col-sm-12 col-12 text-center">

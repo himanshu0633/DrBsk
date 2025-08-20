@@ -24,7 +24,7 @@ const Testimonial = () => {
     // slidesToShow: 6,
     slidesToShow: 2,
     slidesToScroll: 1,
-    arrow: false,
+    arrows: false,
     initialSlide: 0,
     responsive: [
       {

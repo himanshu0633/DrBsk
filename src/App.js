@@ -64,6 +64,7 @@ import Terms from "./Pages/footerLinksPages/Terms";
 import Privacy from "./Pages/footerLinksPages/Privacy";
 import ShippingPolicy from "./Pages/footerLinksPages/ShippingPolicy";
 import ReturnsPolicy from "./Pages/footerLinksPages/ReturnsPolicy";
+import { MobileBottomNav } from "./components/MobileBottomNav";
 
 
 
@@ -165,6 +166,8 @@ function App() {
         </Route>
 
       </Routes>
+      <div className="pt_h"></div>
+      <MobileBottomNav />
     </>
   );
 }

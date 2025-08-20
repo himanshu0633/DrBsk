@@ -34,10 +34,6 @@
     font-weight: 800;
 }
 
-.descriptionFont {
-    font-size: 14px;
-}
-
 .product_right_image {
     float: right;
     max-width: 500px;
@@ -87,26 +83,27 @@
 .heading_banner {
     float: left;
     width: 100%;
-    position: relative;
-    background-size: 100%;
+    /* position: relative; */
+    /* background-size: 100% 100%; */
+    background-size: cover;
     background-position: center;
     padding: 70px 0 60px;
     margin-bottom: 40px;
-    background-repeat: no-repeat;
-    background-size: cover;
+    /* background-repeat: no-repeat; */
+    background-position: right !important;
 }
 
-.heading_banner:before {
+/* .heading_banner:before {
     position: absolute;
     display: block;
     width: 100%;
     height: 100%;
-    background-color: rgba(0, 0, 0, 0.4);
+    background-color: rgba(0, 0, 0, 0.2);
     top: 0;
     left: 0;
     z-index: 0;
     content: '';
-}
+} */
 
 .read_more01 {
     background: #FFF;
@@ -141,11 +138,14 @@
 }
 
 .animalBackground {
-    background: url('https://www.ukgermanpharmaceuticals.com/designer/images/about/abt-bnr.jpg') !important;
+    background-image: url('https://www.ukgermanpharmaceuticals.com/designer/images/about/abt-bnr.jpg') !important;
 }
 
+.PhotoUkBackground {
+    background-image: url('https://www.ukgermanpharmaceuticals.com/designer/images/blog-banner.jpg') !important;
+}
 .contactusBackground {
-    background: url('https://www.ukgermanpharmaceuticals.com/designer/images/contact-banner.jpg') !important;
+    background-image: url('https://www.ukgermanpharmaceuticals.com/designer/images/contact-banner.jpg') !important;
 }
 
 .heading_banner .container {
@@ -222,7 +222,7 @@ img {
     color: #333;
     /* margin-bottom: 1.5rem; */
     padding-bottom: 0.5rem;
-    text-align: center !important;  
+    text-align: center !important;
     /* border-bottom: 1px solid #ddd; */
 }
 
@@ -376,8 +376,8 @@ img {
 .footer-wrapper {
     margin-top: 0;
     padding-top: 0;
-    position: relative;
-    z-index: 1;
+    /* position: relative;
+    z-index: 1; */
 }
 
 /* Ensure footer doesn't inherit unwanted styles */
@@ -780,10 +780,10 @@ img {
     list-style-type: none;
 }
 
-.testimonials_column .slick-prev,
+/* .testimonials_column .slick-prev,
 .slick-next {
     display: none !important;
-}
+} */
 
 .contact_page {
     padding: 40px 0;
@@ -842,10 +842,6 @@ img {
     .aboutTitle {
         font-size: 22px;
         margin: 20px 0;
-    }
-
-    .descriptionFont {
-        font-size: 12px;
     }
 
     .right_image1 .left_centered {

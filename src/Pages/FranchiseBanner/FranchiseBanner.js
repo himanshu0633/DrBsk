@@ -198,9 +198,11 @@ const FranchiseBanner = () => {
             <label style={styles.label}>Password</label>
             <input type="password" name="password" value={formData.password} onChange={handleChange} style={styles.input} />
           </div>
-          <button type="submit" style={styles.button} disabled={isSubmitting}>
-            {isSubmitting ? 'Submitting...' : 'Submit'}
-          </button>
+          <div style={styles.formGroup} className='mb-0'>
+            <button className='w-100' type="submit" style={styles.button} disabled={isSubmitting}>
+              {isSubmitting ? 'Submitting...' : 'Submit'}
+            </button>
+          </div>
           {error && <p style={styles.error}>{error}</p>}
         </form>
       </div>

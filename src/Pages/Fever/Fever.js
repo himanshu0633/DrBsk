@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from "react";
 import Header from "../../components/Header/Header";
-import Navbar from "../../components/Navbar/Navbar";
 import "./Fever.css";
 import { Link, useParams, useLocation, useNavigate } from "react-router-dom";
 import Footer from "../../components/Footer/Footer";
@@ -187,7 +186,6 @@ const Fever = () => {
   return (
     <>
       <Header />
-      <Navbar />
       <div className="fever-container">
         <button className="mobile-filter-btn" onClick={toggleMobileFilters}>
           {mobileFiltersOpen ? "Hide Filters" : "Show Filters"}
@@ -367,7 +365,10 @@ const Fever = () => {
                             </div>
                             <div className="product-details">
                               <h3 className="product-title">{product.name}</h3>
-                              <p className="product-quantity">{product.quantity}</p>
+                              {/* <p className="product-quantity">{product.quantity}</p> */}
+                              <p className="product-quantity" style={{
+                                color: product.stock === 'yes' ? '#2ecc40' : '#ff4136'
+                              }}>{product.stock === 'no' ? 'Out of Stock' : null}</p>
                               <div className="product-price">
                                 {isWholesaler ? (
                                   <>
@@ -403,13 +404,25 @@ const Fever = () => {
                                 </button>
                               </div>
                             ) : (
+                              // product.stock === 'yes' ? (
+                              //   <button
+                              //     onClick={() => handleAddToCart(product)}
+                              //     className={`add-to-cart-btn ${product.stock === 'no' ? 'disabled cursor-not-allowed' : ''}`}
+                              //   // disabled
+                              //   >
+                              //     🛒 Add to Cart
+                              //   </button>
+                              // ) : null
+
                               <button
                                 onClick={() => handleAddToCart(product)}
                                 className="add-to-cart-btn"
+                                disabled={product.stock === 'no'}
                               >
                                 🛒 Add to Cart
                               </button>
-                            )}
+                            )
+                            }
                           </div>
                         </div>
                       );
@@ -428,7 +441,7 @@ const Fever = () => {
             </div>
           </div>
         )}
-      </div>
+      </div >
       <Footer />
     </>
   );

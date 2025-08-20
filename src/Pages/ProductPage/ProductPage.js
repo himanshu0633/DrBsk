@@ -42,8 +42,26 @@ const ProductPage = () => {
   const [addedToCart, setAddedToCart] = useState(false);
   const [selectedImageIndex, setSelectedImageIndex] = useState(0);
   const navigate = useNavigate();
+  const [isZoomActive, setIsZoomActive] = useState(false);
+  const [zoomPosition, setZoomPosition] = useState({ x: 0, y: 0 });
 
+  const handleMouseMove = (e) => {
+    const { left, top, width, height } = e.currentTarget.getBoundingClientRect();
 
+    // Calculate cursor position as a percentage of image dimensions
+    const x = ((e.pageX - window.pageXOffset - left) / width) * 100;
+    const y = ((e.pageY - window.pageYOffset - top) / height) * 100;
+
+    setZoomPosition({ x, y });
+  };
+
+  const handleMouseEnter = () => {
+    setIsZoomActive(true);
+  };
+
+  const handleMouseLeave = () => {
+    setIsZoomActive(false);
+  };
 
   const increaseQty = () => {
     setQuantity(prev => prev + 1);
@@ -60,20 +78,36 @@ const ProductPage = () => {
   };
   const fetchData = async () => {
     setLoading(true);
+    let fetchedProduct;
     try {
-      // console.log("Calling:", /user/product/${id});
       const response = await axiosInstance.get(`/user/product/${id}`);
       const p = response.data;
-      console.log("Fetched product:", p);
+      console.log("Fetched product (raw):", p);
 
-      const fetchedProduct = {
+      // PATCH: handle stringified array in quantity field!
+      let quantityVariants = [];
+      if (Array.isArray(p.quantity) && typeof p.quantity[0] === "string") {
+        try {
+          quantityVariants = JSON.parse(p.quantity);
+        } catch (e) {
+          console.error("Failed to parse product.quantity", e, p.quantity);
+          quantityVariants = [];
+        }
+      } else if (Array.isArray(p.quantity)) {
+        quantityVariants = p.quantity;
+      }
+
+      fetchedProduct = {
         ...p,
+        quantity: quantityVariants,
         price: parseFloat(p.consumer_price),
         originalPrice: parseFloat(p.retail_price),
-        // discount: parseFloat(p.retail_price) - parseFloat(p.consumer_price),
       };
 
       setProduct(fetchedProduct);
+
+      // Logging for sanity check
+      console.log("Fetched product after handling:", fetchedProduct);
     } catch (error) {
       console.error("Error fetching data:", error);
     } finally {
@@ -123,7 +157,6 @@ const ProductPage = () => {
   return (
     <>
       <Header />
-      <Navbar />
       <div className="product-page">
         {/* Breadcrumb Navigation */}
         {/* <div className="breadcrumb">
@@ -141,7 +174,7 @@ const ProductPage = () => {
           <div className="product-wrapper">
             {/* Product Image Section */}
             <div className="product-image-container">
-              <div className="image-wrapper">
+              {/* <div className="image-wrapper">
                 <img src={`${API_URL}${product.media[selectedImageIndex]?.url}`} alt="Cough Drops Jar" className="product-image1" />
                 <div className="product-badge natural-badge">
                   <Leaf className="badge-icon" size={16} />
@@ -151,7 +184,53 @@ const ProductPage = () => {
                   <Bolt className="badge-icon" size={16} />
                   <span>Bestseller</span>
                 </div>
+              </div> */}
+
+              <div
+                className="image-wrapper"
+                onMouseMove={handleMouseMove}
+                onMouseEnter={handleMouseEnter}
+                onMouseLeave={handleMouseLeave}
+                style={{ position: 'relative', cursor: 'crosshair' }}
+              >
+                <img
+                  src={`${API_URL}${product.media[selectedImageIndex]?.url}`}
+                  alt="Product"
+                  className="product-image1"
+                />
+
+                {/* Zoom Lens */}
+                {isZoomActive && (
+                  <div
+                    className="zoom-lens"
+                    style={{
+                      position: 'absolute',
+                      top: 0,
+                      left: '105%',  // Offset right side of image
+                      width: '300px',
+                      height: '300px',
+                      border: '1px solid #ccc',
+                      backgroundImage: `url(${API_URL}${product.media[selectedImageIndex]?.url})`,
+                      backgroundRepeat: 'no-repeat',
+                      backgroundSize: '200%',  // Adjust zoom level here
+                      backgroundPosition: `${zoomPosition.x}% ${zoomPosition.y}%`,
+                      zIndex: 100,
+                    }}
+                  />
+                )}
+
+                {/* Your badges remain here */}
+                <div className="product-badge natural-badge">
+                  <Leaf className="badge-icon" size={16} />
+                  <span>Natural</span>
+                </div>
+                <div className="product-badge bestseller-badge">
+                  <Bolt className="badge-icon" size={16} />
+                  <span>Bestseller</span>
+                </div>
               </div>
+
+
               <div className="image-thumbnails">
                 {product.media.map((mediaItem, index) => (
                   <div
@@ -197,16 +276,39 @@ const ProductPage = () => {
               </div>
 
               <div className="product-meta">
-                <span className="product-pack">{product?.quantity || "Loading..."}</span>
-
-                {/* <span className="product-rating">
-                  ★★★★☆ <span className="rating-count">(128 reviews)</span>
-                </span> */}
+                {/* <h4>Size:</h4>
+                <span className="product-pack">{product?.quantity}</span> */}
+                {/* {console.log(product.quantity,"lsdflksjflksj")}
+                {product?.quantity.map((size, index) => (
+                  <span key={index} className="product-pack">{size}</span>
+                ))} */}
               </div>
 
-              <div className="stock-status in-stock">
-                <div className="status-indicator"></div>
-                <span>In Stock - Ready to Ship</span>
+              {/* Display Price & Quantity Cards */}
+              <div className="product-options">
+                {product.quantity && product.quantity.length > 0 ? (
+                  product.quantity.map((size, index) => (
+                    <div className="product-card1" key={index}>
+                      <div className="product-size">{size.label}</div>
+                      <div className="product-price">₹{size.final_price}</div>
+                      <div className="product-mrp">MRP: ₹{size.mrp}</div>
+                      <div className="product-discount">{size.discount}% OFF</div>
+                      <div className="product-gst">GST: {size.gst}%</div>
+                      <div className={`stock-status ${size.in_stock === 'yes' ? 'in-stock' : 'out-of-stock'}`}>
+                        {size.in_stock === 'yes' ? 'In Stock' : 'Out of Stock'}
+                      </div>
+                    </div>
+                  ))
+                ) : (
+                  <div>No variant data available</div>
+                )}
+              </div>
+
+
+              <div className={`stock-status ${product.stock === 'no' ? 'bg-red' : 'bg-green'} `}>
+                <div className={`status-indicator ${product.stock === 'no' ? 'bg-red' : 'bg-green'} `}></div>
+                {/* <span>In Stock - Ready to Ship</span> */}
+                <span style={{ color: "white", fontWeight: "bold" }}>{product.stock === 'no' ? 'Out of Stock ' : 'In Stock - Ready to Ship'}</span>
               </div>
 
               <div className="product-highlights">
@@ -291,8 +393,7 @@ const ProductPage = () => {
                   </>
                 )}
               </div>
-
-
+              {/* <div className="bg-red-gst">Including GST</div> */}
               <div className="delivery-info">
                 <label className="delivery-option" htmlFor="standard">
                   <input type="radio" id="standard" name="delivery" defaultChecked />
@@ -341,10 +442,20 @@ const ProductPage = () => {
                     Go to Cart
                   </button>
                 ) : (
-                  <button className="add-to-cart-btn" onClick={handleAddToCart}>
-                    <ShoppingCart className="btn-icon" size={18} />
-                    Add to Cart
+                  // product.stock === 'yes' ?
+                  //   (<button className="add-to-cart-btn" onClick={handleAddToCart}>
+                  //     <ShoppingCart className="btn-icon" size={18} />
+                  //     Add to Cart
+                  //   </button>) : null
+
+                  <button
+                    onClick={() => handleAddToCart(product)}
+                    className="add-to-cart-btn"
+                    disabled={product.stock === 'no'}
+                  >
+                    🛒 Add to Cart
                   </button>
+
                 )}
 
                 {/* Removed "Buy Now" button */}
@@ -669,3 +780,6 @@ const ProductPage = () => {
 };
 
 export default ProductPage;
+
+
+
