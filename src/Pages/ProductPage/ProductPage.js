@@ -1,9 +1,7 @@
 import React, { useState } from 'react';
 import './ProductPage.css';
-import ProductCarousel from '../../components/ProductCarousel/ProductCarousel';
 import Footer from '../../components/Footer/Footer';
 import Header from '../../components/Header/Header';
-import Navbar from '../../components/Navbar/Navbar';
 import { Link, useLocation, useNavigate, useParams } from 'react-router-dom';
 import { useEffect } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
@@ -86,7 +84,7 @@ const ProductPage = () => {
 
       // PATCH: handle stringified array in quantity field!
       let quantityVariants = [];
-      if (Array.isArray(p.quantity) && typeof p.quantity[0] === "string") {
+      if (Array.isArray(p.quantity)) {
         try {
           quantityVariants = JSON.parse(p.quantity);
         } catch (e) {
@@ -286,6 +284,21 @@ const ProductPage = () => {
 
               {/* Display Price & Quantity Cards */}
               <div className="product-options">
+                {product.quantity.map((size, index) => (
+                  <div className="product-card1" key={index}>
+                    <div className="product-size">{size.label}</div>
+                    <div className="product-price">₹{size.final_price}</div>
+                    <div className="product-mrp">MRP: ₹{size.mrp}</div>
+                    <div className="product-discount">{size.discount}% OFF</div>
+                    <div className="product-gst">GST: {size.gst}%</div>
+                    <div className={`stock-status ${size.in_stock === 'yes' ? 'in-stock' : 'out-of-stock'}`}>
+                      {size.in_stock === 'yes' ? 'In Stock' : 'Out of Stock'}
+                    </div>
+                  </div>
+                ))}
+              </div>
+
+              {/* <div className="product-options">
                 {product.quantity && product.quantity.length > 0 ? (
                   product.quantity.map((size, index) => (
                     <div className="product-card1" key={index}>
@@ -302,7 +315,7 @@ const ProductPage = () => {
                 ) : (
                   <div>No variant data available</div>
                 )}
-              </div>
+              </div> */}
 
 
               <div className={`stock-status ${product.stock === 'no' ? 'bg-red' : 'bg-green'} `}>
