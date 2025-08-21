@@ -73,7 +73,7 @@ const PharmaWholeSale = () => {
     if (!selectedUserId || !pendingStatus) return;
 
     try {
-      const token = localStorage.getItem('token') || sessionStorage.getItem('token');
+      const token = localStorage.getItem('token') || localStorage.getItem('token');
       const response = await axiosInstance.put(
         `/user/updateWholesalePartner/${selectedUserId}`,
         { status: pendingStatus },

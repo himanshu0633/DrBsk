@@ -32,7 +32,7 @@ const AddToCart = () => {
   const navigate = useNavigate();
 
   useEffect(() => {
-    const userData = sessionStorage.getItem('userData');
+    const userData = localStorage.getItem('userData');
     if (userData) {
       setIsAuthenticated(true);
     } else {
@@ -65,7 +65,7 @@ const AddToCart = () => {
   };
 
   const handleAddAddress = async () => {
-    const userData = JSON.parse(sessionStorage.getItem('userData'));
+    const userData = JSON.parse(localStorage.getItem('userData'));
     const userId = userData?._id;
 
     if (!userId) {
@@ -151,7 +151,7 @@ const handleCheckout = () => {
       try {
         toast.success("Payment successful!");
 
-        const userData = JSON.parse(sessionStorage.getItem('userData'));
+        const userData = JSON.parse(localStorage.getItem('userData'));
         const orderPayload = {
           userId: userData?._id,
           items: cartItems.map(item => ({
@@ -203,7 +203,7 @@ const handleCheckout = () => {
   }, []);
 
   const fetchData = async () => {
-    const userData = JSON.parse(sessionStorage.getItem('userData'));
+    const userData = JSON.parse(localStorage.getItem('userData'));
     const userId = userData?._id;
 
     if (!userId) {
