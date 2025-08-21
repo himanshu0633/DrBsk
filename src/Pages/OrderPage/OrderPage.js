@@ -12,7 +12,7 @@ const OrderPage = () => {
   const [isAuthenticated, setIsAuthenticated] = useState(null);
 
   // Get userId from sessionStorage
-  const userData = JSON.parse(sessionStorage.getItem('userData'));
+  const userData = JSON.parse(localStorage.getItem('userData'));
   const userId = userData?._id;
   const navigate = useNavigate();
 
@@ -32,7 +32,7 @@ const OrderPage = () => {
   };
 
   useEffect(() => {
-    const userData = sessionStorage.getItem('userData');
+    const userData = localStorage.getItem('userData');
     if (userData) {
       setIsAuthenticated(true);
     } else {

@@ -25,7 +25,7 @@ const EditProfile = () => {
   const navigate = useNavigate();
 
   useEffect(() => {
-    const userData = sessionStorage.getItem('userData');
+    const userData = localStorage.getItem('userData');
     console.log("User data:", userData);
     if (userData) {
       const parsedData = JSON.parse(userData);
@@ -84,7 +84,7 @@ const EditProfile = () => {
       if (response.status === 200 || response.status === 201) {
         console.log("Profile updated:", response.data);
 
-        sessionStorage.setItem('userData', JSON.stringify(response.data.updatedUser || updatedData));
+        localStorage.setItem('userData', JSON.stringify(response.data.updatedUser || updatedData));
         toast.success('Profile updated successfully!');
       } else {
         throw new Error("Failed to update profile");
@@ -97,7 +97,7 @@ const EditProfile = () => {
   const handleLogout = (e) => {
     e.preventDefault();
     console.log('Logging out...');
-      sessionStorage.removeItem('userData');
+      localStorage.removeItem('userData');
     // window.location.href = '/login';
     navigate('/login')
   };

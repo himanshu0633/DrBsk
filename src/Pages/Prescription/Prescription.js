@@ -15,7 +15,7 @@ const Prescription = () => {
   const fileInputRef = useRef(null);
   const [isAuthenticated, setIsAuthenticated] = useState(null);
 
-  const userData = sessionStorage.getItem('userData');
+  const userData = localStorage.getItem('userData');
   const userId = userData ? JSON.parse(userData)._id : null;
   const navigate = useNavigate();
   const handleFileSelect = (event) => {
@@ -80,7 +80,7 @@ const Prescription = () => {
   };
 
   useEffect(() => {
-    const userData = sessionStorage.getItem('userData');
+    const userData = localStorage.getItem('userData');
     if (userData) {
       setIsAuthenticated(true);
     } else {

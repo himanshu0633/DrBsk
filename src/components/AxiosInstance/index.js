@@ -9,7 +9,7 @@ const axiosInstance = axios.create({
 
 axiosInstance.interceptors.request.use(
   (config) => {
-    const token = sessionStorage.getItem("userToken");
+    const token = localStorage.getItem("userToken");
     if (token) {
       config.headers.Authorization = `Bearer ${token}`;
     }
@@ -28,7 +28,7 @@ export const setupAxiosInterceptors = (navigate, params) => {
     (error) => {
       if (error.response && (error.response.status === 401 || error.response.status === 403)) {
         toast.error("Session expired. Please sign in again.");
-        sessionStorage.clear();
+        localStorage.clear();
         const org_id = params?.org_id;
         if (org_id) {
           navigate(`/client/${org_id}/login`);
