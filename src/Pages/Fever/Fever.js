@@ -41,68 +41,68 @@ const Fever = () => {
   const isWholesaler = userData?.type === "wholesalePartner";
 
   // Fetch all products
-// Fetch all products
-// Fetch all products
-const fetchProducts = async () => {
-  setLoading(true);
-  try {
-    const { data } = await axiosInstance.get(`/user/allproducts`);
+  // Fetch all products
+  // Fetch all products
+  const fetchProducts = async () => {
+    setLoading(true);
+    try {
+      const { data } = await axiosInstance.get(`/user/allproducts`);
 
-    const toNum = (v) => {
-      const n = parseFloat(v);
-      return Number.isFinite(n) ? n : 0;
-    };
-
-    const pickVariation = (q) => {
-      if (!q) return null;
-      let arr = q;
-      if (typeof q === "string") {
-        try { arr = JSON.parse(q); } catch { return null; }
-      }
-      if (!Array.isArray(arr) || arr.length === 0) return null;
-      // prefer in-stock; else first
-      return arr.find(v => (v.in_stock || "").toLowerCase() === "yes") || arr[0];
-    };
-
-    const fetched = data.map((p) => {
-      // start with flat fields
-      let retail = toNum(p.retail_price);
-      // for consumer, prefer consumer_price, then mrp
-      let consumer = toNum(p.consumer_price || p.mrp);
-
-      // Fallback to quantity[] when retail is missing/zero
-      if (!retail) {
-        const v = pickVariation(p.quantity);
-        if (v) {
-          // take variation prices if present
-          if (toNum(v.retail_price)) retail = toNum(v.retail_price);
-          // final_price (best), else mrp/consumer in variation
-          const vConsumer = toNum(v.final_price || v.mrp || v.consumer_price);
-          if (vConsumer) consumer = vConsumer;
-        }
-      }
-
-      const discount = retail > 0 ? Math.max(0, retail - consumer) : 0;
-
-      return {
-        ...p,
-        // values used by your filters/sort
-        price: consumer,
-        originalPrice: retail,
-        discount,
-
-        // 🔁 overwrite fields your UI displays so it shows correctly
-        retail_price: retail,
-        consumer_price: consumer,
+      const toNum = (v) => {
+        const n = parseFloat(v);
+        return Number.isFinite(n) ? n : 0;
       };
-    });
 
-    setAllProducts(fetched);
-  } catch (error) {
-    console.error("Error fetching products:", error);
-  }
-  setLoading(false);
-};
+      const pickVariation = (q) => {
+        if (!q) return null;
+        let arr = q;
+        if (typeof q === "string") {
+          try { arr = JSON.parse(q); } catch { return null; }
+        }
+        if (!Array.isArray(arr) || arr.length === 0) return null;
+        // prefer in-stock; else first
+        return arr.find(v => (v.in_stock || "").toLowerCase() === "yes") || arr[0];
+      };
+
+      const fetched = data.map((p) => {
+        // start with flat fields
+        let retail = toNum(p.retail_price);
+        // for consumer, prefer consumer_price, then mrp
+        let consumer = toNum(p.consumer_price || p.mrp);
+
+        // Fallback to quantity[] when retail is missing/zero
+        if (!retail) {
+          const v = pickVariation(p.quantity);
+          if (v) {
+            // take variation prices if present
+            if (toNum(v.retail_price)) retail = toNum(v.retail_price);
+            // final_price (best), else mrp/consumer in variation
+            const vConsumer = toNum(v.final_price || v.mrp || v.consumer_price);
+            if (vConsumer) consumer = vConsumer;
+          }
+        }
+
+        const discount = retail > 0 ? Math.max(0, retail - consumer) : 0;
+
+        return {
+          ...p,
+          // values used by your filters/sort
+          price: consumer,
+          originalPrice: retail,
+          discount,
+
+          // 🔁 overwrite fields your UI displays so it shows correctly
+          retail_price: retail,
+          consumer_price: consumer,
+        };
+      });
+
+      setAllProducts(fetched);
+    } catch (error) {
+      console.error("Error fetching products:", error);
+    }
+    setLoading(false);
+  };
 
 
   // Fetch subcategories and match category
@@ -393,9 +393,9 @@ const fetchProducts = async () => {
                           >
                             {product.discount > 0 && (
                               <div className="product-badge">
-                              <span className="discount-badge">
-  Save ₹{Math.floor(product.discount)}
-</span>
+                                <span className="discount-badge">
+                                  Save ₹{Math.floor(product.discount)}
+                                </span>
 
                               </div>
                             )}
@@ -424,10 +424,10 @@ const fetchProducts = async () => {
                                   </>
                                 ) : (
                                   <>
-                                   <span>₹{product.consumer_price}</span>
-{product.retail_price > product.consumer_price && (
-  <span className="original-price">₹{product.retail_price}</span>
-)}
+                                    <span>₹{product.consumer_price}</span>
+                                    {product.retail_price > product.consumer_price && (
+                                      <span className="original-price">₹{product.retail_price}</span>
+                                    )}
 
                                   </>
                                 )}
