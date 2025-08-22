@@ -50,8 +50,9 @@ const Banner = () => {
     speed: 500,  // Transition speed
     slidesToShow: 1,  // Show one slide at a time
     slidesToScroll: 1,  // Scroll one slide at a time
-    autoplay: banners.length > 1,  // Enable autoplay
-    autoplaySpeed: 3000,  // Autoplay interval (in ms)
+    // autoplay: banners.length > 1,  // Enable autoplay
+    autoplay: true,  // Enable autoplay
+    autoplaySpeed: 5000,  // Autoplay interval (in ms)
     arrows: false,  // Disable arrows
   };
 

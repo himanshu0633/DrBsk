@@ -21,7 +21,7 @@ const Features = () => {
         <div className="featurs-row">
           {/* Feature Card */}
           <div
-            className="featurs-item text-center rounded p-4"
+            className="featurs-item  rounded p-4"
             onClick={() => handleClick(false)}
             style={{ cursor: 'pointer' }}
           >
@@ -38,7 +38,7 @@ const Features = () => {
           </div>
 
           {/* Feature Card */}
-          <div className="featurs-item text-center rounded p-4" onClick={() => handleClick(true)}
+          <div className="featurs-item  rounded p-4" onClick={() => handleClick(true)}
             style={{ cursor: 'pointer' }}>
             <div className="featurs-icon">
               <img src="https://app.davaindia.com/images/QuickActions/doctor.gif" alt="No Prescription" />
@@ -50,7 +50,7 @@ const Features = () => {
           </div>
 
           {/* Feature Card */}
-          <div className="featurs-item text-center rounded p-4"
+          <div className="featurs-item  rounded p-4"
             style={{ cursor: 'pointer' }}>
             {/* <NavLink to='OrderPage' className='textDecorNone'>
               <div className="featurs_item1 text-center rounded p-4"
@@ -66,7 +66,7 @@ const Features = () => {
             </NavLink> */}
 
             <div onClick={() => navigate('/OrderPage')} className='textDecorNone'>
-              <div className="featurs_item1 text-center rounded "
+              <div className="featurs_item1 rounded "
                 style={{ cursor: 'pointer' }}>
                 <div className="featurs-icon">
                   <img src="https://app.davaindia.com/images/QuickActions/PrevBought.gif" alt="Previously Bought" />
@@ -80,7 +80,7 @@ const Features = () => {
           </div>
 
           {/* Feature Card */}
-          <div className="featurs-item text-center rounded p-4"
+          <div className="featurs-item  rounded p-4"
             style={{ cursor: 'pointer' }}>
             <div className="featurs-icon">
               <img src="https://app.davaindia.com/images/QuickActions/sale.gif" alt="Deals For You" />

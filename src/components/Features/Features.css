@@ -123,8 +123,7 @@
     margin-right: 10px;
   }
 
-  /* .featurs-icon img {
-    width: 30px;
-    height: 30px;
-  } */
+  .featurs-content {
+    text-align: 'start' !important;
+  }
 }
