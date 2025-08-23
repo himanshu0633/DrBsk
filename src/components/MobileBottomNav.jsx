@@ -4,7 +4,8 @@ import {
     BottomNavigationAction,
     Paper,
     useTheme,
-    useMediaQuery
+    useMediaQuery,
+    Badge
 } from "@mui/material";
 import {
     Home,
@@ -14,12 +15,15 @@ import {
     Star
 } from "@mui/icons-material";
 import { useNavigate } from "react-router-dom";
+import { useSelector } from "react-redux";
 
 export const MobileBottomNav = () => {
     const [value, setValue] = React.useState(0);
     const theme = useTheme();
     const isMobile = useMediaQuery("(max-width:600px)");
     const navigate = useNavigate()
+    const cartItems = useSelector((state) => state.app.data);
+    const cartCount = cartItems.length;
 
     if (!isMobile) return null;
 
@@ -58,7 +62,7 @@ export const MobileBottomNav = () => {
                         mt: "1px"
                     },
                     "& .Mui-selected, & .Mui-selected .MuiBottomNavigationAction-label": {
-                        color: "#FFD700", // Selected color (gold) - change as needed
+                        color: "#FFD700",
                     },
                     "& .MuiBottomNavigationAction-root": {
                         minWidth: 0,
@@ -70,7 +74,28 @@ export const MobileBottomNav = () => {
                 <BottomNavigationAction onClick={() => navigate("/homepage")} label="Home" icon={<Home />} />
                 <BottomNavigationAction onClick={() => navigate("/fever")} label="Products" icon={<Category />} />
                 <BottomNavigationAction onClick={() => navigate("/OrderPage")} label="Orders" icon={<Star />} />
-                <BottomNavigationAction onClick={() => navigate("/cart")} label="Cart" icon={<ShoppingCart />} />
+
+                <BottomNavigationAction
+                    onClick={() => navigate("/cart")}
+                    label="Cart"
+                    icon={
+                        cartCount > 0 ? (
+                            <Badge
+                                badgeContent={cartCount}
+                                color="error"
+                                overlap="circular"
+                                anchorOrigin={{
+                                    vertical: "top",
+                                    horizontal: "right",
+                                }}
+                            >
+                                <ShoppingCart />
+                            </Badge>
+                        ) : (
+                            <ShoppingCart />
+                        )
+                    }
+                />
                 <BottomNavigationAction onClick={() => navigate("/EditProfile")} label="You" icon={<PersonOutline />} />
             </BottomNavigation>
         </Paper>
