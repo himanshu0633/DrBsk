@@ -435,7 +435,7 @@ const ProductPage = () => {
                     🛒 Add to Cart
                   </button>
                 )}
-              </div> 
+              </div>
 
               {/* Badges and policy */}
               <div className="product-highlights">
