@@ -16,10 +16,11 @@ const PharmaSidebar = ({ onClose }) => {
             <div className="sidebar-content">
                 {/* Close Button for Mobile */}
                 <div className="sidebar-header-mobile">
-                    <h4 className="admin-sidebar-title">
+                    {/* <h4 className="admin-sidebar-title">
                         <span className="logo-part">Admin</span> Panel
-                    </h4>
-                    {/* <X className="close-icon" onClick={onClose} /> */}
+                    </h4> */}
+                    <h4 className="admin-sidebar-title">  Admin Panel  </h4>
+                  
                     <X className="close-icon" onClick={onClose} style={{ cursor: 'pointer' }} />
 
                 </div>
@@ -61,10 +62,10 @@ const PharmaSidebar = ({ onClose }) => {
                         <Users className="nav-icon" size={20} />
                         <span className="nav-text">Prescriptions</span>
                     </NavLink>
-                    <NavLink to="/pharma-admin/settings" className="admin-nav-link" onClick={onClose}>
+                    {/* <NavLink to="/pharma-admin/settings" className="admin-nav-link" onClick={onClose}>
                         <Settings className="nav-icon" size={20} />
                         <span className="nav-text">Settings</span>
-                    </NavLink>
+                    </NavLink> */}
                 </nav>
             </div>
         </div>

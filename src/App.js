@@ -121,24 +121,8 @@ function App() {
         <Route path="/blogs" element={<Blogs />} />
         <Route path="/blogCardDetail" element={<BlogCardDetail />} />
 
-
-        {/* {Admin Panel Routes} */}
-        {/* <Route path="/admin/AddProduct" element={<AddProduct />} />
-      <Route path="/admin/Board" element={<Board />} />
-      <Route path="/admin/Category" element={<Category />} />
-      <Route path="/admin/Settings" element={<Settings />} />
-      <Route path="/admin" element={<AdminLayout />} />
-      <Route path="/admin/login" element={<Adminlogin />} />
-      <Route path="/admin/Popup" element={<Popup />} />
-      <Route path="/admin/SubCategory" element={<SubCategory />} />
-      <Route path="/admin/BannerCrud" element={<BannerCrud />} />
-      <Route path="/admin/User" element={<User />} /> */}
-        {/* <Route index element={<Dashboard />} />    */}
-        {/* Future pages can be added here */}
-        {/* </Route> */}
-
         {/* pharma admin */}
-        <Route>
+        {/* <Route>
           <Route path="/admin-login" element={<PharmaAdminLogin />} />
 
           <Route
@@ -162,6 +146,28 @@ function App() {
             <Route path="chart" element={<MyChart />} />
             <Route path="wholesale" element={<PharmaWholeSale />} />
             <Route path="prescriptions" element={<PharmaPrescription />} />
+          </Route>
+        </Route> */}
+
+        <Route path="/admin-login" element={<PharmaAdminLogin />} />
+
+        <Route element={<ProtectedRoute />}>
+          <Route path="/pharma-admin" element={<PharmaAdmin />}>
+            <Route path="dashboard" element={<PharmaDashboard />} />
+            <Route path="category" element={<PharmaCategory />} />
+            <Route path="subCategory" element={<PharmaSubCategory />} />
+            <Route path="orders" element={<PharmaOrder />} />
+            <Route path="products" element={<PharmaProducts />} />
+            <Route path="addNewProduct" element={<AddNewProduct />} />
+            <Route path="addNewProduct/:id" element={<AddNewProduct />} />
+            <Route path="banner" element={<PharmaBanner />} />
+            <Route path="user" element={<PharmaUser />} />
+            <Route path="settings" element={<PharmaSetting />} />
+            <Route path="chart" element={<MyChart />} />
+            <Route path="wholesale" element={<PharmaWholeSale />} />
+            <Route path="prescriptions" element={<PharmaPrescription />} />
+            {/* Optional: index route */}
+            {/* <Route index element={<Navigate to="dashboard" replace />} /> */}
           </Route>
         </Route>
 
