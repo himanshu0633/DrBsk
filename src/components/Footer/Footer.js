@@ -108,7 +108,7 @@ const Footer = () => {
               <li>
                 <a onClick={() => navigate('/privacy')}>Privacy Policy</a>
               </li>
-              <li> <NavLink to="/pharma-admin">Admin Panel</NavLink></li>
+              {/* <li> <NavLink to="/pharma-admin">Admin Panel</NavLink></li> */}
               <li>
                 <a onClick={() => navigate('/shipping')}>Shipping and Delivery Policy</a>
               </li>
