@@ -152,6 +152,25 @@ const ProductPage = () => {
     const variant = product.quantity?.[selectedVariantIndex];
     if (!variant) return;
 
+    // const cartItem = {
+    //   ...product,
+    //   selectedVariant: {
+    //     label: variant.label,
+    //     mrp: variant.mrp,
+    //     discount: variant.discount,
+    //     gst: variant.gst,
+    //     retail_price: variant.retail_price,
+    //     final_price: variant.final_price,
+    //     in_stock: variant.in_stock,
+    //   },
+    //   // keep top-level "quantity" name for your Redux if it expects units count
+    //   quantity: units,
+    //   // helpful derived values
+    //   unitPrice: variant.final_price,
+    //   totalPrice: variant.final_price != null ? variant.final_price * units : null,
+    // };
+
+
     const cartItem = {
       ...product,
       selectedVariant: {
@@ -163,12 +182,17 @@ const ProductPage = () => {
         final_price: variant.final_price,
         in_stock: variant.in_stock,
       },
-      // keep top-level "quantity" name for your Redux if it expects units count
+      // ADD THESE LINES:
+      mrp: variant.mrp,                       // ensures cart page has access to mrp
+      discount: variant.discount,             // ensures cart page has discount
+      gst: variant.gst,                       // ensures cart page has gst
+      retail_price: variant.retail_price,     // ensures cart page has retail_price
+      final_price: variant.final_price,       // ensures cart page displays correct price
       quantity: units,
-      // helpful derived values
       unitPrice: variant.final_price,
       totalPrice: variant.final_price != null ? variant.final_price * units : null,
     };
+
 
     toast.success('Item added to cart!', {
       position: 'top-right',
