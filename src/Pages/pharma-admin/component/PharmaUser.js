@@ -26,7 +26,8 @@ import {
   Paper,
   Chip,
   IconButton,
-  TablePagination
+  TablePagination,
+  styled
 } from '@mui/material';
 import EditIcon from '@mui/icons-material/Edit';
 import DeleteIcon from '@mui/icons-material/Delete';
@@ -51,6 +52,11 @@ const PharmaUser = () => {
   const [rowsPerPage, setRowsPerPage] = useState(10);
 
   // Pagination handlers
+  const StyledTableContainer = styled(TableContainer)(({ theme }) => ({
+    marginTop: theme.spacing(3),
+    boxShadow: theme.shadows[3],
+    borderRadius: theme.shape.borderRadius,
+  }));
   const handleChangePage = (event, newPage) => {
     setPage(newPage);
   };
@@ -143,12 +149,12 @@ const PharmaUser = () => {
         </Typography>
       </Box>
 
-      <Card variant="outlined">
-        <CardContent>
+      <Box variant="outlined">
+        <Box>
           {loading ? (
             <CustomLoader />
           ) : (
-            <TableContainer component={Paper}>
+            <StyledTableContainer component={Paper}>
               <Table sx={{ minWidth: 650 }} aria-label="user table">
                 <TableHead>
                   <TableRow>
@@ -219,12 +225,13 @@ const PharmaUser = () => {
                   backgroundColor: '#f5f5f5',
                   borderBottomLeftRadius: '8px',
                   borderBottomRightRadius: '8px',
+                   width: '100%',
                 }}
               />
-            </TableContainer>
+            </StyledTableContainer>
           )}
-        </CardContent>
-      </Card>
+        </Box>
+      </Box>
 
       <Dialog open={showModal} onClose={resetForm} maxWidth="sm" fullWidth>
         <DialogTitle>

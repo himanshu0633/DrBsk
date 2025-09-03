@@ -20,7 +20,8 @@ import {
   Bolt,
   Pill,
   ShoppingCart,
-  Check
+  Check,
+  Share2   
 } from 'lucide-react';
 import axiosInstance from '../../components/AxiosInstance';
 import API_URL from '../../config';
@@ -208,6 +209,16 @@ const ProductPage = () => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [id]);
 
+    const handleShare = () => {
+    const url = window.location.href;
+    navigator.clipboard.writeText(url).then(() => {
+      toast.info('Link copied to clipboard!', { position: 'top-right', autoClose: 2000 });
+    }).catch(() => {
+      toast.error('Failed to copy link.', { position: 'top-right', autoClose: 2000 });
+    });
+  };
+
+
   const location = useLocation();
   // const product1 = location.state?.product;
 
@@ -324,21 +335,31 @@ const ProductPage = () => {
 
             {/* Product Info Section */}
             <div className="product-info">
-              <div className="product-header">
-                <h1 className="product-title">{product?.name || 'Product'}</h1>
-                <button
-                  className={`wishlist-btn ${isWishlisted ? 'active' : ''}`}
-                  onClick={toggleWishlist}
-                  aria-label={isWishlisted ? 'Remove from wishlist' : 'Add to wishlist'}
-                >
-                  <Heart
-                    className="wishlist-icon"
-                    size={20}
-                    fill={isWishlisted ? '#ff6b6b' : 'none'}
-                    color="#ff6b6b"
-                  />
-                </button>
-              </div>
+             <div className="product-header">
+  <h1 className="product-title">{product?.name || 'Product'}</h1>
+  <div className="product-actions">
+    <button
+      className={`wishlist-btn ${isWishlisted ? 'active' : ''}`}
+      onClick={toggleWishlist}
+      aria-label={isWishlisted ? 'Remove from wishlist' : 'Add to wishlist'}
+    >
+      <Heart
+        className="wishlist-icon"
+        size={18}
+        fill={isWishlisted ? '#ff6b6b' : 'none'}
+        color="#ff6b6b"
+      />
+    </button>
+    <button
+      className="share-btn"
+      onClick={handleShare}
+      aria-label="Share this product"
+    >
+      <Share2 size={18} />
+    </button>
+  </div>
+</div>
+
 
               {/* Variant selector */}
               <div className="variant-section">
