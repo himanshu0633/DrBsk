@@ -18,6 +18,32 @@
   padding: 1rem;
 }
 
+.pagination-container {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  justify-content: center;
+  margin: 16px 0 24px;
+  flex-wrap: wrap;
+}
+
+.page-btn {
+  padding: 6px 10px;
+  border: 1px solid #ddd;
+  background: #fff;
+  border-radius: 6px;
+  cursor: pointer;
+}
+.page-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+.page-indicator {
+  font-weight: 600;
+  padding: 4px 8px;
+}
+
+
 .mobile-filter-btn {
   display: none;
   background-color: var(--primary-color);

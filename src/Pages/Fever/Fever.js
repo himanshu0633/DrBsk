@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useMemo } from "react";
 import Header from "../../components/Header/Header";
 import "./Fever.css";
 import { Link, useParams, useLocation, useNavigate } from "react-router-dom";
@@ -9,6 +9,8 @@ import { addData } from "../../store/Action";
 import API_URL from "../../config";
 import { toast } from "react-toastify";
 import CustomLoader from "../../components/CustomLoader";
+
+const PAGE_SIZE = 20;
 
 const Fever = () => {
   const location = useLocation();
@@ -36,12 +38,13 @@ const Fever = () => {
   const [mobileFiltersOpen, setMobileFiltersOpen] = useState(false);
   const [loading, setLoading] = useState(false);
 
+  // NEW: pagination state
+  const [currentPage, setCurrentPage] = useState(1);
+
   const storedUser = localStorage.getItem("userData");
   const userData = storedUser ? JSON.parse(storedUser) : null;
   const isWholesaler = userData?.type === "wholesalePartner";
 
-  // Fetch all products
-  // Fetch all products
   // Fetch all products
   const fetchProducts = async () => {
     setLoading(true);
@@ -61,22 +64,17 @@ const Fever = () => {
         }
         if (!Array.isArray(arr) || arr.length === 0) return null;
         // prefer in-stock; else first
-        return arr.find(v => (v.in_stock || "").toLowerCase() === "yes") || arr[0];
+        return arr.find(v => (String(v.in_stock || "")).toLowerCase() === "yes") || arr[0];
       };
 
       const fetched = data.map((p) => {
-        // start with flat fields
         let retail = toNum(p.retail_price);
-        // for consumer, prefer consumer_price, then mrp
         let consumer = toNum(p.consumer_price || p.mrp);
 
-        // Fallback to quantity[] when retail is missing/zero
         if (!retail) {
           const v = pickVariation(p.quantity);
           if (v) {
-            // take variation prices if present
             if (toNum(v.retail_price)) retail = toNum(v.retail_price);
-            // final_price (best), else mrp/consumer in variation
             const vConsumer = toNum(v.final_price || v.mrp || v.consumer_price);
             if (vConsumer) consumer = vConsumer;
           }
@@ -86,12 +84,9 @@ const Fever = () => {
 
         return {
           ...p,
-          // values used by your filters/sort
           price: consumer,
           originalPrice: retail,
           discount,
-
-          // 🔁 overwrite fields your UI displays so it shows correctly
           retail_price: retail,
           consumer_price: consumer,
         };
@@ -103,7 +98,6 @@ const Fever = () => {
     }
     setLoading(false);
   };
-
 
   // Fetch subcategories and match category
   const fetchSubcategories = async () => {
@@ -128,22 +122,22 @@ const Fever = () => {
     fetchSubcategories();
   }, [categoryId]);
 
-  // Filter products
+  // Filter + sort products
   useEffect(() => {
     const filtered = allProducts.filter((product) => {
       const price = parseFloat(product.price) || 0;
       const discount = parseFloat(product.discount) || 0;
 
       const matchesSubCategory = subCategoryName
-        ? product.sub_category?.toLowerCase() === subCategoryName.toLowerCase()
+        ? (product.sub_category || "").toLowerCase() === subCategoryName.toLowerCase()
         : true;
 
       const matchesCategory = categoryId
-        ? categorySubNames.includes(product.sub_category?.toLowerCase())
+        ? categorySubNames.includes((product.sub_category || "").toLowerCase())
         : true;
 
       const matchesPrescription = filterByPrescription
-        ? product.prescription?.toLowerCase() === "notrequired"
+        ? (product.prescription || "").toLowerCase() === "notrequired"
         : true;
 
       return (
@@ -157,7 +151,6 @@ const Fever = () => {
       );
     });
 
-    // Sort
     switch (sortOption) {
       case "price-low":
         filtered.sort((a, b) => a.price - b.price);
@@ -173,6 +166,8 @@ const Fever = () => {
     }
 
     setProducts(filtered);
+    // NEW: whenever the product list changes due to filters/sort/etc, reset to page 1
+    setCurrentPage(1);
   }, [
     filters,
     sortOption,
@@ -224,6 +219,64 @@ const Fever = () => {
 
   const toggleMobileFilters = () =>
     setMobileFiltersOpen((prev) => !prev);
+
+  // NEW: pagination calculations
+  const totalPages = Math.max(1, Math.ceil(products.length / PAGE_SIZE));
+  const paginatedProducts = useMemo(() => {
+    const start = (currentPage - 1) * PAGE_SIZE;
+    return products.slice(start, start + PAGE_SIZE);
+  }, [products, currentPage]);
+
+  const goToPage = (page) => {
+    const p = Math.min(Math.max(1, page), totalPages);
+    setCurrentPage(p);
+    // optional: scroll back to top of grid on page change
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  };
+
+  // Simple pagination UI
+  const Pagination = () => {
+    if (products.length === 0) return null;
+
+    // compact page numbers (first, prev, current, next, last)
+    return (
+      <div className="pagination-container">
+        <button
+          className="page-btn"
+          onClick={() => goToPage(1)}
+          disabled={currentPage === 1}
+        >
+          « First
+        </button>
+        <button
+          className="page-btn"
+          onClick={() => goToPage(currentPage - 1)}
+          disabled={currentPage === 1}
+        >
+          ‹ Prev
+        </button>
+
+        <span className="page-indicator">
+          Page {currentPage} of {totalPages}
+        </span>
+
+        <button
+          className="page-btn"
+          onClick={() => goToPage(currentPage + 1)}
+          disabled={currentPage === totalPages}
+        >
+          Next ›
+        </button>
+        <button
+          className="page-btn"
+          onClick={() => goToPage(totalPages)}
+          disabled={currentPage === totalPages}
+        >
+          Last »
+        </button>
+      </div>
+    );
+  };
 
   return (
     <>
@@ -321,155 +374,156 @@ const Fever = () => {
               <div>
                 {products.length > 0 ? (
                   isWholesaler ? (
-                    // Table view for wholesalers
-                    <div className="wholesale-table-container">
-                      <table className="wholesale-table">
-                        <thead>
-                          <tr>
-                            <th>Image</th>
-                            <th>Name</th>
-                            <th>Description</th>
-                            <th>Wholesale Price</th>
-                            <th>Actions</th>
-                          </tr>
-                        </thead>
-                        <tbody>
-                          {products.map((product) => {
-                            const quantity = getQuantity(product._id);
-                            return (
-                              <tr key={product._id}>
-                                <td>
+                    <>
+                      {/* Table view for wholesalers (paginated) */}
+                      <div className="wholesale-table-container">
+                        <table className="wholesale-table">
+                          <thead>
+                            <tr>
+                              <th>Image</th>
+                              <th>Name</th>
+                              <th>Description</th>
+                              <th>Wholesale Price</th>
+                              <th>Actions</th>
+                            </tr>
+                          </thead>
+                          <tbody>
+                            {paginatedProducts.map((product) => {
+                              const quantity = getQuantity(product._id);
+                              return (
+                                <tr key={product._id}>
+                                  <td>
+                                    <img
+                                      src={`${API_URL}${product.media[0]?.url}`}
+                                      alt={product.name}
+                                      className="table-product-image"
+                                      loading="lazy"
+                                    />
+                                  </td>
+                                  <td>
+                                    <span
+                                      className="cursor-pointer"
+                                      onClick={() => navigate(`/ProductPage/${product._id}`)}
+                                    >
+                                      {product.name}
+                                    </span>
+                                  </td>
+                                  <td>{product.description}</td>
+                                  <td>₹{product.consumer_price}</td>
+                                  <td>
+                                    {quantity > 0 ? (
+                                      <div className="quantity-controller">
+                                        <button onClick={() => decreaseQuantity(product._id)}>
+                                          -
+                                        </button>
+                                        <span>{quantity}</span>
+                                        <button onClick={() => increaseQuantity(product._id)}>
+                                          +
+                                        </button>
+                                      </div>
+                                    ) : (
+                                      <button
+                                        onClick={() => handleAddToCart(product)}
+                                        className="add-to-cart-btn"
+                                      >
+                                        🛒 Add
+                                      </button>
+                                    )}
+                                  </td>
+                                </tr>
+                              );
+                            })}
+                          </tbody>
+                        </table>
+                      </div>
+                      <Pagination />
+                    </>
+                  ) : (
+                    <>
+                      {/* Cards view for consumers (paginated) */}
+                      <div className="products-container">
+                        {paginatedProducts.map((product) => {
+                          const quantity = getQuantity(product._id);
+                          return (
+                            <div key={product._id} className="product-card ">
+                              <Link
+                                to={`/ProductPage/${product._id}`}
+                                className="product-card-link"
+                              >
+                                {product.discount > 0 && (
+                                  <div className="product-badge">
+                                    <span className="discount-badge">
+                                      Save ₹{Math.floor(product.discount)}
+                                    </span>
+                                  </div>
+                                )}
+                                <div className="product-image">
                                   <img
                                     src={`${API_URL}${product.media[0]?.url}`}
                                     alt={product.name}
-                                    className="table-product-image"
                                     loading="lazy"
                                   />
-                                </td>
-                                <td>
-                                  {/* <Link to={`/ProductPage/${product._id}`}>
-                                    {product.name}
-                                  </Link> */}
-                                  <span className="cursor-pointer" onClick={() => navigate(`/ProductPage/${product._id}`)} >
-                                    {product.name}
-                                  </span>
-                                </td>
-                                <td>{product.description}</td>
-                                <td>₹{product.consumer_price}</td>
-                                <td>
-                                  {quantity > 0 ? (
-                                    <div className="quantity-controller">
-                                      <button onClick={() => decreaseQuantity(product._id)}>
-                                        -
-                                      </button>
-                                      <span>{quantity}</span>
-                                      <button onClick={() => increaseQuantity(product._id)}>
-                                        +
-                                      </button>
-                                    </div>
-                                  ) : (
-                                    <button
-                                      onClick={() => handleAddToCart(product)}
-                                      className="add-to-cart-btn"
-                                    >
-                                      🛒 Add
+                                </div>
+                                <div className="product-details">
+                                  <h3 className="product-title">{product.name}</h3>
+                                  <p
+                                    className="product-quantity"
+                                    style={{
+                                      color: product.stock === "yes" ? "#2ecc40" : "#ff4136",
+                                    }}
+                                  >
+                                    {product.stock === "no" ? "Out of Stock" : null}
+                                  </p>
+                                  <div className="product-price">
+                                    {isWholesaler ? (
+                                      <>
+                                        <span>₹{product.retail_price}</span>
+                                        {product.consumer_price < product.retail_price && (
+                                          <span className="original-price">
+                                            ₹{product.consumer_price}
+                                          </span>
+                                        )}
+                                      </>
+                                    ) : (
+                                      <>
+                                        <span>₹{product.consumer_price}</span>
+                                        {product.retail_price > product.consumer_price && (
+                                          <span className="original-price">
+                                            ₹{product.retail_price}
+                                          </span>
+                                        )}
+                                      </>
+                                    )}
+                                  </div>
+                                </div>
+                              </Link>
+                              <div className="product-actions">
+                                {quantity > 0 ? (
+                                  <div className="quantity-controller">
+                                    <button onClick={() => decreaseQuantity(product._id)}>
+                                      -
                                     </button>
-                                  )}
-                                </td>
-                              </tr>
-                            );
-                          })}
-                        </tbody>
-                      </table>
-                    </div>
-                  ) : (<div className="products-container">
-                    {products.map((product) => {
-                      const quantity = getQuantity(product._id);
-                      return (
-                        <div key={product._id} className="product-card ">
-                          <Link
-                            to={`/ProductPage/${product._id}`}
-                            className="product-card-link"
-                          >
-                            {product.discount > 0 && (
-                              <div className="product-badge">
-                                <span className="discount-badge">
-                                  Save ₹{Math.floor(product.discount)}
-                                </span>
-
-                              </div>
-                            )}
-                            <div className="product-image">
-                              <img
-                                src={`${API_URL}${product.media[0]?.url}`}
-                                alt={product.name}
-                                loading="lazy"
-                              />
-                            </div>
-                            <div className="product-details">
-                              <h3 className="product-title">{product.name}</h3>
-                              {/* <p className="product-quantity">{product.quantity}</p> */}
-                              <p className="product-quantity" style={{
-                                color: product.stock === 'yes' ? '#2ecc40' : '#ff4136'
-                              }}>{product.stock === 'no' ? 'Out of Stock' : null}</p>
-                              <div className="product-price">
-                                {isWholesaler ? (
-                                  <>
-                                    <span>₹{product.retail_price}</span>
-                                    {product.consumer_price < product.retail_price && (
-                                      <span className="original-price">
-                                        ₹{product.consumer_price}
-                                      </span>
-                                    )}
-                                  </>
+                                    <span>{quantity}</span>
+                                    <button onClick={() => increaseQuantity(product._id)}>
+                                      +
+                                    </button>
+                                  </div>
                                 ) : (
-                                  <>
-                                    <span>₹{product.consumer_price}</span>
-                                    {product.retail_price > product.consumer_price && (
-                                      <span className="original-price">₹{product.retail_price}</span>
-                                    )}
-
-                                  </>
+                                  <button
+                                    onClick={() => handleAddToCart(product)}
+                                    className="add-to-cart-btn"
+                                    disabled={product.stock === "no"}
+                                  >
+                                    🛒 Add to Cart
+                                  </button>
                                 )}
                               </div>
                             </div>
-                          </Link>
-                          <div className="product-actions">
-                            {quantity > 0 ? (
-                              <div className="quantity-controller">
-                                <button onClick={() => decreaseQuantity(product._id)}>
-                                  -
-                                </button>
-                                <span>{quantity}</span>
-                                <button onClick={() => increaseQuantity(product._id)}>
-                                  +
-                                </button>
-                              </div>
-                            ) : (
-                              // product.stock === 'yes' ? (
-                              //   <button
-                              //     onClick={() => handleAddToCart(product)}
-                              //     className={`add-to-cart-btn ${product.stock === 'no' ? 'disabled cursor-not-allowed' : ''}`}
-                              //   // disabled
-                              //   >
-                              //     🛒 Add to Cart
-                              //   </button>
-                              // ) : null
-
-                              <button
-                                onClick={() => handleAddToCart(product)}
-                                className="add-to-cart-btn"
-                                disabled={product.stock === 'no'}
-                              >
-                                🛒 Add to Cart
-                              </button>
-                            )
-                            }
-                          </div>
-                        </div>
-                      );
-                    })}
-                  </div>
+                          );
+                        })}
+                      </div>
+                      <Pagination />
+                    </>
                   )
                 ) : (
                   <div className="no-products">
@@ -483,7 +537,7 @@ const Fever = () => {
             </div>
           </div>
         )}
-      </div >
+      </div>
       <Footer />
     </>
   );
