@@ -2,6 +2,7 @@ import Footer from '../../components/Footer/Footer'
 import './linkDetail.css'
 import Head from '../Head/Head'
 
+
 const ContactusForm = () => {
     return (
         <div>
