@@ -423,7 +423,9 @@ const Fever = () => {
                                       </div>
                                     ) : (
                                       <button
-                                        onClick={() => handleAddToCart(product)}
+                                        onClick={() => navigate(`/ProductPage/${product._id}`)
+                                      
+                                      }
                                         className="add-to-cart-btn"
                                       >
                                         🛒 Add
@@ -510,11 +512,11 @@ const Fever = () => {
                                   </div>
                                 ) : (
                                   <button
-                                    onClick={() => handleAddToCart(product)}
+                                    onClick={() => navigate(`/ProductPage/${product._id}`)}
                                     className="add-to-cart-btn"
                                     disabled={product.stock === "no"}
                                   >
-                                    🛒 Add to Cart
+                                    Go to product
                                   </button>
                                 )}
                               </div>

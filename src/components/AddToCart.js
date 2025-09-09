@@ -50,9 +50,9 @@ const AddToCart = () => {
   // }, 0);
 
   const totalPrice = cartItems.reduce((acc, item) => {
-  const price = parseFloat(item.final_price || 0);
-  return acc + price * (item.quantity || 1);
-}, 0);
+    const price = parseFloat(item.final_price || 0);
+    return acc + price * (item.quantity || 1);
+  }, 0);
 
 
   const handleQuantityChange = (itemId, newQuantity) => {
@@ -149,6 +149,7 @@ const AddToCart = () => {
 
     const options = {
       key: "rzp_live_hgk55iUzVRpKZ1", // Your Razorpay key
+      // key: "rzp_test_1234567890abcdef", // Your Razorpay key
       amount: totalPrice * 100, // In paise
       currency: "INR",
       name: "My Shop",
@@ -164,7 +165,7 @@ const AddToCart = () => {
               productId: item._id,
               name: item.name,
               quantity: item.quantity || 1,
-              price: parseFloat(item.consumer_price || item.price || 0),
+              price: parseFloat(item?.consumer_price || item?.consumer_price || 0),
             })),
             address: formData.selectedAddress,
             phone: formData.phone || "9999999999",

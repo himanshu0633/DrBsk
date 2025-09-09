@@ -138,26 +138,45 @@ const PharmaOrder = () => {
                 </TableRow>
               </TableHead>
               <TableBody>
-                {currentOrders.map((order) => (
-                  order.items.map((item) => (
-                    <TableRow key={`${order._id}-${item.productId}`} hover>
-                      <TableCell>{item.productId}</TableCell>
-                      <TableCell>{item.name}</TableCell>
-                      <TableCell>₹{item.price}</TableCell>
-                      <TableCell>{item.quantity}</TableCell>
-                      <TableCell>{order.paymentId || 'N/A'}</TableCell>
-                      <TableCell>
-                        <StatusChip
-                          icon={getStatusIcon(order.status)}
-                          label={order.status}
-                          status={order.status}
-                          onClick={() => { }}
-                        />
-                      </TableCell>
-                    </TableRow>
-                  ))
-                ))}
-              </TableBody>
+  {currentOrders.map((order) => {
+    const items = order.items || [];
+
+    return items.map((item, index) => (
+      <TableRow key={`${order._id}-${item.productId}-${index}`} hover>
+        {/* Product ID */}
+        <TableCell>{item.productId}</TableCell>
+
+        {/* Product Name */}
+        <TableCell>{item.name}</TableCell>
+
+        {/* ✅ Total Amount सिर्फ एक बार दिखेगा */}
+        {index === 0 && (
+          <TableCell rowSpan={items.length}>₹{order.totalAmount}</TableCell>
+        )}
+
+        {/* Quantity */}
+        <TableCell>{item.quantity}</TableCell>
+
+        {/* Payment ID सिर्फ एक बार */}
+        {index === 0 && (
+          <TableCell rowSpan={items.length}>{order.paymentId || 'N/A'}</TableCell>
+        )}
+
+        {/* Status सिर्फ एक बार */}
+        {index === 0 && (
+          <TableCell rowSpan={items.length}>
+            <StatusChip
+              icon={getStatusIcon(order.status)}
+              label={order.status}
+              status={order.status}
+            />
+          </TableCell>
+        )}
+      </TableRow>
+    ));
+  })}
+</TableBody>
+
             </Table>
             <TablePagination
               rowsPerPageOptions={[10, 20, 30]}
