@@ -388,7 +388,7 @@ const ProductPage = () => {
               <div className="product-header">
                 <h1 className="product-title">{product?.name || 'Product'}</h1>
                 <div className="product-actions">
-                  <button
+                  {/* <button
                     className={`wishlist-btn ${isWishlisted ? 'active' : ''}`}
                     onClick={toggleWishlist}
                     aria-label={isWishlisted ? 'Remove from wishlist' : 'Add to wishlist'}
@@ -399,7 +399,7 @@ const ProductPage = () => {
                       fill={isWishlisted ? '#ff6b6b' : 'none'}
                       color="#ff6b6b"
                     />
-                  </button>
+                  </button> */}
                   <button
                     className="share-btn"
                     onClick={handleShare}
@@ -413,7 +413,7 @@ const ProductPage = () => {
 
               {/* Variant selector */}
               <div className="variant-section">
-                <div className="variant-header">Select Variant</div>
+                <div className="variant-header mb-1">Select Quantity</div>
                 <div className="variant-grid" role="listbox" aria-label="Variants">
                   {variants.length > 0 ? (
                     variants.map((v, i) => {
@@ -438,17 +438,17 @@ const ProductPage = () => {
                           </div>
                           <div className="variant-card__price">
                             <span className="variant-card__price--current">{money(v.final_price)}</span>
-                            {v.mrp != null && v.final_price != null && v.mrp > v.final_price && (
+                            {/* {v.mrp != null && v.final_price != null && v.mrp > v.final_price && (
                               <span className="variant-card__price--mrp">{money(v.mrp)}</span>
-                            )}
+                            )} */}
                           </div>
-                          <div className="variant-card__meta">
+                          {/* <div className="variant-card__meta">
                             {v.discount != null && <span className="chip chip--green">{v.discount}% OFF</span>}
                             {v.gst != null && <span className="chip">GST {v.gst}%</span>}
                             <span className={`chip ${v.in_stock ? 'chip--instock' : 'chip--oos'}`}>
                               {v.in_stock ? 'In Stock' : 'Out of Stock'}
                             </span>
-                          </div>
+                          </div> */}
                         </button>
                       );
                     })
@@ -505,11 +505,6 @@ const ProductPage = () => {
                       aria-label="Increase quantity"
                     >+</button>
                   </div>
-                </div>
-
-                <div className="order-total">
-                  <div className="order-total__label">Total</div>
-                  <div className="order-total__value">{money(orderTotal)}</div>
                 </div>
               </div>
 
