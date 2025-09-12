@@ -21,7 +21,7 @@ import {
   Pill,
   ShoppingCart,
   Check,
-  Share2   
+  Share2
 } from 'lucide-react';
 import axiosInstance from '../../components/AxiosInstance';
 import API_URL from '../../config';
@@ -41,17 +41,66 @@ const money = (n, fallback = '—') => {
   return `₹${num % 1 === 0 ? num.toFixed(0) : num.toFixed(2)}`;
 };
 
+// const parseQuantityVariants = (raw) => {
+//   try {
+//     let arr = [];
+//     if (Array.isArray(raw)) {
+//       arr = raw;
+//     } else if (typeof raw === 'string') {
+//       arr = JSON.parse(raw);
+//     } else if (raw == null) {
+//       arr = [];
+//     } else {
+//       arr = JSON.parse(String(raw));
+//     }
+
+//     if (!Array.isArray(arr)) return [];
+
+//     return arr.map((v, i) => ({
+//       _key: v._id || `v-${i}`,
+//       label: v.label ?? '',
+//       mrp: normalizeNumber(v.mrp),
+//       discount: normalizeNumber(v.discount),
+//       gst: normalizeNumber(v.gst),
+//       retail_price: normalizeNumber(v.retail_price),
+//       final_price: normalizeNumber(v.final_price),
+//       in_stock:
+//         typeof v.in_stock === 'string'
+//           ? v.in_stock.toLowerCase() === 'yes'
+//           : Boolean(v.in_stock),
+//     }));
+//   } catch (e) {
+//     console.error('Failed to parse/normalize quantity variants:', e, raw);
+//     return [];
+//   }
+// };
+
+// option 2:
 const parseQuantityVariants = (raw) => {
   try {
     let arr = [];
+
     if (Array.isArray(raw)) {
-      arr = raw;
+      // Check if the first element is a string (the nested JSON string)
+      if (raw.length > 0 && typeof raw[0] === 'string') {
+        // Parse each string in the array and flatten
+        arr = raw.flatMap((item) => {
+          try {
+            const parsed = JSON.parse(item);
+            return Array.isArray(parsed) ? parsed : [];
+          } catch (err) {
+            console.error('Error parsing quantity variant string:', err, item);
+            return [];
+          }
+        });
+      } else {
+        // raw is already an array of objects
+        arr = raw;
+      }
     } else if (typeof raw === 'string') {
       arr = JSON.parse(raw);
-    } else if (raw == null) {
-      arr = [];
     } else {
-      arr = JSON.parse(String(raw));
+      arr = [];
     }
 
     if (!Array.isArray(arr)) return [];
@@ -74,6 +123,7 @@ const parseQuantityVariants = (raw) => {
     return [];
   }
 };
+
 
 const ProductPage = () => {
   const [units, setUnits] = useState(1); // number of packs/items to add
@@ -209,7 +259,7 @@ const ProductPage = () => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [id]);
 
-    const handleShare = () => {
+  const handleShare = () => {
     const url = window.location.href;
     navigator.clipboard.writeText(url).then(() => {
       toast.info('Link copied to clipboard!', { position: 'top-right', autoClose: 2000 });
@@ -335,30 +385,30 @@ const ProductPage = () => {
 
             {/* Product Info Section */}
             <div className="product-info">
-             <div className="product-header">
-  <h1 className="product-title">{product?.name || 'Product'}</h1>
-  <div className="product-actions">
-    <button
-      className={`wishlist-btn ${isWishlisted ? 'active' : ''}`}
-      onClick={toggleWishlist}
-      aria-label={isWishlisted ? 'Remove from wishlist' : 'Add to wishlist'}
-    >
-      <Heart
-        className="wishlist-icon"
-        size={18}
-        fill={isWishlisted ? '#ff6b6b' : 'none'}
-        color="#ff6b6b"
-      />
-    </button>
-    <button
-      className="share-btn"
-      onClick={handleShare}
-      aria-label="Share this product"
-    >
-      <Share2 size={18} />
-    </button>
-  </div>
-</div>
+              <div className="product-header">
+                <h1 className="product-title">{product?.name || 'Product'}</h1>
+                <div className="product-actions">
+                  <button
+                    className={`wishlist-btn ${isWishlisted ? 'active' : ''}`}
+                    onClick={toggleWishlist}
+                    aria-label={isWishlisted ? 'Remove from wishlist' : 'Add to wishlist'}
+                  >
+                    <Heart
+                      className="wishlist-icon"
+                      size={18}
+                      fill={isWishlisted ? '#ff6b6b' : 'none'}
+                      color="#ff6b6b"
+                    />
+                  </button>
+                  <button
+                    className="share-btn"
+                    onClick={handleShare}
+                    aria-label="Share this product"
+                  >
+                    <Share2 size={18} />
+                  </button>
+                </div>
+              </div>
 
 
               {/* Variant selector */}
