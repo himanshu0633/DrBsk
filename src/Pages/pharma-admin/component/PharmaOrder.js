@@ -53,12 +53,15 @@ const StatusChip = styled(Chip)(({ theme, status }) => ({
           theme.palette.info.dark,
 }));
 
+const statusOptions = ['Pending', 'Delivered', 'Cancelled'];
 
 const PharmaOrder = () => {
   const [orders, setOrders] = useState([]);
   const [loading, setLoading] = useState(true);
   const [selectedOrder, setSelectedOrder] = useState(null);
   const [openDialog, setOpenDialog] = useState(false);
+
+  const [updatingStatusId, setUpdatingStatusId] = useState(null);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -83,18 +86,6 @@ const PharmaOrder = () => {
     setSelectedOrder(null);
   };
 
-  const getStatusIcon = (status) => {
-    switch (status) {
-      case 'Delivered':
-        return <CheckCircle />;
-      case 'Pending':
-        return <Pending />;
-      case 'Cancelled':
-        return <Cancel />;
-      default:
-        return <LocalShipping />;
-    }
-  };
   const [page, setPage] = useState(0);
   const [rowsPerPage, setRowsPerPage] = useState(10);
 
@@ -112,6 +103,27 @@ const PharmaOrder = () => {
     page * rowsPerPage,
     page * rowsPerPage + rowsPerPage
   );
+
+
+  const updateOrderStatus = async (orderId, newStatus) => {
+    setUpdatingStatusId(orderId);
+    try {
+      const response = await axiosInstance.put(`/api/orders/${orderId}/status`, {
+        status: newStatus,
+      });
+      console.log(response.data);  // Debug here to check the response
+      setOrders(prevOrders =>
+        prevOrders.map(order =>
+          order._id === orderId ? { ...order, status: newStatus } : order
+        )
+      );
+    } catch (error) {
+      console.error("Failed to update order status:", error);  // Debug the error
+      alert("Failed to update order status. Please try again.");
+    } finally {
+      setUpdatingStatusId(null);
+    }
+  };
 
   return (
     <Container maxWidth="xl">
@@ -135,47 +147,79 @@ const PharmaOrder = () => {
                   <TableCell sx={{ color: 'white', fontWeight: 'bold' }}>Quantity</TableCell>
                   <TableCell sx={{ color: 'white', fontWeight: 'bold' }}>Payment ID</TableCell>
                   <TableCell sx={{ color: 'white', fontWeight: 'bold' }}>Status</TableCell>
+
+                  <TableCell sx={{ color: 'white', fontWeight: 'bold' }}>View</TableCell>
                 </TableRow>
               </TableHead>
               <TableBody>
-  {currentOrders.map((order) => {
-    const items = order.items || [];
+                {currentOrders.map((order) => {
+                  const items = order.items || [];
 
-    return items.map((item, index) => (
-      <TableRow key={`${order._id}-${item.productId}-${index}`} hover>
-        {/* Product ID */}
-        <TableCell>{item.productId}</TableCell>
+                  return items.map((item, index) => (
+                    <TableRow key={`${order._id}-${item.productId}-${index}`} hover>
+                      {/* Product ID */}
+                      <TableCell>{item.productId}</TableCell>
 
-        {/* Product Name */}
-        <TableCell>{item.name}</TableCell>
+                      {/* Product Name */}
+                      <TableCell>{item.name}</TableCell>
 
-        {/* ✅ Total Amount सिर्फ एक बार दिखेगा */}
-        {index === 0 && (
-          <TableCell rowSpan={items.length}>₹{order.totalAmount}</TableCell>
-        )}
+                      {/* ✅ Total Amount  */}
+                      {index === 0 && (
+                        <TableCell rowSpan={items.length}>₹{order.totalAmount}</TableCell>
+                      )}
 
-        {/* Quantity */}
-        <TableCell>{item.quantity}</TableCell>
+                      {/* Quantity */}
+                      <TableCell>{item.quantity}</TableCell>
 
-        {/* Payment ID सिर्फ एक बार */}
-        {index === 0 && (
-          <TableCell rowSpan={items.length}>{order.paymentId || 'N/A'}</TableCell>
-        )}
+                      {/* Payment ID */}
+                      {index === 0 && (
+                        <TableCell rowSpan={items.length}>{order.paymentId || 'N/A'}</TableCell>
+                      )}
 
-        {/* Status सिर्फ एक बार */}
-        {index === 0 && (
-          <TableCell rowSpan={items.length}>
-            <StatusChip
-              icon={getStatusIcon(order.status)}
-              label={order.status}
-              status={order.status}
-            />
-          </TableCell>
-        )}
-      </TableRow>
-    ));
-  })}
-</TableBody>
+                      {index === 0 && (
+                        <TableCell rowSpan={items.length}>
+                          <select
+                            value={order.status}
+                            disabled={updatingStatusId === order._id}
+                            onChange={(e) => updateOrderStatus(order._id, e.target.value)}
+                            style={{
+                              fontWeight: '600',
+                              color:
+                                order.status === 'Delivered' ? 'green' :
+                                  order.status === 'Pending' ? 'orange' :
+                                    order.status === 'Cancelled' ? 'red' : 'black',
+                              padding: '4px 8px',
+                              borderRadius: '4px',
+                              border: '1px solid #ccc',
+                              cursor: updatingStatusId === order._id ? 'not-allowed' : 'pointer',
+                              minWidth: '100px',
+                              textAlign: 'center'
+                            }}
+                          >
+                            {statusOptions.map((status) => (
+                              <option key={status} value={status}>
+                                {status}
+                              </option>
+                            ))}
+                          </select>
+                        </TableCell>
+                      )}
+
+                      {/* view order all details */}
+                      {index === 0 && (
+                        <TableCell>
+                          <Button
+                            variant="outlined"
+                            size="small"
+                            onClick={() => handleViewOrder(order)}
+                          >
+                            View
+                          </Button>
+                        </TableCell>)}
+                    </TableRow>
+                  ));
+                })}
+              </TableBody>
 
             </Table>
             <TablePagination
@@ -205,9 +249,9 @@ const PharmaOrder = () => {
       >
         {selectedOrder && (
           <>
-            <DialogTitle>
+            <div>
               <Typography variant="h6">Order Details</Typography>
-            </DialogTitle>
+            </div>
             <DialogContent dividers>
               <Grid container spacing={2}>
                 <Grid item xs={12}>
@@ -215,14 +259,14 @@ const PharmaOrder = () => {
                     Order Information
                   </Typography>
                   <Divider sx={{ mb: 2 }} />
-                  <Typography><strong>Status:</strong>
+                  <><strong>Status:</strong>
                     <StatusChip
                       label={selectedOrder.status}
                       status={selectedOrder.status}
                       size="small"
                       sx={{ ml: 1 }}
                     />
-                  </Typography>
+                  </>
                   <Typography><strong>Payment ID:</strong> {selectedOrder.paymentId || 'N/A'}</Typography>
                 </Grid>
 
