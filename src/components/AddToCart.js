@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
 import { Trash2, ShoppingBag, ArrowLeft } from 'lucide-react';
 import './addToCart.css';
-import { useNavigate } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { toast } from 'react-toastify';
 import { deleteProduct, updateData, clearProducts } from '../store/Action';
 import API_URL from '../config';
@@ -294,10 +294,11 @@ const AddToCart = () => {
                 <div className="cart-items">
                   {cartItems.map((item) => (
                     <div key={item._id} className="cart-item">
-                      <div className="item-image">
-                        <img src={JoinUrl(API_URL, item.media[0]?.url)} alt={item.name} />
-
-                      </div>
+                      <Link to={`/ProductPage/${item._id}`} className="item-image">
+                        <img
+                          // onClick={() => navigate(`/ProductPage/${item._id}`)} style={{ cursor: 'pointer' }}
+                          src={JoinUrl(API_URL, item.media[0]?.url)} alt={item.name} />
+                      </Link>
 
                       <div className="item-details">
                         <h3 className="item-name">{item.name}</h3>
