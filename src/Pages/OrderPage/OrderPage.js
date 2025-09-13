@@ -57,7 +57,7 @@ const OrderPage = () => {
       <div className="order-page-container">
         <div className="order-layout">
           {/* Sidebar */}
-          <aside className="profile-sidebar">
+          <aside className="order-sidebar">
             <div className="sidebar-header">
               <h3>Hello {userData?.name}</h3>
               <p>Welcome to your account</p>

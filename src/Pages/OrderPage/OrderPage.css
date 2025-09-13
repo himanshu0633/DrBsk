@@ -29,8 +29,8 @@ body {
 }
 
 .order-page-container {
-  min-height: 100vh;
-  padding: 2rem;
+  padding: 3rem 2rem;
+
 }
 
 .order-layout {
@@ -184,12 +184,12 @@ body {
 .orders-table {
   /* width: 100%; */
   /* width:1000px; */
-  max-width: 700px;
-  overflow-x: auto;
 }
 
 .orders-table table {
   width: 100%;
+  /* max-width: 700px;
+  overflow-x: auto; */
   border-collapse: collapse;
 }
 
@@ -232,8 +232,7 @@ body {
   color: #166534;
 }
 
-/* Responsive Design */
-@media (max-width: 992px) {
+@media(max-width:1300px) {
   .order-layout {
     flex-direction: column;
   }
@@ -262,6 +261,11 @@ body {
 
   .search-bar {
     width: 100%;
+  }
+
+  .orders-table {
+    max-width: 700px;
+    overflow-x: auto;
   }
 }
 
