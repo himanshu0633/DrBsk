@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import Admin from '../../components/Admin/Admin';
 import './BannerCrud.css';
+import JoinUrl from '../../JoinUrl';
 
 const BannerCrud = () => {
   const [banners, setBanners] = useState([
@@ -82,7 +83,7 @@ const BannerCrud = () => {
         <div className="banner-list">
           {banners.map(banner => (
             <div className="banner-card" key={banner.id}>
-              <img src={banner.image} alt={banner.title} />
+              <img src={JoinUrl(banner.image)} alt={banner.title} />
               <h4>{banner.title}</h4>
               <div className="banner-actions">
                 <button onClick={() => handleEdit(banner.id)} className="btn-edit">Edit</button>

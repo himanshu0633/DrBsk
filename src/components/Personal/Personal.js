@@ -103,6 +103,7 @@ import API_URL from '../../config';
 import { useNavigate } from 'react-router-dom';
 import Slider from "react-slick";
 import '../Categories/Categories.css';
+import JoinUrl from '../../JoinUrl';
 
 const Personal = () => {
   const [vetCategories, setVetCategories] = useState([]);
@@ -178,7 +179,10 @@ const Personal = () => {
                 onClick={() => navigate('/fever', { state: { categoryId: item._id } })}
               >
                 <div className="category-image-container" style={{ background: item.bg }}>
-                  <img src={`${API_URL}/${item.image}`} alt={item.name} className="category-image" />
+                  <img
+                    // src={`${API_URL}/${item.image}`} 
+                    src={JoinUrl(API_URL, item.image)}
+                    alt={item.name} className="category-image" />
                 </div>
                 <p className="category-title">{item.name}</p>
               </div>

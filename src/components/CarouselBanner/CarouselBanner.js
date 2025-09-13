@@ -1,6 +1,7 @@
 import React, { useEffect, useRef, useState } from 'react';
 import './CarouselBanner.css';
 import Award1 from '../../logo/Award1.jpg'; // Import the image directly
+import JoinUrl from '../../JoinUrl';
 
 const originalImages = [
   Award1, // Use the imported image
@@ -59,7 +60,8 @@ const CarouselBanner = () => {
         >
           {images.map((img, index) => (
             <div className="slide" key={`${index}-${img}`}>
-              <img src={img} alt={`slide-${index}`} className="banner-img" />
+              {/* <img src={img} alt={`slide-${index}`} className="banner-img" /> */}
+              <img src={JoinUrl(img)} alt={`slide`} className="banner-img" />
             </div>
           ))}
         </div>

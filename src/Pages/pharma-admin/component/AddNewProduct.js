@@ -772,6 +772,7 @@ import React, { useEffect, useState, useRef } from 'react'
 import axiosInstance from '../../../components/AxiosInstance';
 import { toast } from 'react-toastify';
 import { useParams, useNavigate } from 'react-router-dom';
+import JoinUrl from '../../../JoinUrl';
 
 const AddNewProduct = () => {
     const { id } = useParams();
@@ -1155,7 +1156,7 @@ const AddNewProduct = () => {
                                                             Your browser does not support the video tag.
                                                         </video>
                                                     ) : (
-                                                        <img src={media.url} alt={`Preview ${index}`} />
+                                                        <img src={JoinUrl(media.url)} alt={`Preview ${index}`} />
                                                     )}
                                                     <button 
                                                         type="button" 

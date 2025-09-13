@@ -256,6 +256,7 @@ import {
 import CloseIcon from '@mui/icons-material/Close';
 import { toast } from 'react-toastify';
 import { DeleteOutlineRounded } from '@mui/icons-material';
+import JoinUrl from '../../../JoinUrl';
 
 const PharmaPrescription = () => {
     const [prescriptions, setPrescriptions] = useState([]);
@@ -387,7 +388,8 @@ const PharmaPrescription = () => {
                                             <TableCell>{user?.email || ''}</TableCell>
                                             <TableCell>
                                                 <img
-                                                    src={`${API_URL}/${item.image?.replace(/\\/g, '/')}`}
+                                                    // src={`${API_URL}/${item.image?.replace(/\\/g, '/')}`}
+                                                    src={JoinUrl(API_URL, item.image?.replace(/\\/g, '/'))}
                                                     alt={`Prescription ${i + 1}`}
                                                     onClick={() => handleImageClick(item.image)}
                                                     style={{
@@ -471,7 +473,8 @@ const PharmaPrescription = () => {
                             <CloseIcon />
                         </IconButton>
                         <img
-                            src={selectedImage}
+                            // src={selectedImage}
+                            src={JoinUrl(selectedImage)}
                             alt="Full Prescription"
                             style={{
                                 height: '400px',

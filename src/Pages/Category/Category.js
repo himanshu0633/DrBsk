@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import './Category.css';
 import Admin from '../../components/Admin/Admin';
+import JoinUrl from '../../JoinUrl';
 
 const Category = () => {
   const [showModal, setShowModal] = useState(false);
@@ -77,7 +78,7 @@ const Category = () => {
                 <td>{user.category_id}</td>
                 <td>
                   <img
-                    src={user.image}
+                    src={JoinUrl(user.image)}
                     alt={user.name}
                     width="60"
                     height="60"

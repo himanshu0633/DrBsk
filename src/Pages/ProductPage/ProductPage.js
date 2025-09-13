@@ -27,6 +27,7 @@ import axiosInstance from '../../components/AxiosInstance';
 import API_URL from '../../config';
 import { toast } from 'react-toastify';
 import CustomLoader from '../../components/CustomLoader';
+import JoinUrl from '../../JoinUrl';
 
 const normalizeNumber = (val) => {
   if (val === null || val === undefined || val === '') return null;
@@ -124,7 +125,6 @@ const parseQuantityVariants = (raw) => {
   }
 };
 
-
 const ProductPage = () => {
   const [units, setUnits] = useState(1); // number of packs/items to add
   const [activeTab, setActiveTab] = useState('description');
@@ -221,7 +221,6 @@ const ProductPage = () => {
     //   totalPrice: variant.final_price != null ? variant.final_price * units : null,
     // };
 
-
     const cartItem = {
       ...product,
       selectedVariant: {
@@ -284,10 +283,15 @@ const ProductPage = () => {
   const userData = storedUser ? JSON.parse(storedUser) : null;
 
   const mediaSafe = Array.isArray(product.media) ? product.media : [];
-  const selectedImageUrl =
-    mediaSafe[selectedImageIndex]?.url
-      ? `${API_URL}${mediaSafe[selectedImageIndex].url}`
-      : null;
+  // const selectedImageUrl =
+  //   mediaSafe[selectedImageIndex]?.url
+  //     ? `${API_URL}${mediaSafe[selectedImageIndex].url}`
+  //     : null;
+
+  const selectedImageUrl = mediaSafe[selectedImageIndex]?.url
+    ? JoinUrl(API_URL, mediaSafe[selectedImageIndex].url)
+    : null;
+
 
   const variants = product.quantity || [];
   const selectedVariant = variants[selectedVariantIndex] || null;
@@ -318,7 +322,8 @@ const ProductPage = () => {
               >
                 {selectedImageUrl ? (
                   <img
-                    src={selectedImageUrl}
+                    // src={selectedImageUrl}
+                    src={JoinUrl(selectedImageUrl)}
                     alt={product?.name || 'Product'}
                     className="product-image1"
                   />
@@ -374,7 +379,8 @@ const ProductPage = () => {
                       onClick={() => setSelectedImageIndex(index)}
                       aria-label={`Select image ${index + 1}`}
                     >
-                      <img src={`${API_URL}${mediaItem.url}`} alt={`Thumbnail ${index + 1}`} />
+                      {/* <img src={`${API_URL}${mediaItem.url}`} alt={`Thumbnail ${index + 1}`} /> */}
+                      <img src={JoinUrl(API_URL, mediaItem.url)} alt={`Thumbnail ${index + 1}`} />
                     </button>
                   ))
                 ) : (

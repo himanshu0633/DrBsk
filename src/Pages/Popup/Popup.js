@@ -2,6 +2,7 @@ import React, { useState, useRef, useEffect } from 'react';
 import './Popup.css';
 import Admin from '../../components/Admin/Admin';
 import axiosInstance from '../../components/AxiosInstance';
+import JoinUrl from '../../JoinUrl';
 
 const Popup = () => {
   const [categoryList, setCategoryList] = useState([]);
@@ -271,7 +272,8 @@ const handleChange = (e) => {
                                 Your browser does not support the video tag.
                               </video>
                             ) : (
-                              <img src={media.url} alt={`Preview ${index}`} />
+                              // <img src={media.url} alt={`Preview ${index}`} />
+                              <img src={JoinUrl(media.url)} alt={`Preview ${index}`} />
                             )}
                             <button 
                               type="button" 

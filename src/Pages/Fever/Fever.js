@@ -9,6 +9,7 @@ import { addData } from "../../store/Action";
 import API_URL from "../../config";
 import { toast } from "react-toastify";
 import CustomLoader from "../../components/CustomLoader";
+import JoinUrl from "../../JoinUrl";
 
 const PAGE_SIZE = 20;
 
@@ -393,8 +394,10 @@ const Fever = () => {
                               return (
                                 <tr key={product._id}>
                                   <td>
+                                    {/* {console.log('thumbnail url:', JoinUrl(API_URL, mediaItem.url), mediaItem)} */}
                                     <img
-                                      src={`${API_URL}${product.media[0]?.url}`}
+                                      // src={`${API_URL}${product.media[0]?.url}`}
+                                      src={JoinUrl(API_URL, product.media[0]?.url)}
                                       alt={product.name}
                                       className="table-product-image"
                                       loading="lazy"
@@ -424,8 +427,8 @@ const Fever = () => {
                                     ) : (
                                       <button
                                         onClick={() => navigate(`/ProductPage/${product._id}`)
-                                      
-                                      }
+
+                                        }
                                         className="add-to-cart-btn"
                                       >
                                         🛒 Add
@@ -461,7 +464,8 @@ const Fever = () => {
                                 )}
                                 <div className="product-image">
                                   <img
-                                    src={`${API_URL}${product.media[0]?.url}`}
+                                    // src={`${API_URL}${product.media[0]?.url}`}
+                                    src={JoinUrl(API_URL, product.media[0]?.url)}
                                     alt={product.name}
                                     loading="lazy"
                                   />
@@ -539,7 +543,7 @@ const Fever = () => {
             </div>
           </div>
         )}
-      </div>
+      </div >
       <Footer />
     </>
   );

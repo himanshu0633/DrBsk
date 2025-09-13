@@ -8,6 +8,7 @@ import { deleteProduct, updateData, clearProducts } from '../store/Action';
 import API_URL from '../config';
 import axiosInstance from './AxiosInstance';
 import { Dialog, DialogTitle, DialogContent, DialogActions, TextField, Button, Grid, InputAdornment } from '@mui/material';
+import JoinUrl from '../JoinUrl';
 
 const AddToCart = () => {
   const [isAuthenticated, setIsAuthenticated] = useState(null);
@@ -294,7 +295,8 @@ const AddToCart = () => {
                   {cartItems.map((item) => (
                     <div key={item._id} className="cart-item">
                       <div className="item-image">
-                        <img src={`${API_URL}${item.media[0]?.url}`} alt={item.name} />
+                        <img src={JoinUrl(API_URL, item.media[0]?.url)} alt={item.name} />
+
                       </div>
 
                       <div className="item-details">

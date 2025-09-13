@@ -5,6 +5,7 @@ import Footer from '../../components/Footer/Footer';
 import axiosInstance from '../../components/AxiosInstance';
 import { toast } from 'react-toastify';
 import { useNavigate } from 'react-router-dom';
+import JoinUrl from '../../JoinUrl';
 
 const EditProfile = () => {
   const [formData, setFormData] = useState({
@@ -26,7 +27,7 @@ const EditProfile = () => {
 
   useEffect(() => {
     const userData = localStorage.getItem('userData');
-    console.log("User data:", userData);
+    // console.log("User data:", userData);
     if (userData) {
       const parsedData = JSON.parse(userData);
       setIsAuthenticated(true);
@@ -177,7 +178,7 @@ const EditProfile = () => {
               <div className="profile-picture-section">
                 <div className="profile-picture-container">
                   {profileImage ? (
-                    <img src={profileImage} alt="Profile" className="profile-picture" />
+                    <img src={JoinUrl(profileImage)} alt="Profile" className="profile-picture" />
                   ) : (
                     <div className="profile-picture-placeholder">
                       <svg viewBox="0 0 24 24">

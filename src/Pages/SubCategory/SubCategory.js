@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import Admin from '../../components/Admin/Admin';
 import './SubCategory.css';
+import JoinUrl from '../../JoinUrl';
 
 const SubCategory = () => {
   const [formData, setFormData] = useState({
@@ -138,7 +139,8 @@ const SubCategory = () => {
                   <td>{item.name}</td>
                   <td>{item.description}</td>
                   <td>
-                    <img src={item.image} alt={item.name} width="60" height="60" style={{ borderRadius: '6px' }} />
+                    <img src={JoinUrl(item.image)}
+                     alt={item.name} width="60" height="60" style={{ borderRadius: '6px' }} />
                   </td>
                   <td>{categoryName}</td>
                   <td>

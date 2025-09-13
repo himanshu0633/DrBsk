@@ -5,6 +5,7 @@ import API_URL from "../../config";
 import Slider from 'react-slick';
 import "slick-carousel/slick/slick.css";
 import "slick-carousel/slick/slick-theme.css";
+import JoinUrl from "../../JoinUrl";
 
 const Banner = () => {
   const [banners, setBanners] = useState([]);
@@ -58,11 +59,12 @@ const Banner = () => {
 
   return (
     <div className="banner-slider-container ">
-      <Slider {...settings}>  
+      <Slider {...settings}>
         {banners.map((banner, index) => (
           <div className="banner-slide" key={`banner-${index}`}>
             <img
-              src={`${API_URL}/${banner.slider_image[0]}`}
+              // src={`${API_URL}/${banner.slider_image[0]}`}
+              src={JoinUrl(API_URL, banner.slider_image[0])}
               alt={`Banner ${index + 1}`}
               className="banner-image1"
             />

@@ -23,6 +23,7 @@ import {
 } from '@mui/material';
 import CloseIcon from '@mui/icons-material/Close';
 import { Add, Delete } from '@mui/icons-material';
+import JoinUrl from '../../../JoinUrl';
 
 const PharmaBanner = () => {
     const [formData, setFormData] = useState({ image: '', banner_type: '' });
@@ -176,7 +177,8 @@ const PharmaBanner = () => {
                                         <TableCell>{item.type}</TableCell>
                                         <TableCell>
                                             <img
-                                                src={`${API_URL}/${item.slider_image}`}
+                                                // src={`${API_URL}/${item.slider_image}`}
+                                                src={JoinUrl(API_URL, item.slider_image)}
                                                 alt={`Banner ${i + 1}`}
                                                 style={{ width: 200, height: 130, cursor: 'pointer', borderRadius: 8, objectFit: 'cover' }}
                                                 onClick={() => handleImageClick(`${API_URL}/${item.slider_image}`)}
