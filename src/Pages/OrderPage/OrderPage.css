@@ -180,16 +180,9 @@ body {
   fill: var(--white);
 }
 
-/* Orders Table Styles */
-.orders-table {
-  /* width: 100%; */
-  /* width:1000px; */
-}
 
 .orders-table table {
   width: 100%;
-  /* max-width: 700px;
-  overflow-x: auto; */
   border-collapse: collapse;
 }
 

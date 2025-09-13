@@ -150,7 +150,6 @@ const AddToCart = () => {
 
     const options = {
       key: "rzp_live_hgk55iUzVRpKZ1", // Your Razorpay key
-      // key: "rzp_test_1234567890abcdef", // Your Razorpay key
       amount: totalPrice * 100, // In paise
       currency: "INR",
       name: "My Shop",
