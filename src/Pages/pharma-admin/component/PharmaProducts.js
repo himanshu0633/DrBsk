@@ -31,6 +31,7 @@ import {
 } from '@mui/material';
 import { Add, Edit, Delete, Close, Visibility } from '@mui/icons-material';
 import { styled } from '@mui/material/styles';
+import JoinUrl from '../../../JoinUrl';
 
 const StyledTableContainer = styled(TableContainer)(({ theme }) => ({
   marginTop: theme.spacing(3),
@@ -168,7 +169,8 @@ const PharmaProducts = () => {
                     <TableCell>
                       {product.media && product.media.length > 0 ? (
                         <ProductImage
-                          src={`${API_URL}${product.media[0].url}`}
+                          // src={`${API_URL}${product.media[0].url}`}
+                          src={JoinUrl(API_URL, product.media[0].url)}
                           alt={product.name}
                           variant="rounded"
                         />
