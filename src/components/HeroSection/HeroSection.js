@@ -35,7 +35,7 @@ const HeroSection = () => {
   return (
     <div className="hero-container">
       <div className="search-section">
-        <img src={Right} alt="Decorative" className="decorative-image right-image" />
+        {/* <img src={Right} alt="Decorative" className="decorative-image right-image" /> */}
 
         <div className="hero-content">
           <h2>
@@ -69,7 +69,7 @@ const HeroSection = () => {
           </div>
 
         </div>
-        <img src={Left} alt="Decorative" className="decorative-image left-image" />
+        {/* <img src={Left} alt="Decorative" className="decorative-image left-image" /> */}
       </div>
     </div>
   );
