@@ -341,4 +341,12 @@ address {
     justify-content: center;
     gap: 250px;
   }
+
+  .footer_flex {
+    /* display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end; */
+    gap: 70px;
+    width: 60%;
+  }
 }
