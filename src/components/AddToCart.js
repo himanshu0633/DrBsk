@@ -432,7 +432,6 @@ const AddToCart = () => {
 
                   <div className="security-badges">
                     <div className="badge">🔒 Secure Checkout</div>
-                    <div className="badge">✓ 30-Day Returns</div>
                   </div>
                 </div>
               </div>
