@@ -42,6 +42,12 @@
   /* align-items: center; */
 }
 
+.logo_size_footer {
+  height: 90px !important;
+  width: 90px !important;
+
+}
+
 .footer h4 {
   margin-bottom: 15px;
   font-size: 18px;
@@ -273,9 +279,10 @@ address {
 .footer_flex1 {
   display: flex;
   /* justify-content: space-between; */
-  align-items: center;
+  /* align-items: center; */
   justify-content: center;
-  gap: 50px;
+  /* gap: 50px; */
+  flex-wrap: wrap;
 }
 
 @media (max-width:670px) {
@@ -290,11 +297,17 @@ address {
 
   .footer_flex1 {
     flex-direction: column;
-    align-items: center;
+    /* align-items: center; */
   }
 
   .contact-item {
     justify-content: center;
+  }
+}
+
+@media (max-width:1100px) {
+  .footer_flex1 {
+    gap: 50px;
   }
 }
 
@@ -330,9 +343,9 @@ address {
 
   .footer_flex1 {
     display: flex;
-    align-items: center;
+    /* align-items: center; */
     justify-content: center;
-    gap: 90px;
+
   }
 }
 
@@ -340,9 +353,9 @@ address {
   .footer_flex1 {
     display: flex;
     /* justify-content: space-between; */
-    align-items: center;
+    /* align-items: center; */
     justify-content: center;
-    gap: 250px;
+    /* gap: 250px; */
   }
 
   .footer_flex {
@@ -351,5 +364,13 @@ address {
   justify-content: flex-end; */
     gap: 70px;
     width: 60%;
+  }
+
+  .footerWidth1 {
+    width: 30%;
+  }
+
+  .footerWidth {
+    width: 20%;
   }
 }

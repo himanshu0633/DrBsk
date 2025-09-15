@@ -1437,7 +1437,7 @@ select {
   }
 }
 
-@media (max-width: 768px) {
+@media (max-width:760px) {
   .header-buttons {
     display: none;
   }
@@ -1445,6 +1445,9 @@ select {
   .hamburger {
     display: block;
   }
+}
+
+@media (max-width: 768px) {
 
   .banner-container {
     flex-direction: column;
