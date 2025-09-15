@@ -172,29 +172,39 @@ const PharmaBanner = () => {
                                 </TableRow>
                             </TableHead>
                             <TableBody>
-                                {currentBanners.map((item, i) => (
-                                    <TableRow key={i}>
-                                        <TableCell>{item.type}</TableCell>
-                                        <TableCell>
-                                            <img
-                                                // src={`${API_URL}/${item.slider_image}`}
-                                                src={JoinUrl(API_URL, item.slider_image)}
-                                                alt={`Banner ${i + 1}`}
-                                                style={{ width: 200, height: 130, cursor: 'pointer', borderRadius: 8, objectFit: 'cover' }}
-                                                onClick={() => handleImageClick(`${API_URL}/${item.slider_image}`)}
-                                            />
-                                        </TableCell>
-                                        <TableCell>
-                                            <IconButton
-                                                color="error"
-                                                onClick={() => handleDeleteBanner(item._id)}
-                                                disabled={!!item.deleted_at}
-                                            >
-                                                <Delete />
-                                            </IconButton>
-                                        </TableCell>
-                                    </TableRow>
-                                ))}
+                                {currentBanners.map((item, i) => {
+                                    // Check type of slider_image, fallback to empty string or suitable default
+                                    const sliderPath =
+                                        Array.isArray(item.slider_image) && item.slider_image.length > 0
+                                            ? item.slider_image[0]
+                                            : '';
+
+                                    const imageUrl = sliderPath ? JoinUrl(API_URL, sliderPath) : '';
+
+                                    return (
+                                        <TableRow key={i}>
+                                            <TableCell>{item.type}</TableCell>
+                                            <TableCell>
+                                                <img
+                                                    src={imageUrl}
+                                                    alt={`Banner ${i + 1}`}
+                                                    style={{ width: 200, height: 130, cursor: 'pointer', borderRadius: 8, objectFit: 'cover' }}
+                                                    onClick={() => handleImageClick(imageUrl)}
+                                                />
+                                            </TableCell>
+                                            <TableCell>
+                                                <IconButton
+                                                    color="error"
+                                                    onClick={() => handleDeleteBanner(item._id)}
+                                                    disabled={!!item.deleted_at}
+                                                >
+                                                    <Delete />
+                                                </IconButton>
+                                            </TableCell>
+                                        </TableRow>
+                                    );
+                                })}
+
                             </TableBody>
                         </Table>
                         <TablePagination

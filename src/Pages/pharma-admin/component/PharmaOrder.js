@@ -23,14 +23,6 @@ import {
   Grid,
   TablePagination
 } from '@mui/material';
-import {
-  Receipt,
-  LocalShipping,
-  CheckCircle,
-  Pending,
-  Cancel,
-  Visibility
-} from '@mui/icons-material';
 import { styled } from '@mui/material/styles';
 
 const StyledTableContainer = styled(TableContainer)(({ theme }) => ({
