@@ -162,7 +162,7 @@ export default function SignUpForm() {
     }
     setIsSubmitting(true);
     try {
-      await axiosInstance.post('/api/pre-signup', { email: formData.email });
+      await axiosInstance.post('/api/send-otp', { email: formData.email });
       toast.success('OTP sent to your email');
       setStep(2);
     } catch (err) {
@@ -182,7 +182,7 @@ export default function SignUpForm() {
     }
     setIsSubmitting(true);
     try {
-      await axiosInstance.post('/api/verify-otp-and-signup', { ...formData, otp });
+      await axiosInstance.post('/api/verify-otp', { ...formData, otp });
       toast.success('Registration successful!');
       setSuccess(true);
       setStep(3);
