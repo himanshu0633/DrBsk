@@ -155,11 +155,8 @@ const PharmaProducts = () => {
                   <TableCell sx={{ color: 'white', fontWeight: 'bold' }}>Image</TableCell>
                   <TableCell sx={{ color: 'white', fontWeight: 'bold' }}>Name</TableCell>
                   <TableCell sx={{ color: 'white', fontWeight: 'bold' }}>Category</TableCell>
-                  <TableCell sx={{ color: 'white', fontWeight: 'bold' }}>Price (Retail)</TableCell>
-                  <TableCell sx={{ color: 'white', fontWeight: 'bold' }}>MRP (Consumer)</TableCell>
                   <TableCell sx={{ color: 'white', fontWeight: 'bold' }}>Quantity</TableCell>
-                  {/* <TableCell sx={{ color: 'white', fontWeight: 'bold' }}>Stock</TableCell> */}
-                  <TableCell sx={{ color: 'white', fontWeight: 'bold' }}>Status</TableCell>
+                
                   <TableCell sx={{ color: 'white', fontWeight: 'bold' }}>Actions</TableCell>
                 </TableRow>
               </TableHead>
@@ -192,21 +189,7 @@ const PharmaProducts = () => {
                         {product.sub_category}
                       </Typography>
                     </TableCell>
-                    <TableCell>
-                      <Typography fontWeight="medium">
-                        ₹{product.retail_price}
-                      </Typography>
-                    </TableCell>
-                    <TableCell>
-                      <Typography fontWeight="medium">
-                        ₹{product.consumer_price}
-                      </Typography>
-                      {product.discount > 0 && (
-                        <Typography variant="body2" color="error">
-                          {product.discount}% off
-                        </Typography>
-                      )}
-                    </TableCell>
+                   
                     <TableCell>
                       <Typography
                         fontWeight="medium"
@@ -214,21 +197,7 @@ const PharmaProducts = () => {
                         {product.quantity}
                       </Typography>
                     </TableCell>
-                    {/* <TableCell>
-                      <Typography
-                        color={product.quantity > 0 ? 'success.main' : 'error.main'}
-                        fontWeight="medium"
-                      >
-                        {product.stock}
-                      </Typography>
-                    </TableCell> */}
-                    <TableCell>
-                      <StatusChip
-                        label={product.deleted_at ? 'Inactive' : 'Active'}
-                        status={product.deleted_at ? 'inactive' : 'active'}
-                        sx={{ pointerEvents: 'none' }}
-                      />
-                    </TableCell>
+                    
                     <TableCell>
                       <IconButton
                         color="info"
