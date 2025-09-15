@@ -304,7 +304,8 @@ const PharmaProducts = () => {
                 <Box sx={{ display: 'flex', justifyContent: 'center' }}>
                   {selectedProduct.media && selectedProduct.media.length > 0 ? (
                     <Avatar
-                      src={`${API_URL}${selectedProduct.media[0].url}`}
+                      // src={`${API_URL}${selectedProduct.media[0].url}`}
+                      src={JoinUrl(API_URL, selectedProduct.media[0].url)}
                       alt={selectedProduct.name}
                       sx={{ width: 200, height: 200 }}
                       variant="rounded"

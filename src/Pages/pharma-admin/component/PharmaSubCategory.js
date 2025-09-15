@@ -492,6 +492,7 @@ import {
 } from '@mui/material';
 import { Add, Edit, Delete, Close, CloudUpload } from '@mui/icons-material';
 import { styled } from '@mui/material/styles';
+import JoinUrl from '../../../JoinUrl';
 
 const StyledTableContainer = styled(TableContainer)(({ theme }) => ({
   marginTop: theme.spacing(3),
@@ -761,11 +762,16 @@ const PharmaSubCategory = () => {
                     <TableCell>{item.description || '-'}</TableCell>
                     <TableCell>
                       <Avatar
-                        src={item.image ? `${API_URL}/${item.image}` : `${API_URL}/${item.category_id?.image}`}
+                        src={
+                          item.image
+                            ? JoinUrl(API_URL, item.image)
+                            : (item.category_id?.image ? JoinUrl(API_URL, item.category_id.image) : '')
+                        }
                         alt={item.name}
                         sx={{ width: 56, height: 56 }}
                         variant="rounded"
                       />
+
                     </TableCell>
                     <TableCell>{item.category_id?.name || 'Unknown'}</TableCell>
                     <TableCell>
@@ -910,7 +916,7 @@ const PharmaSubCategory = () => {
                 {imagePreview && (
                   <Box sx={{ mt: 2, display: 'flex', justifyContent: 'center' }}>
                     <Avatar
-                      src={imagePreview}
+                      src={JoinUrl(imagePreview)}
                       alt="Preview"
                       sx={{ width: 100, height: 100 }}
                       variant="rounded"

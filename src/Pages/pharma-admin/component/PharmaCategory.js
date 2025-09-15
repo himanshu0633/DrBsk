@@ -33,6 +33,7 @@ import {
 } from '@mui/material';
 import { Add, Edit, Delete, Close, CloudUpload } from '@mui/icons-material';
 import { styled } from '@mui/material/styles';
+import JoinUrl from '../../../JoinUrl';
 
 const StyledTableContainer = styled(TableContainer)(({ theme }) => ({
     marginTop: theme.spacing(3),
@@ -176,7 +177,8 @@ const PharmaCategory = () => {
             description: cat.description || '',
             image: null,
         });
-        setImagePreview(cat.image ? `${API_URL}/${cat.image}` : null);
+        // setImagePreview(cat.image ? `${API_URL}/${cat.image}` : null);
+        setImagePreview(cat.image ? `${JoinUrl}/${cat.image}` : null);
         setOpenModal(true);
     };
 
@@ -265,7 +267,8 @@ const PharmaCategory = () => {
                                         <TableCell>{cat.description}</TableCell>
                                         <TableCell>
                                             <Avatar
-                                                src={`${API_URL}/${cat.image}`}
+                                                // src={`${API_URL}/${cat.image}`}
+                                                src={JoinUrl(API_URL, cat.image)}
                                                 alt={cat.name}
                                                 sx={{ width: 56, height: 56 }}
                                                 variant="rounded"
