@@ -283,15 +283,16 @@ const ProductPage = () => {
   const userData = storedUser ? JSON.parse(storedUser) : null;
 
   const mediaSafe = Array.isArray(product.media) ? product.media : [];
-  // const selectedImageUrl =
-  //   mediaSafe[selectedImageIndex]?.url
-  //     ? `${API_URL}${mediaSafe[selectedImageIndex].url}`
-  //     : null;
 
-  const selectedImageUrl = mediaSafe[selectedImageIndex]?.url
-    ? JoinUrl(API_URL, mediaSafe[selectedImageIndex].url)
-    : null;
+  // const selectedImageUrl = mediaSafe[selectedImageIndex]?.url
+  //   ? JoinUrl(API_URL, mediaSafe[selectedImageIndex].url)
+  //   : null;
 
+  // Always provide a fallback image if url is missing or invalid
+  const isValidUrl = (url) => url && (url.startsWith('http') || url.startsWith('/'));
+  // const selectedImageUrl = isValidUrl(mediaSafe[selectedImageIndex]?.url)
+  //   ? JoinUrl(API_URL, mediaSafe[selectedImageIndex].url)
+  //   : ''; // add a local placeholder in public folder
 
   const variants = product.quantity || [];
   const selectedVariant = variants[selectedVariantIndex] || null;
@@ -304,6 +305,12 @@ const ProductPage = () => {
   const unitDiscount = selectedVariant?.discount ?? null;
   const unitGst = selectedVariant?.gst ?? null;
   const orderTotal = unitPrice != null ? unitPrice * units : null;
+
+  const selectedMediaItem = mediaSafe[selectedImageIndex];
+  const selectedImageUrl = selectedMediaItem ? JoinUrl(API_URL, selectedMediaItem.url) : '';
+  const cssSafeUrl = selectedImageUrl
+    ? encodeURI(selectedImageUrl)
+    : '';
 
   return (
     <>
@@ -320,10 +327,10 @@ const ProductPage = () => {
                 onMouseLeave={handleMouseLeave}
                 style={{ position: 'relative', cursor: 'crosshair' }}
               >
+
                 {selectedImageUrl ? (
                   <img
-                    // src={selectedImageUrl}
-                    src={JoinUrl(selectedImageUrl)}
+                    src={selectedImageUrl}
                     alt={product?.name || 'Product'}
                     className="product-image1"
                   />
@@ -337,7 +344,8 @@ const ProductPage = () => {
                 )}
 
                 {/* Zoom Lens */}
-                {isZoomActive && selectedImageUrl && (
+                {/* option 1: */}
+                {/* {isZoomActive && selectedImageUrl && (
                   <div
                     className="zoom-lens"
                     style={{
@@ -357,7 +365,32 @@ const ProductPage = () => {
                       backgroundColor: '#fff'
                     }}
                   />
+                )} */}
+
+                {/* option 2: */}
+                {isZoomActive && cssSafeUrl && (
+                  <div
+                    className="zoom-lens"
+                    style={{
+                      position: 'absolute',
+                      top: 0,
+                      left: '105%',
+                      width: '320px',
+                      height: '320px',
+                      border: '1px solid #e5e7eb',
+                      backgroundImage: `url(${cssSafeUrl})`,
+                      backgroundRepeat: 'no-repeat',
+                      backgroundSize: '200%',
+                      backgroundPosition: `${zoomPosition.x}% ${zoomPosition.y}%`,
+                      zIndex: 100,
+                      borderRadius: '10px',
+                      boxShadow: '0 8px 24px rgba(0,0,0,0.08)',
+                      backgroundColor: selectedImageUrl === '' ? '#82b9f0ff' : '#fff'
+                    }}
+                  />
                 )}
+
+
 
                 <div className="product-badge natural-badge">
                   <Leaf className="badge-icon" size={16} />
