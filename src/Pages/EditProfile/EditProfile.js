@@ -13,9 +13,6 @@ const EditProfile = () => {
     phone: '',
     email: '',
     gender: 'male',
-    dob: '',
-    height: '',
-    weight: '',
   });
 
   // const [error, setError] = useState(null);
@@ -40,9 +37,6 @@ const EditProfile = () => {
         email: parsedData.email || '',
         mobile: parsedData.mobile || '',
         gender: parsedData.gender || 'male',
-        dob: parsedData.dob || '',
-        height: parsedData.height || '',
-        weight: parsedData.weight || '',
       });
 
       if (parsedData.profileImage) {
@@ -85,7 +79,8 @@ const EditProfile = () => {
       if (response.status === 200 || response.status === 201) {
         console.log("Profile updated:", response.data);
 
-        localStorage.setItem('userData', JSON.stringify(response.data.updatedUser || updatedData));
+        // localStorage.setItem('userData', JSON.stringify(response.data.updatedUser || updatedData));
+        localStorage.setItem('userData', JSON.stringify(response.data.admin || updatedData));
         toast.success('Profile updated successfully!');
       } else {
         throw new Error("Failed to update profile");
@@ -98,7 +93,7 @@ const EditProfile = () => {
   const handleLogout = (e) => {
     e.preventDefault();
     console.log('Logging out...');
-      localStorage.removeItem('userData');
+    localStorage.removeItem('userData');
     navigate('/login')
   };
 
@@ -116,15 +111,7 @@ const EditProfile = () => {
             </div>
             <nav className="sidebar-nav">
               <div className="nav-item active"
-               onClick={()=>{navigate('/EditProfile')}}
-              // href='#'
-              // onClick={(e) => {
-              //                 e.preventDefault();
-              //                 console.log("Navigating to /EditProfile");
-              //                 // navigate('/EditProfile');
-              //               }}
-              // onClick={() => navigate('/EditProfile')}
-              // href='#'
+                onClick={() => { navigate('/EditProfile') }}
               >
                 <svg className="nav-icon" viewBox="0 0 24 24">
                   <path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z" />
@@ -191,7 +178,7 @@ const EditProfile = () => {
                       <input
                         type="tel"
                         id="mobile"
-                        value={formData.mobile}
+                        value={formData.phone}
                         onChange={handleChange}
                         placeholder="Enter your phone number"
                       />

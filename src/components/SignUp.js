@@ -138,7 +138,7 @@ import { toast } from 'react-toastify';
 
 export default function SignUpForm() {
   const [formData, setFormData] = useState({
-    name: '', email: '', mobile: '', password: '', address: ''
+    name: '', email: '', phone: '', password: '', address: ''
   });
   const [otp, setOtp] = useState('');
   const [step, setStep] = useState(1);
@@ -148,7 +148,7 @@ export default function SignUpForm() {
 
   const handleChange = e => {
     const { name, value } = e.target;
-    if (name === 'mobile' && !/^\d{0,10}$/.test(value)) return;
+    if (name === 'phone' && !/^\d{0,10}$/.test(value)) return;
     setFormData(prev => ({ ...prev, [name]: value }));
   };
 
@@ -186,7 +186,7 @@ export default function SignUpForm() {
       toast.success('Registration successful!');
       setSuccess(true);
       setStep(3);
-      setFormData({ name: '', email: '', mobile: '', password: '', address: '' });
+      setFormData({ name: '', email: '', phone: '', password: '', address: '' });
       setOtp('');
     } catch (err) {
       setError(err.response?.data?.message || 'OTP verification failed');
@@ -208,7 +208,7 @@ export default function SignUpForm() {
           <input type="text" name="name" placeholder="Full Name" value={formData.name} onChange={handleChange} required className="signup-input" />
           <input type="email" name="email" placeholder="Email Address" value={formData.email} onChange={handleChange} required className="signup-input" />
           <input type="password" name="password" placeholder="Password" value={formData.password} onChange={handleChange} required minLength={6} className="signup-input" />
-          <input type="tel" name="mobile" placeholder="Mobile Number" value={formData.mobile} onChange={handleChange} required className="signup-input" />
+          <input type="tel" name="phone" placeholder="Phone Number" value={formData.phone} onChange={handleChange} required className="signup-input" />
           <input type="text" name="address" placeholder="Address" value={formData.address} onChange={handleChange} required className="signup-input" />
           <button type="submit" disabled={isSubmitting} className="signup-button">
             {isSubmitting ? 'Sending OTP...' : 'Send OTP'}
