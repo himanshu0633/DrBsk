@@ -38,7 +38,7 @@ const Features = () => {
           </div>
 
           {/* Feature Card */}
-          <div className="featurs-item  rounded p-4" onClick={() => handleClick(true)}
+          <div className="featurs-item  rounded p-4" onClick={() => navigate('/fever')}
             style={{ cursor: 'pointer' }}>
             <div className="featurs-icon">
               <img src="https://app.davaindia.com/images/QuickActions/doctor.gif" alt="No Prescription" />
