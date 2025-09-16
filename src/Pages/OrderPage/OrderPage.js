@@ -171,6 +171,14 @@ import axiosInstance from '../../components/AxiosInstance';
 import CustomLoader from '../../components/CustomLoader';
 import { useNavigate } from 'react-router-dom';
 
+function paymentStatusLabel(status) {
+  if (!status) return 'Unknown';
+  if (status === 'captured') return 'Paid';
+  if (status === 'failed') return 'Failed';
+  if (status === 'refunded') return 'Refunded';
+  return status.charAt(0).toUpperCase() + status.slice(1);
+}
+
 const OrderPage = () => {
   const [orders, setOrders] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -223,61 +231,6 @@ const OrderPage = () => {
     navigate('/login');
   };
 
-  // Razorpay payment
-  const triggerRazorpayPayment = (razorpayOrderId, amount) => {
-    if (!window.Razorpay) {
-      alert('Razorpay SDK not loaded.');
-      return;
-    }
-
-    const options = {
-      key: 'rzp_live_hgk55iUzVRpKZ1', // Your Razorpay Key ID
-      amount: amount * 100, // Amount in paise
-      currency: 'INR',
-      name: 'Dr BSK Healthcare',
-      description: 'Payment for Order',
-      order_id: razorpayOrderId,
-      handler: async function (response) {
-        try {
-          await axiosInstance.post('/api/payment/success', {
-            orderId: razorpayOrderId,
-            paymentDetails: response
-          });
-          alert('Payment successful!');
-          fetchOrders(); // Refresh orders
-        } catch (error) {
-          console.error('Error saving payment details:', error);
-          alert('Payment successful but saving failed. Contact support.');
-        }
-      },
-      prefill: {
-        name: userData?.name,
-        email: userData?.email,
-        contact: userData?.phone
-      },
-      theme: {
-        color: '#F37254'
-      }
-    };
-
-    const rzp = new window.Razorpay(options);
-    rzp.open();
-  };
-
-  // Create Razorpay order & pay
-  const handlePayNow = async (orderId, totalAmount) => {
-    try {
-      const response = await axiosInstance.post('/razorpay/createOrder', {
-        userId,
-        totalAmount
-      });
-      const { razorpayOrderId } = response.data;
-      triggerRazorpayPayment(razorpayOrderId, totalAmount);
-    } catch (error) {
-      console.error('Error creating Razorpay order:', error);
-      alert('Failed to initiate payment.');
-    }
-  };
 
   if (isAuthenticated === null) return null;
 
@@ -327,10 +280,11 @@ const OrderPage = () => {
                         <th>Order ID</th>
                         <th>Product(s)</th>
                         <th>Date</th>
-                        <th>Status</th>
+                        <th>Order Status</th>
+                        <th>Payment Status</th>
                         <th>Total</th>
                         <th>Phone</th>
-                        <th>Action</th>
+                        {/* <th>Action</th> */}
                       </tr>
                     </thead>
                     <tbody>
@@ -346,9 +300,14 @@ const OrderPage = () => {
                                 {order.status}
                               </span>
                             </td>
+                            <td>
+                              {order.paymentInfo
+                                ? paymentStatusLabel(order.paymentInfo.status)
+                                : 'Unknown'}
+                            </td>
                             <td>₹{order.totalAmount}</td>
                             <td>{order.phone}</td>
-                            <td>
+                            {/* <td>
                               {order.status === 'Pending' && (
                                 <button
                                   className="pay-now-button"
@@ -357,7 +316,7 @@ const OrderPage = () => {
                                   Pay Now
                                 </button>
                               )}
-                            </td>
+                            </td> */}
                           </tr>
                         ))
                       ) : (

@@ -138,8 +138,8 @@ const PharmaOrder = () => {
                   <TableCell sx={{ color: 'white', fontWeight: 'bold' }}>Price</TableCell>
                   <TableCell sx={{ color: 'white', fontWeight: 'bold' }}>Quantity</TableCell>
                   <TableCell sx={{ color: 'white', fontWeight: 'bold' }}>Payment ID</TableCell>
-                  <TableCell sx={{ color: 'white', fontWeight: 'bold' }}>Status</TableCell>
-
+                  <TableCell sx={{ color: 'white', fontWeight: 'bold' }}>Order Status</TableCell>
+                  <TableCell sx={{ color: 'white', fontWeight: 'bold' }}>Payment Status</TableCell>
                   <TableCell sx={{ color: 'white', fontWeight: 'bold' }}>View</TableCell>
                 </TableRow>
               </TableHead>
@@ -168,7 +168,7 @@ const PharmaOrder = () => {
                         <TableCell rowSpan={items.length}>{order.paymentId || 'N/A'}</TableCell>
                       )}
 
-                      {index === 0 && (
+                      {/* {index === 0 && (
                         <TableCell rowSpan={items.length}>
                           <select
                             value={order.status}
@@ -195,10 +195,38 @@ const PharmaOrder = () => {
                             ))}
                           </select>
                         </TableCell>
+                      )} */}
+
+                      {index === 0 && (
+                        <TableCell rowSpan={items.length}>
+                          <select
+                            value={order.status}
+                            disabled={updatingStatusId === order._id}
+                            onChange={(e) => updateOrderStatus(order._id, e.target.value)}
+                          /* styling */
+                          >
+                            {statusOptions.map((status) => (
+                              <option key={status} value={status}>
+                                {status}
+                              </option>
+                            ))}
+                          </select>
+                        </TableCell>
+                      )}
+                      {/* payment status */}
+                      {index === 0 && (
+                        <TableCell rowSpan={items.length}>
+                          <StatusChip
+                            label={order.paymentInfo?.status || 'Unknown'}
+                            status={order.paymentInfo?.status?.toLowerCase() || 'unknown'}
+                            size="small"
+                            sx={{ minWidth: '80px', textAlign: 'center' }}
+                          />
+                        </TableCell>
                       )}
 
                       {/* view order all details */}
-                      {index === 0 && (
+                      {/* {index === 0 && (
                         <TableCell>
                           <Button
                             variant="outlined"
@@ -207,7 +235,18 @@ const PharmaOrder = () => {
                           >
                             View
                           </Button>
-                        </TableCell>)}
+                        </TableCell>)} */}
+                      {index === 0 && (
+                        <TableCell rowSpan={items.length}>
+                          <Button
+                            variant="outlined"
+                            size="small"
+                            onClick={() => handleViewOrder(order)}
+                          >
+                            View
+                          </Button>
+                        </TableCell>
+                      )}
                     </TableRow>
                   ));
                 })}
