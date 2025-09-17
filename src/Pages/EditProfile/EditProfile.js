@@ -35,7 +35,7 @@ const EditProfile = () => {
       setFormData({
         name: parsedData.name || '',
         email: parsedData.email || '',
-        mobile: parsedData.mobile || '',
+        phone: parsedData.phone || '',
         gender: parsedData.gender || 'male',
       });
 
@@ -177,7 +177,7 @@ const EditProfile = () => {
                       <span className="country-code">+91</span>
                       <input
                         type="tel"
-                        id="mobile"
+                        id="phone"
                         value={formData.phone}
                         onChange={handleChange}
                         placeholder="Enter your phone number"

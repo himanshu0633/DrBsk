@@ -18,6 +18,8 @@ const AddToCart = () => {
   const [loading, setLoading] = useState(true);
   const [states, setStates] = useState([]);
   const [cities, setCities] = useState([]);
+  // const [countryCode, setCountryCode] = useState('+91');
+  // const [localNumber, setLocalNumber] = useState('');
   const [formData, setFormData] = useState({
     flat: '',
     landmark: '',
@@ -79,13 +81,15 @@ const AddToCart = () => {
       toast.error("User ID not found.");
       return;
     }
+    const phoneWithCountry = `+91${formData.phone}`;
 
     const fullAddress = `${formData.flat}, ${formData.landmark}, ${formData.city}, ${formData.state}, ${formData.country}`;
 
     try {
       const response = await axiosInstance.put(`admin/updateAdmin/${userId}`, {
         address: [...addresses, fullAddress],
-        phone: formData.phone,
+        // phone: formData.phone,
+        phone: phoneWithCountry,
       });
 
       if (response.status === 200) {
@@ -142,11 +146,78 @@ const AddToCart = () => {
   //   });
   // };
 
+  // // option 1:
+  // const handleCheckout = () => {
+  //   if (!formData.selectedAddress) {
+  //     toast.warn("Please select an address before checkout.");
+  //     return;
+  //   }
+
+  //   const options = {
+  //     key: "rzp_live_hgk55iUzVRpKZ1", // Your Razorpay key
+  //     amount: totalPrice * 100, // In paise
+  //     currency: "INR",
+  //     name: "My Shop",
+  //     description: "Order Payment",
+  //     handler: async function (response) {
+  //       try {
+  //         toast.success("Payment successful!");
+
+  //         const userData = JSON.parse(localStorage.getItem('userData'));
+  //         const orderPayload = {
+  //           userId: userData?._id,
+  //           items: cartItems.map(item => ({
+  //             productId: item._id,
+  //             name: item.name,
+  //             quantity: item.quantity || 1,
+  //             price: parseFloat(item?.consumer_price || item?.consumer_price || 0),
+  //           })),
+  //           address: formData.selectedAddress,
+  //           phone: formData.phone || "9999999999",
+  //           totalAmount: totalPrice,
+  //           paymentId: response.razorpay_payment_id,
+  //         };
+
+  //         const res = await axiosInstance.post('/api/createOrder', orderPayload);
+
+  //         if (res.status === 201) {
+  //           dispatch(clearProducts()); // Clear the cart
+  //           navigate("/success"); // Redirect to success page
+  //         } else {
+  //           toast.error("Failed to place order.");
+  //         }
+  //       } catch (error) {
+  //         console.error("Order creation error:", error);
+  //         toast.error("Something went wrong while placing the order.");
+  //       }
+  //     },
+
+  //     prefill: {
+  //       name: "Test User",
+  //       email: "test@example.com",
+  //       contact: formData.phone || "9999999999",
+  //     },
+  //     notes: {
+  //       address: formData.selectedAddress,
+  //     },
+  //     theme: {
+  //       color: "#3399cc",
+  //     },
+  //   };
+
+  //   const razorpay = new window.Razorpay(options); // Instantiate Razorpay
+  //   razorpay.open(); // Open the Razorpay checkout
+  // };
+
+
+  // // option 2:
   const handleCheckout = () => {
     if (!formData.selectedAddress) {
       toast.warn("Please select an address before checkout.");
       return;
     }
+
+    console.log("Phone used for checkout:", formData.phone);
 
     const options = {
       key: "rzp_live_hgk55iUzVRpKZ1", // Your Razorpay key
@@ -158,22 +229,22 @@ const AddToCart = () => {
         try {
           toast.success("Payment successful!");
 
-          const userData = JSON.parse(localStorage.getItem('userData'));
+          const userData = JSON.parse(localStorage.getItem("userData"));
           const orderPayload = {
             userId: userData?._id,
-            items: cartItems.map(item => ({
+            items: cartItems.map((item) => ({
               productId: item._id,
               name: item.name,
               quantity: item.quantity || 1,
-              price: parseFloat(item?.consumer_price || item?.consumer_price || 0),
+              price: parseFloat(item?.consumer_price || 0),
             })),
             address: formData.selectedAddress,
-            phone: formData.phone || "9999999999",
+            phone: formData.phone,  // use exact phone from formData here, no fallback
             totalAmount: totalPrice,
             paymentId: response.razorpay_payment_id,
           };
 
-          const res = await axiosInstance.post('/api/createOrder', orderPayload);
+          const res = await axiosInstance.post("/api/createOrder", orderPayload);
 
           if (res.status === 201) {
             dispatch(clearProducts()); // Clear the cart
@@ -190,7 +261,7 @@ const AddToCart = () => {
       prefill: {
         name: "Test User",
         email: "test@example.com",
-        contact: formData.phone || "9999999999",
+        contact: formData.phone,  // use exact phone here, no fallback
       },
       notes: {
         address: formData.selectedAddress,
@@ -497,6 +568,19 @@ const AddToCart = () => {
             </select>
 
             <Grid item xs={12} sm={6}>
+              {/* <select
+                value={countryCode}
+                onChange={(e) => {
+                  setCountryCode(e.target.value);
+                  setFormData({ ...formData, phone: '' }); // Optional: clear phone input on country change
+                }}
+                style={{ width: '25%', marginRight: 8 }}
+              >
+                <option value="+91">+91 (India)</option>
+                <option value="+98">+98 (Iran)</option>
+                <option value="+1">+1 (USA)</option>
+              </select> */}
+
               <TextField
                 fullWidth
                 variant="outlined"

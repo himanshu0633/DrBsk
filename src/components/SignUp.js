@@ -171,7 +171,36 @@ export default function SignUpForm() {
       setIsSubmitting(false);
     }
   };
+  // // option 1:
+  // const verifyOtpAndSignup = async e => {
+  //   e.preventDefault();
+  //   setError('');
+  //   setSuccess(false);
+  //   if (otp.length !== 6) {
+  //     setError('Enter 6-digit OTP');
+  //     return;
+  //   }
+  //   setIsSubmitting(true);
+  //   try {
+  //     await axiosInstance.post('/api/verify-otp', { ...formData, otp });
+  //     // const response = await axiosInstance.post('/api/verify-otp', { ...formData, otp });
+  //     // if (response.data.admin) {
+  //     //   localStorage.setItem('userData', JSON.stringify(response.data.admin));
+  //     // }
+  //     toast.success('Registration successful!');
+  //     setSuccess(true);
+  //     setStep(3);
+  //     setFormData({ name: '', email: '', phone: '', password: '', address: '' });
+  //     setOtp('');
+  //   } catch (err) {
+  //     setError(err.response?.data?.message || 'OTP verification failed');
+  //   } finally {
+  //     setIsSubmitting(false);
+  //   }
+  // };
 
+
+  // // option 2:
   const verifyOtpAndSignup = async e => {
     e.preventDefault();
     setError('');
@@ -182,8 +211,14 @@ export default function SignUpForm() {
     }
     setIsSubmitting(true);
     try {
-      await axiosInstance.post('/api/verify-otp', { ...formData, otp });
-      toast.success('Registration successful!');
+      const response = await axiosInstance.post('/api/verify-otp', { ...formData, otp });
+
+      // Store user data if needed
+      if (response.data.admin) {
+        localStorage.setItem('userData', JSON.stringify(response.data.admin));
+      }
+
+      toast.success('Registration successful! You can now log in.');
       setSuccess(true);
       setStep(3);
       setFormData({ name: '', email: '', phone: '', password: '', address: '' });
@@ -194,6 +229,8 @@ export default function SignUpForm() {
       setIsSubmitting(false);
     }
   };
+
+
 
   const errorMessage = error && <p className="clrRed">{error}</p>;
   const successMessage = success && <div className="success-message">Registration successful!</div>;

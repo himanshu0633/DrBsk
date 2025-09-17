@@ -16,7 +16,8 @@ const Cart = () => {
   const [showSignUp, setShowSignUp] = useState(false);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const [mobile, setMobile] = useState('');
+  // const [mobile, setMobile] = useState('');
+  const [phone, setPhone] = useState('');
   const [otp, setOtp] = useState('');
   const [otpSent, setOtpSent] = useState(false);
   const [errors, setErrors] = useState({});
@@ -34,21 +35,35 @@ const Cart = () => {
   };
 
   const validateEmail = (email) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
-  const validateMobile = (mobile) => /^[0-9]{10}$/.test(mobile);
+  // const validateMobile = (mobile) => /^[0-9]{10}$/.test(mobile);
+  const validatePhone = (phone) => /^[0-9]{10}$/.test(phone);
 
   const handleSendOtp = () => {
-    if (!validateMobile(mobile)) {
-      setErrors({ mobile: 'Please enter a valid 10-digit mobile number' });
+    if (!validatePhone(phone)) {
+      setErrors({ phone: 'Please enter a valid 10-digit phone number' });
       return;
     }
     setIsLoading(true);
     setTimeout(() => {
       setOtpSent(true);
       setIsLoading(false);
-      toast.success(`OTP sent to +91${mobile}`);
+      toast.success(`OTP sent to +91${phone}`);
     }, 1500);
 
   };
+  // const handleSendOtp = () => {
+  //   if (!validateMobile(mobile)) {
+  //     setErrors({ mobile: 'Please enter a valid 10-digit mobile number' });
+  //     return;
+  //   }
+  //   setIsLoading(true);
+  //   setTimeout(() => {
+  //     setOtpSent(true);
+  //     setIsLoading(false);
+  //     toast.success(`OTP sent to +91${mobile}`);
+  //   }, 1500);
+
+  // };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -59,7 +74,8 @@ const Cart = () => {
     const newErrors = {};
 
     if (isMobileLogin) {
-      if (!validateMobile(mobile)) newErrors.mobile = 'Please enter a valid 10-digit mobile number';
+      // if (!validateMobile(mobile)) newErrors.mobile = 'Please enter a valid 10-digit mobile number';
+      if (!validatePhone(phone)) newErrors.phone = 'Please enter a valid 10-digit mobile number';
       if (!otp) newErrors.otp = 'Please enter the OTP';
     } else {
       if (!validateEmail(email)) newErrors.email = 'Please enter a valid email address';
@@ -156,9 +172,9 @@ const Cart = () => {
                   ) : (
                     <>
                       <div className={`davaindia-form-group ${errors.mobile ? 'error' : ''}`}>
-                        <label>Mobile</label>
-                        <input type="tel" value={mobile} onChange={(e) => setMobile(e.target.value)} placeholder="Enter mobile number" />
-                        {errors.mobile && <div className="davaindia-error-message">{errors.mobile}</div>}
+                        <label>Phone</label>
+                        <input type="tel" value={phone} onChange={(e) => setPhone(e.target.value)} placeholder="Enter phone number" />
+                        {errors.phone && <div className="davaindia-error-message">{errors.phone}</div>}
                       </div>
                       {otpSent && (
                         <div className={`davaindia-form-group ${errors.otp ? 'error' : ''}`}>

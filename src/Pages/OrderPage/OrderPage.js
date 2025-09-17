@@ -213,11 +213,45 @@ const OrderPage = () => {
   }, [userId]);
 
 
+  // const fetchOrders = async () => {
+  //   setLoading(true);
+  //   try {
+  //     const response = await axiosInstance.get(`/api/orders/${userId}`);
+  //     setOrders(response.data.orders || []);
+  //   } catch (error) {
+  //     console.error('Error fetching orders:', error);
+  //   } finally {
+  //     setLoading(false);
+  //   }
+  // };
+
+  // Handle logout
+
+  const fetchLivePaymentStatus = async (orderId) => {
+    try {
+      const response = await axiosInstance.get(`/api/paymentStatus/${orderId}`);
+      return response.data.paymentInfo; // This is your live payment status
+    } catch (error) {
+      console.error('Error fetching payment status:', error);
+      return null;
+    }
+  };
+
   const fetchOrders = async () => {
     setLoading(true);
     try {
       const response = await axiosInstance.get(`/api/orders/${userId}`);
-      setOrders(response.data.orders || []);
+      const ordersWithLiveStatus = await Promise.all(
+        (response.data.orders || []).map(async (order) => {
+          // Fetch live payment status for each order
+          const paymentInfo = await fetchLivePaymentStatus(order._id);
+          return {
+            ...order,
+            paymentInfo, // override with live Razorpay status
+          };
+        })
+      );
+      setOrders(ordersWithLiveStatus);
     } catch (error) {
       console.error('Error fetching orders:', error);
     } finally {
@@ -225,7 +259,7 @@ const OrderPage = () => {
     }
   };
 
-  // Handle logout
+
   const handleLogout = () => {
     localStorage.removeItem('userData');
     navigate('/login');
