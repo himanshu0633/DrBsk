@@ -130,7 +130,7 @@ const Cart = () => {
                         <label>Email</label>
                         <div className="davaindia-input-container">
                           <Mail size={18} className="davaindia-input-icon left" />
-                          <input type="email" value={email} onChange={(e) => setEmail(e.target.value)} placeholder="Enter your email" />
+                          <input type="email" value={email} onChange={(e) => setEmail(e.target.value)} placeholder="Enter your email" className='w-100' />
                         </div>
                         {errors.email && <div className="davaindia-error-message">{errors.email}</div>}
                       </div>
@@ -138,9 +138,9 @@ const Cart = () => {
                       <div className={`davaindia-form-group ${errors.password ? 'error' : ''}`}>
                         <label>Password</label>
                         <div className="davaindia-input-container justifyBetween">
-                          <div className='davaindia-input-container1'>
+                          <div className='davaindia-input-container1 '>
                             <Lock size={18} className="davaindia-input-icon left" />
-                            <input type={showPassword ? 'text' : 'password'} value={password} onChange={(e) => setPassword(e.target.value)} placeholder="Enter your password" />
+                            <input type={showPassword ? 'text' : 'password'} value={password} onChange={(e) => setPassword(e.target.value)} placeholder="Enter your password" className='w-100' />
                           </div>
                           <button type="button" onClick={togglePasswordVisibility}>
                             {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
