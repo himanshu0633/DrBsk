@@ -43,7 +43,7 @@ const HeroSection = () => {
             <span className="highlight">lowest price</span>
           </h2>
 
-          <div className="search-box">
+          <div className="search-box ">
             <div className="search-icon">🔍</div>
             <input
               type="text"
@@ -54,7 +54,7 @@ const HeroSection = () => {
             />
 
             {query.trim() !== '' && results.length > 0 && (
-              <div className="search-results searchOverflow">
+              <div className="search-results searchOverflow ">
                 {results.map((product) => (
                   <div
                     key={product._id}
