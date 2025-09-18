@@ -77,10 +77,10 @@ const AddToCart = () => {
     const userData = JSON.parse(localStorage.getItem('userData'));
     const userId = userData?._id;
 
-    if (!userId) {
-      toast.error("User ID not found.");
-      return;
-    }
+    // if (!userId) {
+    //   toast.error("User ID not found.");
+    //   return;
+    // }
     const phoneWithCountry = `+91${formData.phone}`;
 
     const fullAddress = `${formData.flat}, ${formData.landmark}, ${formData.city}, ${formData.state}, ${formData.country}`;
@@ -136,80 +136,6 @@ const AddToCart = () => {
     fetchCities();
   }, [formData.state]);
 
-  // const loadRazorpayScript = () => {
-  //   return new Promise((resolve) => {
-  //     const script = document.createElement("script");
-  //     script.src = "https://checkout.razorpay.com/v1/checkout.js";
-  //     script.onload = () => resolve(true);
-  //     script.onerror = () => resolve(false);
-  //     document.body.appendChild(script);
-  //   });
-  // };
-
-  // // option 1:
-  // const handleCheckout = () => {
-  //   if (!formData.selectedAddress) {
-  //     toast.warn("Please select an address before checkout.");
-  //     return;
-  //   }
-
-  //   const options = {
-  //     key: "rzp_live_hgk55iUzVRpKZ1", // Your Razorpay key
-  //     amount: totalPrice * 100, // In paise
-  //     currency: "INR",
-  //     name: "My Shop",
-  //     description: "Order Payment",
-  //     handler: async function (response) {
-  //       try {
-  //         toast.success("Payment successful!");
-
-  //         const userData = JSON.parse(localStorage.getItem('userData'));
-  //         const orderPayload = {
-  //           userId: userData?._id,
-  //           items: cartItems.map(item => ({
-  //             productId: item._id,
-  //             name: item.name,
-  //             quantity: item.quantity || 1,
-  //             price: parseFloat(item?.consumer_price || item?.consumer_price || 0),
-  //           })),
-  //           address: formData.selectedAddress,
-  //           phone: formData.phone || "9999999999",
-  //           totalAmount: totalPrice,
-  //           paymentId: response.razorpay_payment_id,
-  //         };
-
-  //         const res = await axiosInstance.post('/api/createOrder', orderPayload);
-
-  //         if (res.status === 201) {
-  //           dispatch(clearProducts()); // Clear the cart
-  //           navigate("/success"); // Redirect to success page
-  //         } else {
-  //           toast.error("Failed to place order.");
-  //         }
-  //       } catch (error) {
-  //         console.error("Order creation error:", error);
-  //         toast.error("Something went wrong while placing the order.");
-  //       }
-  //     },
-
-  //     prefill: {
-  //       name: "Test User",
-  //       email: "test@example.com",
-  //       contact: formData.phone || "9999999999",
-  //     },
-  //     notes: {
-  //       address: formData.selectedAddress,
-  //     },
-  //     theme: {
-  //       color: "#3399cc",
-  //     },
-  //   };
-
-  //   const razorpay = new window.Razorpay(options); // Instantiate Razorpay
-  //   razorpay.open(); // Open the Razorpay checkout
-  // };
-
-
   // // option 2: Updated with proper Razorpay Order API flow
   const handleCheckout = async () => {
     if (!formData.selectedAddress) {
@@ -223,7 +149,7 @@ const AddToCart = () => {
       // First, create the order in your backend which will create Razorpay order
       const userData = JSON.parse(localStorage.getItem("userData"));
       // Get phone from user data if not in formData
-      const phoneNumber = formData.phone || OriginalAddress?.phone || "9999999999";
+      const phoneNumber = formData.phone || OriginalAddress?.phone || "";
 
       const orderPayload = {
         userId: userData?._id,
@@ -337,13 +263,6 @@ const AddToCart = () => {
       console.error("Error fetching address:", error);
     }
   };
-
-  useEffect(() => {
-    console.log("Addresses state updated:", addresses);
-  }, [addresses]);
-
-
-
 
   return (
     <>
@@ -618,7 +537,7 @@ const AddToCart = () => {
               />
             </Grid>
             <Grid item xs={12} sm={6}>
-              <TextField
+              {/* <TextField
                 label="Phone Number"
                 fullWidth
                 variant="outlined"
@@ -626,8 +545,26 @@ const AddToCart = () => {
                 InputProps={{
                   startAdornment: <InputAdornment position="start">+91</InputAdornment>,
                 }}
-                onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
+                // onChange={(e) => setFormData({ ...formData, phone: e.target.value })}  
+              /> */}
+              <TextField
+                label="Phone Number"
+                fullWidth
+                variant="outlined"
+                size="small"
+                name="phone"
+                value={formData.phone}
+                onChange={(e) => {
+                  const value = e.target.value;
+                  if (/^\d{0,10}$/.test(value)) {
+                    setFormData({ ...formData, phone: value });
+                  }
+                }}
+                InputProps={{
+                  startAdornment: <InputAdornment position="start">+91</InputAdornment>,
+                }}
               />
+
             </Grid>
           </Grid>
         </DialogContent>
