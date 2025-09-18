@@ -19,11 +19,7 @@
   background: #fff;
   border: 1px solid #ccc;
   width: 100%;
-  /* width: 500px; */
   z-index: 999;
-  /* height: 170px;
-  overflow-y: auto; */
-  height: 100%;
   top: 55px;
   left: 0;
 }
@@ -42,7 +38,7 @@
 .search-section {
   /* background: linear-gradient(to right, #009e51, #00b894); */
   background-color: #68171b;
-  padding: 70px 0px 40px ;
+  padding: 70px 0px 40px;
   border-radius: 16px;
   margin: 20px auto;
   width: 100%;
