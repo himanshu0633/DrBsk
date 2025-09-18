@@ -98,9 +98,7 @@ const Cart = () => {
         // Store login data in session storage
         localStorage.setItem('authToken', response.data.token);
         localStorage.setItem('userData', JSON.stringify(response.data.data));
-
-        // Redirect to dashboard
-        // window.location.href = '/';
+        
         navigate('/homepage')
       }
     } catch (error) {

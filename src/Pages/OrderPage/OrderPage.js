@@ -233,7 +233,12 @@ const OrderPage = () => {
       return response.data.paymentInfo; // This is your live payment status
     } catch (error) {
       console.error('Error fetching payment status:', error);
-      return null;
+      // Return a default payment info object instead of null
+      return {
+        status: 'pending',
+        amount: 0,
+        paymentId: null
+      };
     }
   };
 
@@ -335,9 +340,9 @@ const OrderPage = () => {
                               </span>
                             </td>
                             <td>
-                              {order.paymentInfo
+                              {order.paymentInfo && order.paymentInfo.status
                                 ? paymentStatusLabel(order.paymentInfo.status)
-                                : 'Unknown'}
+                                : 'Pending'}
                             </td>
                             <td>₹{order.totalAmount}</td>
                             <td>{order.phone}</td>

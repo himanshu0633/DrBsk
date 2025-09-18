@@ -210,8 +210,8 @@ const AddToCart = () => {
   // };
 
 
-  // // option 2:
-  const handleCheckout = () => {
+  // // option 2: Updated with proper Razorpay Order API flow
+  const handleCheckout = async () => {
     if (!formData.selectedAddress) {
       toast.warn("Please select an address before checkout.");
       return;
@@ -219,60 +219,89 @@ const AddToCart = () => {
 
     console.log("Phone used for checkout:", formData.phone);
 
-    const options = {
-      key: "rzp_live_hgk55iUzVRpKZ1", // Your Razorpay key
-      amount: totalPrice * 100, // In paise
-      currency: "INR",
-      name: "My Shop",
-      description: "Order Payment",
-      handler: async function (response) {
-        try {
-          toast.success("Payment successful!");
+    try {
+      // First, create the order in your backend which will create Razorpay order
+      const userData = JSON.parse(localStorage.getItem("userData"));
+      // Get phone from user data if not in formData
+      const phoneNumber = formData.phone || OriginalAddress?.phone || "9999999999";
 
-          const userData = JSON.parse(localStorage.getItem("userData"));
-          const orderPayload = {
-            userId: userData?._id,
-            items: cartItems.map((item) => ({
-              productId: item._id,
-              name: item.name,
-              quantity: item.quantity || 1,
-              price: parseFloat(item?.consumer_price || 0),
-            })),
-            address: formData.selectedAddress,
-            phone: formData.phone,  // use exact phone from formData here, no fallback
-            totalAmount: totalPrice,
-            paymentId: response.razorpay_payment_id,
-          };
+      const orderPayload = {
+        userId: userData?._id,
+        items: cartItems.map((item) => ({
+          productId: item._id,
+          name: item.name,
+          quantity: item.quantity || 1,
+          price: parseFloat(item?.final_price || item?.consumer_price || 0),
+        })),
+        address: formData.selectedAddress,
+        phone: phoneNumber,
+        totalAmount: totalPrice,
+        paymentId: null, // Will be set after payment
+      };
 
-          const res = await axiosInstance.post("/api/createOrder", orderPayload);
+      console.log("Order payload:", orderPayload); // Debug log
+      console.log("Cart items for debugging:", cartItems.map(item => ({
+        name: item.name,
+        final_price: item.final_price,
+        consumer_price: item.consumer_price,
+        retail_price: item.retail_price
+      })));
 
-          if (res.status === 201) {
+      const orderResponse = await axiosInstance.post("/api/createOrder", orderPayload);
+
+      if (orderResponse.status !== 201) {
+        toast.error("Failed to create order.");
+        return;
+      }
+
+      const { razorpayOrderId } = orderResponse.data;
+
+      // Now create Razorpay payment options with the order ID
+      const options = {
+        key: "rzp_live_hgk55iUzVRpKZ1", // Your Razorpay key
+        amount: totalPrice * 100, // In paise
+        currency: "INR",
+        name: "BSK Healthcare",
+        description: "Order Payment",
+        order_id: razorpayOrderId, // Use the Razorpay order ID
+        handler: async function (response) {
+          try {
+            toast.success("Payment successful!");
+
+            // Update the order with payment ID
+            const updatePayload = {
+              paymentId: response.razorpay_payment_id,
+              razorpayOrderId: razorpayOrderId,
+            };
+
+            await axiosInstance.put(`/api/updatePayment/${orderResponse.data.orderId}`, updatePayload);
+
             dispatch(clearProducts()); // Clear the cart
             navigate("/success"); // Redirect to success page
-          } else {
-            toast.error("Failed to place order.");
+          } catch (error) {
+            console.error("Order update error:", error);
+            toast.error("Payment successful but failed to update order.");
           }
-        } catch (error) {
-          console.error("Order creation error:", error);
-          toast.error("Something went wrong while placing the order.");
-        }
-      },
+        },
+        prefill: {
+          name: "Test User",
+          email: "test@example.com",
+          contact: phoneNumber,
+        },
+        notes: {
+          address: formData.selectedAddress,
+        },
+        theme: {
+          color: "#3399cc",
+        },
+      };
 
-      prefill: {
-        name: "Test User",
-        email: "test@example.com",
-        contact: formData.phone,  // use exact phone here, no fallback
-      },
-      notes: {
-        address: formData.selectedAddress,
-      },
-      theme: {
-        color: "#3399cc",
-      },
-    };
-
-    const razorpay = new window.Razorpay(options); // Instantiate Razorpay
-    razorpay.open(); // Open the Razorpay checkout
+      const razorpay = new window.Razorpay(options);
+      razorpay.open();
+    } catch (error) {
+      console.error("Checkout error:", error);
+      toast.error("Something went wrong while creating the order.");
+    }
   };
 
 
