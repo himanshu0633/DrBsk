@@ -40,7 +40,7 @@ const AddToCart = () => {
       setIsAuthenticated(true);
     } else {
       // window.location.href = '/login';
-      navigate('/login')
+      // navigate('/login')
     }
   }, []);
 

@@ -51,19 +51,7 @@ const Cart = () => {
     }, 1500);
 
   };
-  // const handleSendOtp = () => {
-  //   if (!validateMobile(mobile)) {
-  //     setErrors({ mobile: 'Please enter a valid 10-digit mobile number' });
-  //     return;
-  //   }
-  //   setIsLoading(true);
-  //   setTimeout(() => {
-  //     setOtpSent(true);
-  //     setIsLoading(false);
-  //     toast.success(`OTP sent to +91${mobile}`);
-  //   }, 1500);
 
-  // };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -98,7 +86,7 @@ const Cart = () => {
         // Store login data in session storage
         localStorage.setItem('authToken', response.data.token);
         localStorage.setItem('userData', JSON.stringify(response.data.data));
-        
+
         navigate('/homepage')
       }
     } catch (error) {

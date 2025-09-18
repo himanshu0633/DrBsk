@@ -67,22 +67,6 @@ import ReturnsPolicy from "./Pages/footerLinksPages/ReturnsPolicy";
 import { MobileBottomNav } from "./components/MobileBottomNav";
 
 
-
-function HomePage() {
-  return (
-    <>
-      <HeroSection />
-      <Features />
-      <Categories />
-      <CarouselBanner />
-      <PromoSection />
-      <Personal />
-      <ProductCarousel />
-      <Footer />
-    </>
-  );
-}
-
 function App() {
   //   useEffect(() => {
   //   toast.info('Test toast works!');
