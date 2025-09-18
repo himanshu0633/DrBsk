@@ -12,7 +12,7 @@ const EditProfile = () => {
     name: '',
     phone: '',
     email: '',
-    gender: 'male',
+    address: [],
   });
 
   // const [error, setError] = useState(null);
@@ -36,7 +36,7 @@ const EditProfile = () => {
         name: parsedData.name || '',
         email: parsedData.email || '',
         phone: parsedData.phone || '',
-        gender: parsedData.gender || 'male',
+        address: parsedData.address || '',
       });
 
       if (parsedData.profileImage) {
@@ -197,13 +197,24 @@ const EditProfile = () => {
                   </div>
 
                   <div className="form-group">
+                    <label htmlFor="address">Address</label>
+                    <input
+                      type="text"
+                      id="address"
+                      value={formData.address}
+                      onChange={handleChange}
+                      placeholder="Enter your address"
+                    />
+                  </div>
+
+                  {/* <div className="form-group">
                     <label htmlFor="gender">Gender</label>
                     <select id="gender" value={formData.gender} onChange={handleChange}>
                       <option value="male">Male</option>
                       <option value="female">Female</option>
                       <option value="other">Other</option>
                     </select>
-                  </div>
+                  </div> */}
                 </div>
 
                 <button type="submit" className="save-button">
