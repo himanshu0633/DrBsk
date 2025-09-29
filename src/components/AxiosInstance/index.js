@@ -1,7 +1,6 @@
 import axios from "axios";
 import { toast } from "react-toastify";
 import API_URL from "../../config";
-// import SweetAlert from "../CustomSwal";
 
 const axiosInstance = axios.create({
   baseURL: API_URL,
