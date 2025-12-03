@@ -3,20 +3,47 @@
 
 <head>
   <meta charset="utf-8" />
+  
+  <!-- Favicon for the website -->
   <link rel="icon" type="image/jpg" href="/logo1.jpg" />
+  
+  <!-- Viewport settings for responsiveness -->
   <meta name="viewport" content="width=device-width, initial-scale=1" />
+  
+  <!-- Razorpay Checkout Script -->
   <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
+  
+  <!-- Theme color for mobile browsers -->
   <meta name="theme-color" content="#000000" />
-  <meta name="description" content="Web site created using create-react-app" />
+  
+  <!-- SEO Optimization -->
+  <meta name="description" content="BSK Pharma offers pharmaceutical products with excellent service and customer satisfaction." />
+  
+  <!-- Apple touch icon for iOS devices -->
   <link rel="apple-touch-icon" href="%PUBLIC_URL%/logo192.png" />
-
+  
+  <!-- Manifest for PWA (Progressive Web App) -->
   <link rel="manifest" href="%PUBLIC_URL%/manifest.json" />
 
-  <title>BSK Pharma</title>
+  <!-- Website Title -->
+  <title>BSK Pharma | Pharmaceutical Excellence</title>
+
+  <!-- Google tag (gtag.js) for Google Analytics -->
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-QB5QXWS1LT"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+    gtag('config', 'G-QB5QXWS1LT');
+  </script>
+
 </head>
 
 <body>
+  <!-- In case JavaScript is disabled, provide a message to enable it -->
   <noscript>You need to enable JavaScript to run this app.</noscript>
+  
+  <!-- Root element for React to inject the app content -->
   <div id="root"></div>
 
 </body>
