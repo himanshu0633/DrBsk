@@ -9,7 +9,7 @@ const PromoSection = () => {
         <iframe 
           width="100%" 
           height="220" 
-          src="https://www.youtube.com/embed/YOUR_VIDEO_ID_HERE" 
+          src="https://www.youtube.com/embed/i-6HACPlf3g" 
           title="Promo Video" 
           frameBorder="0" 
           allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" 
