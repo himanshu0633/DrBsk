@@ -23,6 +23,14 @@ const Header = () => {
   const [categoryName, setCategoryName] = useState([]);
   const [subcategoryName, setSubCategoryName] = useState([]);
   const [menuOpen, setMenuOpen] = useState(false);
+  
+  // Search functionality states
+  const [searchQuery, setSearchQuery] = useState('');
+  const [searchResults, setSearchResults] = useState([]);
+  const [showSearchDropdown, setShowSearchDropdown] = useState(false);
+  const searchRef = useRef(null);
+  const searchContainerRef = useRef(null); // New ref for search container
+
   const toggleMenu = () => {
     setMenuOpen((prev) => !prev);
   };
@@ -65,21 +73,54 @@ const Header = () => {
     return () => window.removeEventListener('resize', handleResize);
   }, []);
 
+  // Search functionality useEffect - HeroSection की तरह simple
+  useEffect(() => {
+    const delayDebounce = setTimeout(() => {
+      if (searchQuery.trim() !== '') {
+        axiosInstance
+          .get(`/user/search?query=${encodeURIComponent(searchQuery)}`)
+          .then(res => {
+            setSearchResults(res.data.results);
+            setShowSearchDropdown(true);
+          })
+          .catch(err => {
+            console.error('Search API error:', err);
+            setSearchResults([]);
+          });
+      } else {
+        setSearchResults([]);
+        setShowSearchDropdown(false);
+      }
+    }, 300);
+
+    return () => clearTimeout(delayDebounce);
+  }, [searchQuery]);
+
+  // Handle click outside for profile dropdown only
   useEffect(() => {
     const handleClickOutside = (event) => {
       if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
         setShowDropdown(false);
       }
     };
-    if (showDropdown) {
-      document.addEventListener('mousedown', handleClickOutside);
-    } else {
-      document.removeEventListener('mousedown', handleClickOutside);
-    }
+    
+    document.addEventListener('mousedown', handleClickOutside);
     return () => {
       document.removeEventListener('mousedown', handleClickOutside);
     };
-  }, [showDropdown]);
+  }, []);
+
+  const handleSearchChange = (e) => {
+    const value = e.target.value;
+    setSearchQuery(value);
+  };
+
+  // HeroSection की तरह handleSuggestionClick function
+  const handleSearchSuggestionClick = (productId) => {
+    navigate(`/ProductPage/${productId}`);
+    setSearchQuery('');
+    setShowSearchDropdown(false);
+  };
 
   const toggleDropdown = (e) => {
     e.stopPropagation();
@@ -95,6 +136,7 @@ const Header = () => {
 
   const handleDivClick = () => setShowInput(true);
   const handleInputChange = (e) => setPincode(e.target.value);
+  
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
@@ -127,30 +169,6 @@ const Header = () => {
       {/* --- MOBILE HEADER ROW --- */}
       <div className="mobile-header-row">
         <div className='d-flex align-items-center'>
-          {/* <button onClick={toggleMenu} aria-label="Toggle menu" className="mobile-menu-btn" style={{ background: 'none', border: 'none', padding: 0 }}>
-            <Menu size={28} />
-          </button>
-          {menuOpen && (
-            <div className="nav-left">
-              {categoryName?.slice(0, 4).map((category) => (
-                <div className="nav-item" key={category._id}>
-                  <span>
-                    {category.name} <ChevronDown size={14} className="dropdown-icon" />
-                  </span>
-                  <div className="dropdown subcatHeight overflow-y-scroll">
-                    {subcategoryName
-                      .filter(sub => sub.category_id?._id === category._id)
-                      .map(sub => (
-                        <Link key={sub._id} to={`/subcategory/${sub.name}`}>
-                          {sub.name}
-                        </Link>
-                      ))}
-                  </div>
-                </div>
-              ))}
-            </div>
-          )} */}
-
           <div className="sml-mobile-header-left"> 
             <button onClick={toggleMenu} aria-label="Toggle menu" className="mobile-menu-btn" style={{ background: 'none', border: 'none', padding: 0 }}>
               <Menu size={28} />
@@ -194,7 +212,6 @@ const Header = () => {
         </div>
       </div>
 
-
       {/* --- DESKTOP & TABLET HEADER --- */}
       <header className="header-container">
         <div>
@@ -202,6 +219,34 @@ const Header = () => {
             <a className='logo_size' href="/">
               <img src={logo} alt="Logo" className="logo" />
             </a>
+            
+            {/* Search Box in Header - HeroSection की तरह */}
+            <div className="search-box-header" ref={searchContainerRef}>
+              <div className="search-icon-header">🔍</div>
+              <input
+                type="text"
+                placeholder="Search for medicines, health products..."
+                className="search-input-header"
+                value={searchQuery}
+                onChange={handleSearchChange}
+              />
+              
+              {/* HeroSection की तरह conditional rendering */}
+              {searchQuery.trim() !== '' && searchResults.length > 0 && (
+                <div className="search-results-header searchOverflow">
+                  {searchResults.map((product) => (
+                    <div
+                      key={product._id}
+                      className="search-result-item-header"
+                      onClick={() => handleSearchSuggestionClick(product._id)}
+                    >
+                      {product.name}
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+            
             <div className='headerLocationHideLgScreen flexProp'>
               <div className='position_relative'>
                 <div className="location-box order_4" onClick={handleDivClick}>
@@ -306,6 +351,8 @@ const Header = () => {
           </div>
         </div>
       </header>
+      
+      {/* Top Navigation with Search for Mobile */}
       <div>
         <div className="top-nav">
           <input type="checkbox" id="mobile-menu" className="mobile-menu-checkbox" />
@@ -330,21 +377,48 @@ const Header = () => {
               </div>
             ))}
           </div>
-          <div className="nav-right ">
+          <div className="nav-right">
+            {/* Mobile Search Box in Nav - HeroSection की तरह */}
+            <div className="search-box-nav-mobile">
+              <div className="search-icon-nav">🔍</div>
+              <input
+                type="text"
+                placeholder="Search medicines..."
+                className="search-input-nav"
+                value={searchQuery}
+                onChange={handleSearchChange}
+              />
+              
+              {/* HeroSection की तरह conditional rendering */}
+              {searchQuery.trim() !== '' && searchResults.length > 0 && (
+                <div className="search-results-nav searchOverflow">
+                  {searchResults.map((product) => (
+                    <div
+                      key={product._id}
+                      className="search-result-item-nav"
+                      onClick={() => handleSearchSuggestionClick(product._id)}
+                    >
+                      {product.name}
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+            
             <a onClick={() => navigate('/phone')} style={{ textDecoration: 'none' }}>
               <div className="get-app">
                 <Smartphone size={16} className="icon" />
                 <span>Get the App</span>
               </div>
             </a>
-            <div style={{ display: 'flex', flexDirection: 'column' }} className='smlDflex' >
-              <a className="text-black textDecorNone phone" href="tel:+919115513759" >
+            <div style={{ display: 'flex', flexDirection: 'column' }} className='smlDflex'>
+              <a className="text-black textDecorNone phone" href="tel:+919115513759">
                 <Phone size={16} className="icon" />
-                <span >+91-911-551-3759 </span>
+                <span>+91-911-551-3759</span>
               </a>
               <a className="text-black textDecorNone email" href="mailto:ukgermanpharmaceutical@gmail.com">
                 <Mail size={16} className="icon" />
-                <span >ukgermanpharmaceutical@gmail.com</span>
+                <span>ukgermanpharmaceutical@gmail.com</span>
               </a>
             </div>
           </div>
@@ -355,7 +429,3 @@ const Header = () => {
 };
 
 export default Header;
-
-
-
-

@@ -518,12 +518,12 @@ const AddToCart = () => {
             // Store order ID and redirect
             localStorage.setItem('lastOrderId', orderId);
             console.log("Redirecting to success page...");
-            navigate('/successOrder');
+            navigate('/success');
 
           } catch (err) {
             console.error('Post-payment error:', err);
             toast.error('Payment successful but there was an issue. Please contact support.');
-            navigate('/successOrder');
+            navigate('/success');
           }
         },
 

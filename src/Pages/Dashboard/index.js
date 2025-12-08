@@ -13,19 +13,16 @@ import Footer from "../../components/Footer/Footer";
 import Slider from "../../components/Slider/Slider";
 import MobileMenu from "../../components/MobileMenu";
 import Slider2 from "../../components/Slider/Slider2";
-
 import VideoPlayer from '../../components/VideoPlayer';
 
-// import "./App.css";
+
 
 function Dashboard() {
-   const videoUrl = "https://drbskhealthcare.com/uploads/intro-video.mp4";
+  
   return (
     <div className="App">
       <Header />
-        <VideoPlayer 
-    videoUrl={videoUrl}
-  />
+        <VideoPlayer />
       <HeroSection />
       <Banner />
       <Features />

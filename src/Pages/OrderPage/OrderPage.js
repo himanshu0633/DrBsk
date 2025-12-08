@@ -6,6 +6,9 @@ import axiosInstance from '../../components/AxiosInstance';
 import CustomLoader from '../../components/CustomLoader';
 import { useNavigate } from 'react-router-dom';
 
+// Add a default image import
+import noImage from '../../assets/no-image.png';
+
 function paymentStatusLabel(status) {
   if (!status) return 'Unknown';
   if (status === 'captured') return 'Paid';
@@ -50,6 +53,57 @@ function getEstimatedRefundDays(refundInfo) {
   if (diffDays === 1) return 'Expected tomorrow';
   return `Expected in ${diffDays} days`;
 }
+
+// Function to get product image URL - UPDATED
+const getProductImage = (item) => {
+  if (!item) return noImage;
+  
+  console.log('getProductImage item:', item);
+  
+  // Check 1: If media exists directly in item (from order creation)
+  if (item.media && Array.isArray(item.media) && item.media.length > 0) {
+    const firstImage = item.media.find(mediaItem => 
+      mediaItem.type === 'image' || 
+      mediaItem.url.includes('.jpg') || 
+      mediaItem.url.includes('.png') || 
+      mediaItem.url.includes('.jpeg')
+    );
+    if (firstImage && firstImage.url) {
+      console.log('Found image in item.media:', firstImage.url);
+      return firstImage.url;
+    }
+  }
+  
+  // Check 2: If populated product has media
+  if (item.productId && item.productId.media && Array.isArray(item.productId.media)) {
+    const firstImage = item.productId.media.find(mediaItem => 
+      mediaItem.type === 'image' || 
+      mediaItem.url.includes('.jpg') || 
+      mediaItem.url.includes('.png') || 
+      mediaItem.url.includes('.jpeg')
+    );
+    if (firstImage && firstImage.url) {
+      console.log('Found image in productId.media:', firstImage.url);
+      return firstImage.url;
+    }
+  }
+  
+  console.log('No image found, using default');
+  return noImage;
+};
+
+// Function to get product name - UPDATED
+const getProductName = (item) => {
+  if (!item) return 'Unknown Product';
+  
+  // Check if populated product has name
+  if (item.productId && item.productId.name) {
+    return item.productId.name;
+  }
+  
+  // Check if item has name directly
+  return item.name || 'Unknown Product';
+};
 
 const OrderPage = () => {
   const [orders, setOrders] = useState([]);
@@ -124,6 +178,7 @@ const OrderPage = () => {
         })
       );
       setOrders(ordersWithLiveStatus);
+      console.log('Orders fetched:', ordersWithLiveStatus);
     } catch (error) {
       console.error('Error fetching orders:', error);
     } finally {
@@ -217,7 +272,7 @@ const OrderPage = () => {
               </div>
 
               {loading ? (
-                <h2>Loading Orders...</h2>
+                <CustomLoader />
               ) : (
                 <div className="orders-table">
                   <table>
@@ -226,6 +281,7 @@ const OrderPage = () => {
                         <th>#</th>
                         <th>Order ID</th>
                         <th>Product(s)</th>
+                        <th>Image</th>
                         <th>Date</th>
                         <th>Order Status</th>
                         <th>Payment Status</th>
@@ -241,10 +297,32 @@ const OrderPage = () => {
                             <td>{index + 1}</td>
                             <td>{order._id.slice(-8)}</td>
                             <td>
-                              {order.items && Array.isArray(order.items)
-                                ? order.items.map(item => item.name || 'Unknown Product').join(', ')
+                              {order.items && Array.isArray(order.items) && order.items.length > 0
+                                ? order.items.map((item, idx) => (
+                                    <div key={idx} className="product-name-item">
+                                      {getProductName(item)}
+                                      {idx < order.items.length - 1 && ', '}
+                                    </div>
+                                  ))
                                 : 'No items'
                               }
+                            </td>
+                            <td>
+                              {order.items && Array.isArray(order.items) && order.items.length > 0 && (
+                                <div className="product-thumbnail">
+                                  <img 
+                                    src={getProductImage(order.items[0])} 
+                                    alt="Product" 
+                                    className="thumbnail-img"
+                                    onError={(e) => {
+                                      e.target.src = noImage;
+                                    }}
+                                  />
+                                  {order.items.length > 1 && (
+                                    <span className="more-items-count">+{order.items.length - 1}</span>
+                                  )}
+                                </div>
+                              )}
                             </td>
                             <td>{formatDate(order.createdAt)}</td>
                             <td>
@@ -282,8 +360,16 @@ const OrderPage = () => {
                         ))
                       ) : (
                         <tr>
-                          <td colSpan="9" style={{ textAlign: 'center' }}>
-                            No orders found.
+                          <td colSpan="10" style={{ textAlign: 'center', padding: '40px' }}>
+                            <div className="no-orders">
+                              <p>No orders found.</p>
+                              <button 
+                                className="shop-now-btn"
+                                onClick={() => navigate('/')}
+                              >
+                                Shop Now
+                              </button>
+                            </div>
                           </td>
                         </tr>
                       )}
@@ -468,22 +554,41 @@ const OrderPage = () => {
                 </div>
               )}
 
-              {/* Items Information */}
+              {/* Items Information with Images */}
               <div className="details-section">
                 <h4>Items Ordered</h4>
                 <div className="items-list">
-                  {selectedOrder.items && Array.isArray(selectedOrder.items) && selectedOrder.items.map((item, index) => (
-                    <div key={index} className="item-card">
-                      <div className="item-details">
-                        <h5>{item.name || 'Unknown Product'}</h5>
-                        <p>Product ID: {item.productId || 'N/A'}</p>
-                        <div className="item-price-qty">
-                          <span>₹{item.price || 0} × {item.quantity || 0}</span>
-                          <span className="item-total">₹{(item.price || 0) * (item.quantity || 0)}</span>
+                  {selectedOrder.items && Array.isArray(selectedOrder.items) && selectedOrder.items.map((item, index) => {
+                    const productImage = getProductImage(item);
+                    const productName = getProductName(item);
+                    
+                    return (
+                      <div key={index} className="item-card">
+                        <div className="item-image">
+                          <img 
+                            src={productImage} 
+                            alt={productName} 
+                            onError={(e) => {
+                              e.target.src = noImage;
+                            }}
+                          />
+                        </div>
+                        <div className="item-details">
+                          <h5>{productName}</h5>
+                          <p>Product ID: {item.productId?._id || 'N/A'}</p>
+                          <div className="item-price-qty">
+                            <span>₹{item.price || 0} × {item.quantity || 0}</span>
+                            <span className="item-total">₹{(item.price || 0) * (item.quantity || 0)}</span>
+                          </div>
+                          {item.category && (
+                            <div className="item-category">
+                              <small>Category: {item.category}</small>
+                            </div>
+                          )}
                         </div>
                       </div>
-                    </div>
-                  ))}
+                    );
+                  })}
                 </div>
               </div>
             </div>
@@ -496,4 +601,3 @@ const OrderPage = () => {
 }
 
 export default OrderPage;
-
