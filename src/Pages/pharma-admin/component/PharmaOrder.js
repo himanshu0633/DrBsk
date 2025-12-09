@@ -53,18 +53,49 @@ const StatusChip = styled(Chip)(({ theme, status }) => ({
     status === 'delivered' ? theme.palette.success.dark :
       status === 'pending' ? theme.palette.warning.dark :
         status === 'cancelled' ? theme.palette.error.dark :
-          status === 'refunded' ? theme.palette.info.dark :
-            status === 'captured' || status === 'paid' ? theme.palette.success.dark :
-              status === 'authorized' ? theme.palette.info.dark :
-                status === 'failed' ? theme.palette.error.dark :
-                  status === 'processed' ? theme.palette.success.dark :
-                    status === 'initiated' ? theme.palette.warning.dark :
-                      status === 'created' ? theme.palette.grey.dark :
-                        status === 'none' ? theme.palette.grey.dark :
-                          theme.palette.grey.dark,
+      status === 'refunded' ? theme.palette.info.dark :
+        status === 'captured' || status === 'paid' ? theme.palette.success.dark :
+          status === 'authorized' ? theme.palette.info.dark :
+            status === 'failed' ? theme.palette.error.dark :
+              status === 'processed' ? theme.palette.success.dark :
+                status === 'initiated' ? theme.palette.warning.dark :
+                  status === 'created' ? theme.palette.grey.dark :
+                    status === 'none' ? theme.palette.grey.dark :
+                      theme.palette.grey.dark,
 }));
 
 const statusOptions = ['Pending', 'Delivered', 'Cancelled'];
+
+// Safe rendering utilities
+const safeString = (value, defaultValue = '') => {
+  if (value === null || value === undefined) return defaultValue;
+  if (typeof value === 'string') return value;
+  if (typeof value === 'number' || typeof value === 'boolean') return String(value);
+  if (typeof value === 'object') {
+    // Try to extract common properties
+    if (value.name) return safeString(value.name, defaultValue);
+    if (value.title) return safeString(value.title, defaultValue);
+    if (value.productName) return safeString(value.productName, defaultValue);
+    // Fallback to JSON string if it's a simple object
+    try {
+      return JSON.stringify(value);
+    } catch {
+      return defaultValue;
+    }
+  }
+  return defaultValue;
+};
+
+const safeNumber = (value, defaultValue = 0) => {
+  if (value === null || value === undefined) return defaultValue;
+  const num = Number(value);
+  return isNaN(num) ? defaultValue : num;
+};
+
+const getProductName = (item) => {
+  if (!item) return 'Unknown Product';
+  return safeString(item.name, 'Unknown Product');
+};
 
 const PharmaOrder = () => {
   const [orders, setOrders] = useState([]);
@@ -249,22 +280,16 @@ const PharmaOrder = () => {
   };
 
   const getPaymentStatusLabel = (paymentInfo) => {
-    if (!paymentInfo || !paymentInfo.status) return 'Unknown';
-    switch (paymentInfo.status.toLowerCase()) {
-      case 'captured': return 'Paid';
-      case 'authorized': return 'Authorized';
-      case 'failed': return 'Failed';
-      case 'created': return 'Created';
-      default: return paymentInfo.status;
-    }
+    if (!paymentInfo || typeof paymentInfo !== 'object') return 'Unknown';
+    return safeString(paymentInfo.status, 'Unknown');
   };
 
   const getRefundStatusText = (refundInfo) => {
-    if (!refundInfo) return 'No Refund';
+    if (!refundInfo || typeof refundInfo !== 'object') return 'No Refund';
     if (!refundInfo.refundId && refundInfo.status === 'none') return 'No Refund';
     if (!refundInfo.refundId) return 'No Refund';
 
-    const status = refundInfo.status;
+    const status = safeString(refundInfo.status, '');
     if (status === 'processed') return 'Refund Processed';
     if (status === 'failed') return 'Refund Failed';
     if (status === 'pending') return 'Refund Pending';
@@ -289,6 +314,20 @@ const PharmaOrder = () => {
 
   const needsPaymentCapture = (paymentInfo) => {
     return paymentInfo?.status === 'authorized';
+  };
+
+  // Safe render component that prevents object rendering
+  const SafeTableCell = ({ children, ...props }) => {
+    let safeChildren = children;
+    
+    if (children !== null && children !== undefined) {
+      if (typeof children === 'object' && !Array.isArray(children)) {
+        // If it's an object, convert to string
+        safeChildren = safeString(children);
+      }
+    }
+    
+    return <TableCell {...props}>{safeChildren}</TableCell>;
   };
 
   return (
@@ -325,98 +364,112 @@ const PharmaOrder = () => {
                 </TableRow>
               </TableHead>
               <TableBody>
-                {currentOrders.map((order) => {
-                  const items = order.items || [];
+                {currentOrders.length === 0 ? (
+                  <TableRow>
+                    <TableCell colSpan={7} align="center">
+                      <Typography>No orders found</Typography>
+                    </TableCell>
+                  </TableRow>
+                ) : (
+                  currentOrders.map((order) => {
+                    const items = order.items || [];
 
-                  return items.map((item, index) => (
-                    <TableRow key={`${order._id}-${item.productId}-${index}`} hover>
-                      <TableCell>{item.name || 'Unknown Product'}</TableCell>
+                    return items.map((item, index) => (
+                      <TableRow key={`${order._id}-${item.productId || index}-${index}`} hover>
+                        <SafeTableCell>
+                          {getProductName(item)}
+                        </SafeTableCell>
 
-                      {index === 0 && (
-                        <TableCell rowSpan={items.length}>₹{order.totalAmount}</TableCell>
-                      )}
+                        {index === 0 && (
+                          <TableCell rowSpan={items.length}>
+                            ₹{safeNumber(order.totalAmount, 0)}
+                          </TableCell>
+                        )}
 
-                      <TableCell>{item.quantity}</TableCell>
+                        <SafeTableCell>
+                          {safeNumber(item.quantity, 0)}
+                        </SafeTableCell>
 
-                      {index === 0 && (
-                        <TableCell rowSpan={items.length}>
-                          <select
-                            value={order.status}
-                            disabled={updatingStatusId === order._id || !canCancelOrder(order)}
-                            onChange={(e) => updateOrderStatus(order._id, e.target.value)}
-                            style={{
-                              padding: '4px 8px',
-                              borderRadius: '4px',
-                              border: '1px solid #ccc',
-                              backgroundColor: canCancelOrder(order) ? 'white' : '#f5f5f5'
-                            }}
-                          >
-                            {statusOptions.map((status) => (
-                              <option key={status} value={status}>
-                                {status}
-                              </option>
-                            ))}
-                          </select>
-                        </TableCell>
-                      )}
+                        {index === 0 && (
+                          <TableCell rowSpan={items.length}>
+                            <select
+                              value={safeString(order.status, 'Pending')}
+                              disabled={updatingStatusId === order._id || !canCancelOrder(order)}
+                              onChange={(e) => updateOrderStatus(order._id, e.target.value)}
+                              style={{
+                                padding: '4px 8px',
+                                borderRadius: '4px',
+                                border: '1px solid #ccc',
+                                backgroundColor: canCancelOrder(order) ? 'white' : '#f5f5f5'
+                              }}
+                            >
+                              {statusOptions.map((status) => (
+                                <option key={status} value={status}>
+                                  {status}
+                                </option>
+                              ))}
+                            </select>
+                          </TableCell>
+                        )}
 
-                      {index === 0 && (
-                        <TableCell rowSpan={items.length}>
-                          <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
-                            <StatusChip
-                              label={getPaymentStatusLabel(order.paymentInfo)}
-                              status={order.paymentInfo?.status?.toLowerCase() || 'unknown'}
-                              size="small"
-                            />
-                            {needsPaymentCapture(order.paymentInfo) && (
+                        {index === 0 && (
+                          <TableCell rowSpan={items.length}>
+                            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
+                              <StatusChip
+                                label={getPaymentStatusLabel(order.paymentInfo)}
+                                status={safeString(order.paymentInfo?.status, 'unknown').toLowerCase()}
+                                size="small"
+                              />
+                              {needsPaymentCapture(order.paymentInfo) && (
+                                <Button
+                                  variant="outlined"
+                                  color="primary"
+                                  size="small"
+                                  disabled={processingCapture === order._id}
+                                  onClick={() => capturePayment(order._id)}
+                                  sx={{ fontSize: '10px', padding: '2px 8px' }}
+                                >
+                                  {processingCapture === order._id ? 'Capturing...' : 'Capture Payment'}
+                                </Button>
+                              )}
+                            </Box>
+                          </TableCell>
+                        )}
+
+                        {index === 0 && (
+                          <TableCell rowSpan={items.length}>
+                            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
+                              <StatusChip
+                                label={getRefundStatusText(order.refundInfo)}
+                                status={safeString(order.refundInfo?.status, 'none').toLowerCase()}
+                                size="small"
+                              />
+                              {order.refundInfo && order.refundInfo.refundId && getEstimatedRefundDays(order.refundInfo) && (
+                                <Typography variant="caption" color="text.secondary">
+                                  {getEstimatedRefundDays(order.refundInfo)}
+                                </Typography>
+                              )}
+                            </Box>
+                          </TableCell>
+                        )}
+
+                        {index === 0 && (
+                          <TableCell rowSpan={items.length}>
+                            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
                               <Button
                                 variant="outlined"
-                                color="primary"
                                 size="small"
-                                disabled={processingCapture === order._id}
-                                onClick={() => capturePayment(order._id)}
-                                sx={{ fontSize: '10px', padding: '2px 8px' }}
+                                onClick={() => handleViewOrder(order)}
                               >
-                                {processingCapture === order._id ? 'Capturing...' : 'Capture Payment'}
+                                View Details
                               </Button>
-                            )}
-                          </Box>
-                        </TableCell>
-                      )}
-
-                      {index === 0 && (
-                        <TableCell rowSpan={items.length}>
-                          <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
-                            <StatusChip
-                              label={getRefundStatusText(order.refundInfo)}
-                              status={order.refundInfo?.status?.toLowerCase() || 'none'}
-                              size="small"
-                            />
-                            {order.refundInfo && order.refundInfo.refundId && getEstimatedRefundDays(order.refundInfo) && (
-                              <Typography variant="caption" color="text.secondary">
-                                {getEstimatedRefundDays(order.refundInfo)}
-                              </Typography>
-                            )}
-                          </Box>
-                        </TableCell>
-                      )}
-
-                      {index === 0 && (
-                        <TableCell rowSpan={items.length}>
-                          <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
-                            <Button
-                              variant="outlined"
-                              size="small"
-                              onClick={() => handleViewOrder(order)}
-                            >
-                              View Details
-                            </Button>
-                          </Box>
-                        </TableCell>
-                      )}
-                    </TableRow>
-                  ));
-                })}
+                            </Box>
+                          </TableCell>
+                        )}
+                      </TableRow>
+                    ));
+                  })
+                )}
               </TableBody>
             </Table>
             <TablePagination
@@ -475,7 +528,7 @@ const PharmaOrder = () => {
         {selectedOrder && (
           <>
             <DialogTitle>
-              <Typography variant="h6">Order Details - #{selectedOrder._id.slice(-8)}</Typography>
+              <Typography variant="h6">Order Details - #{safeString(selectedOrder._id, '').slice(-8)}</Typography>
             </DialogTitle>
             <DialogContent dividers>
               <Grid container spacing={3}>
@@ -486,23 +539,23 @@ const PharmaOrder = () => {
                   <Divider sx={{ mb: 2 }} />
                   <Typography><strong>Status:</strong>
                     <StatusChip
-                      label={selectedOrder.status}
-                      status={selectedOrder.status.toLowerCase()}
+                      label={safeString(selectedOrder.status, 'Pending')}
+                      status={safeString(selectedOrder.status, '').toLowerCase()}
                       size="small"
                       sx={{ ml: 1 }}
                     />
                   </Typography>
-                  <Typography><strong>Total Amount:</strong> ₹{selectedOrder.totalAmount}</Typography>
+                  <Typography><strong>Total Amount:</strong> ₹{safeNumber(selectedOrder.totalAmount, 0)}</Typography>
                   <Typography><strong>Date:</strong> {formatDate(selectedOrder.createdAt)}</Typography>
-                  <Typography><strong>Phone:</strong> {selectedOrder.phone}</Typography>
-                  <Typography><strong>Address:</strong> {selectedOrder.address}</Typography>
-                  <Typography><strong>User Email:</strong> {selectedOrder.userEmail || 'N/A'}</Typography>
-                  <Typography><strong>Razorpay Order ID:</strong> {selectedOrder.razorpayOrderId}</Typography>
+                  <Typography><strong>Phone:</strong> {safeString(selectedOrder.phone, 'N/A')}</Typography>
+                  <Typography><strong>Address:</strong> {safeString(selectedOrder.address, 'N/A')}</Typography>
+                  <Typography><strong>User Email:</strong> {safeString(selectedOrder.userEmail, 'N/A')}</Typography>
+                  <Typography><strong>Razorpay Order ID:</strong> {safeString(selectedOrder.razorpayOrderId, 'N/A')}</Typography>
 
                   {selectedOrder.cancelReason && (
                     <Box mt={2} p={2} bgcolor="error.light" borderRadius={1}>
                       <Typography variant="subtitle2" color="error.dark">Cancellation Reason:</Typography>
-                      <Typography variant="body2">{selectedOrder.cancelReason}</Typography>
+                      <Typography variant="body2">{safeString(selectedOrder.cancelReason)}</Typography>
                       {selectedOrder.cancelledAt && (
                         <Typography variant="body2"><strong>Cancelled on:</strong> {formatDate(selectedOrder.cancelledAt)}</Typography>
                       )}
@@ -519,13 +572,13 @@ const PharmaOrder = () => {
                   <Typography><strong>Payment Status:</strong>
                     <StatusChip
                       label={getPaymentStatusLabel(selectedOrder.paymentInfo)}
-                      status={selectedOrder.paymentInfo?.status?.toLowerCase() || 'unknown'}
+                      status={safeString(selectedOrder.paymentInfo?.status, 'unknown').toLowerCase()}
                       size="small"
                       sx={{ ml: 1 }}
                     />
                   </Typography>
                   {selectedOrder.paymentInfo?.method && (
-                    <Typography><strong>Payment Method:</strong> {selectedOrder.paymentInfo.method}</Typography>
+                    <Typography><strong>Payment Method:</strong> {safeString(selectedOrder.paymentInfo.method)}</Typography>
                   )}
                   {selectedOrder.paymentInfo?.updatedAt && (
                     <Typography><strong>Last Updated:</strong> {formatDate(selectedOrder.paymentInfo.updatedAt)}</Typography>
@@ -534,17 +587,17 @@ const PharmaOrder = () => {
                   {selectedOrder.refundInfo && selectedOrder.refundInfo.refundId && (
                     <Box mt={2} p={2} bgcolor="info.light" borderRadius={1}>
                       <Typography variant="subtitle2" color="info.dark">Refund Information:</Typography>
-                      <Typography variant="body2"><strong>Refund ID:</strong> {selectedOrder.refundInfo.refundId}</Typography>
-                      <Typography variant="body2"><strong>Amount:</strong> ₹{selectedOrder.refundInfo.amount}</Typography>
+                      <Typography variant="body2"><strong>Refund ID:</strong> {safeString(selectedOrder.refundInfo.refundId)}</Typography>
+                      <Typography variant="body2"><strong>Amount:</strong> ₹{safeNumber(selectedOrder.refundInfo.amount, 0)}</Typography>
                       <Typography variant="body2"><strong>Status:</strong>
                         <StatusChip
                           label={getRefundStatusText(selectedOrder.refundInfo)}
-                          status={selectedOrder.refundInfo.status?.toLowerCase() || 'unknown'}
+                          status={safeString(selectedOrder.refundInfo.status, 'unknown').toLowerCase()}
                           size="small"
                           sx={{ ml: 1 }}
                         />
                       </Typography>
-                      <Typography variant="body2"><strong>Reason:</strong> {selectedOrder.refundInfo.reason}</Typography>
+                      <Typography variant="body2"><strong>Reason:</strong> {safeString(selectedOrder.refundInfo.reason, 'N/A')}</Typography>
                       {selectedOrder.refundInfo.initiatedAt && (
                         <Typography variant="body2"><strong>Initiated:</strong> {formatDate(selectedOrder.refundInfo.initiatedAt)}</Typography>
                       )}
@@ -570,11 +623,11 @@ const PharmaOrder = () => {
                   <Divider sx={{ mb: 2 }} />
                   {selectedOrder.items && selectedOrder.items.map((item, index) => (
                     <Box key={index} sx={{ mb: 2, p: 2, border: '1px solid #eee', borderRadius: 1 }}>
-                      <Typography><strong>Product ID:</strong> {item.productId || 'N/A'}</Typography>
-                      <Typography><strong>Name:</strong> {item.name || 'Unknown Product'}</Typography>
-                      <Typography><strong>Price:</strong> ₹{item.price || 0}</Typography>
-                      <Typography><strong>Quantity:</strong> {item.quantity || 0}</Typography>
-                      <Typography><strong>Subtotal:</strong> ₹{(item.price || 0) * (item.quantity || 0)}</Typography>
+                      <Typography><strong>Product ID:</strong> {safeString(item.productId, 'N/A')}</Typography>
+                      <Typography><strong>Name:</strong> {getProductName(item)}</Typography>
+                      <Typography><strong>Price:</strong> ₹{safeNumber(item.price, 0)}</Typography>
+                      <Typography><strong>Quantity:</strong> {safeNumber(item.quantity, 0)}</Typography>
+                      <Typography><strong>Subtotal:</strong> ₹{safeNumber(item.price, 0) * safeNumber(item.quantity, 0)}</Typography>
                     </Box>
                   ))}
                 </Grid>
@@ -593,4 +646,3 @@ const PharmaOrder = () => {
 };
 
 export default PharmaOrder;
-
