@@ -23,7 +23,7 @@ function Dashboard() {
     <div className="App">
       <Header />
         <VideoPlayer />
-      <HeroSection />
+      {/* <HeroSection /> */}
       <Banner />
       <Features />
       <div className="spacer"></div>
