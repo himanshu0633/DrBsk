@@ -407,10 +407,10 @@ const AddToCart = () => {
 
       // Configure Razorpay options
       const options = {
-        key: "rzp_test_RpQ1JwSJEy6yAw",
+        key: "rzp_live_hgk55iUzVRpKZ1", // Live Key
         amount: razorpayOrder.amount,
         currency: razorpayOrder.currency,
-        name: "Your Store Name",
+        name: "Dr BSK",
         description: "Order Payment",
         order_id: razorpayOrder.id,
         handler: async function (response) {
@@ -809,156 +809,473 @@ const AddToCart = () => {
         </div>
       </div>
 
-      <Dialog
-        open={showModal}
-        onClose={() => setShowModal(false)}
-        fullWidth
-        maxWidth="sm"
-      >
-        <DialogTitle sx={{ fontWeight: 'bold' }}>
-          {isAuthenticated ? 'Add New Address' : 'Add Delivery Address'}
-        </DialogTitle>
-        <DialogContent sx={{ pt: 2, display: 'flex', flexDirection: 'column', gap: 2 }}>
-          <Grid container spacing={2}>
-            <Grid item xs={12}>
-              <TextField
-                label="Email Address *"
-                fullWidth
-                variant="outlined"
-                size="small"
-                type="email"
-                value={formData.email}
-                onChange={handleEmailChange}
-                helperText="Required for order confirmation and updates"
-                required
-                error={formData.email && !isValidEmail(formData.email)}
-              />
-            </Grid>
+ <Dialog
+  open={showModal}
+  onClose={() => setShowModal(false)}
+  fullWidth
+  maxWidth="sm"
+  sx={{
+    '& .MuiDialog-paper': {
+      borderRadius: '12px',
+      overflow: 'hidden',
+      boxShadow: '0 10px 40px rgba(0,0,0,0.1)',
+    }
+  }}
+>
+  <DialogTitle 
+    sx={{ 
+      fontWeight: 700, 
+      fontSize: '1.25rem',
+      pb: 2,
+      background: 'linear-gradient(135deg, #1976d2 0%, #0d47a1 100%)',
+      color: 'white',
+      px: 3,
+     
+      py: 2.5,
+      position: 'relative',
+      '&:after': {
+        content: '""',
+        position: 'absolute',
+        bottom: 0,
+        left: '5%',
+        width: '90%',
+        height: '1px',
+        background: 'rgba(255,255,255,0.2)'
+      }
+    }}
+  >
+    {isAuthenticated ? 'Add New Address' : 'Add Delivery Address'}
+    <div style={{ 
+      fontSize: '0.875rem', 
+      fontWeight: 400, 
+      opacity: 0.9,
+      marginTop: '4px'
+    }}>
+      Please fill in all required fields
+    </div>
+  </DialogTitle>
+  
+  <DialogContent sx={{ 
+    pt: 3, 
+    pb: 1,
+    px: 3,
+    '& .form-grid': {
+      display: 'grid',
+      gridTemplateColumns: 'repeat(12, 1fr)',
+      gap: '16px',
+      marginBottom: '16px'
+    },
+    '& .form-field': {
+      marginBottom: '20px'
+    }
+  }}>
+    <div className="form-grid">
+      {/* Email Field */}
+      <div className="form-field" style={{ gridColumn: 'span 12' ,paddingTop: '10px'}}>
+        <TextField
+          label="Email Address"
+          fullWidth
+          variant="outlined"
+          size="medium"
+          type="email"
+          value={formData.email}
+          onChange={handleEmailChange}
+          helperText={
+            formData.email && !isValidEmail(formData.email) 
+              ? "Please enter a valid email address" 
+              : "Required for order confirmation and updates"
+          }
+          required
+          error={formData.email && !isValidEmail(formData.email)}
+          InputLabelProps={{ shrink: true }}
+          sx={{
+            '& .MuiOutlinedInput-root': {
+              borderRadius: '8px',
+              transition: 'all 0.3s ease',
+              '&:hover': {
+                '& .MuiOutlinedInput-notchedOutline': {
+                  borderColor: '#1976d2',
+                }
+              }
+            },
+            '& .MuiFormHelperText-root': {
+              marginLeft: '4px',
+              fontSize: '0.75rem'
+            }
+          }}
+        />
+      </div>
 
-            <Grid item xs={12} sm={6}>
-              <TextField
-                label="Flat / House No. *"
-                fullWidth
-                variant="outlined"
-                size="small"
-                value={formData.flat}
-                onChange={(e) => setFormData({ ...formData, flat: e.target.value })}
-                required
-              />
-            </Grid>
-            
-            <Grid item xs={12} sm={6}>
-              <TextField
-                label="Landmark *"
-                fullWidth
-                variant="outlined"
-                size="small"
-                value={formData.landmark}
-                onChange={(e) => setFormData({ ...formData, landmark: e.target.value })}
-                required
-              />
-            </Grid>
+      {/* Address Fields */}
+      <div className="form-field" style={{ gridColumn: 'span 6' }}>
+        <TextField
+          label="Flat / House No."
+          fullWidth
+          variant="outlined"
+          size="medium"
+          value={formData.flat}
+          onChange={(e) => setFormData({ ...formData, flat: e.target.value })}
+          required
+          InputLabelProps={{ shrink: true }}
+          sx={{
+            '& .MuiOutlinedInput-root': {
+              borderRadius: '8px',
+              transition: 'all 0.3s ease',
+              '&:hover': {
+                '& .MuiOutlinedInput-notchedOutline': {
+                  borderColor: '#1976d2',
+                }
+              }
+            }
+          }}
+        />
+      </div>
+      
+      <div className="form-field" style={{ gridColumn: 'span 6' }}>
+        <TextField
+          label="Landmark"
+          fullWidth
+          variant="outlined"
+          size="medium"
+          value={formData.landmark}
+          onChange={(e) => setFormData({ ...formData, landmark: e.target.value })}
+          required
+          InputLabelProps={{ shrink: true }}
+          sx={{
+            '& .MuiOutlinedInput-root': {
+              borderRadius: '8px',
+              transition: 'all 0.3s ease',
+              '&:hover': {
+                '& .MuiOutlinedInput-notchedOutline': {
+                  borderColor: '#1976d2',
+                }
+              }
+            }
+          }}
+        />
+      </div>
 
-            <Grid item xs={12} sm={6}>
-              <select
-                name="state"
-                value={formData.state}
-                onChange={(e) => setFormData({ ...formData, state: e.target.value, city: '' })}
-                style={{ width: '100%', padding: '8px', borderRadius: '4px', border: '1px solid #ccc' }}
-                required
-              >
-                <option value="">Select State *</option>
-                {states.map((state) => <option key={state} value={state}>{state}</option>)}
-              </select>
-            </Grid>
+      {/* State Dropdown */}
+      <div className="form-field" style={{ gridColumn: 'span 6' }}>
+        <div className="custom-select-container">
+          <label className="custom-label">
+            State <span className="required-star">*</span>
+          </label>
+          <select
+            name="state"
+            value={formData.state}
+            onChange={(e) => setFormData({ ...formData, state: e.target.value, city: '' })}
+            className="custom-select"
+            style={{
+              width: '100%',
+              padding: '14px 12px',
+              borderRadius: '8px',
+              border: formData.state ? '2px solid #1976d2' : '1px solid #ddd',
+              fontSize: '0.875rem',
+              backgroundColor: 'white',
+              cursor: 'pointer',
+              transition: 'all 0.3s ease',
+              appearance: 'none',
+              backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24' fill='none' stroke='%23666' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E")`,
+              backgroundRepeat: 'no-repeat',
+              backgroundPosition: 'right 10px center',
+              backgroundSize: '16px'
+            }}
+            required
+          >
+            <option value="">Select State</option>
+            {states.map((state) => (
+              <option key={state} value={state}>{state}</option>
+            ))}
+          </select>
+        </div>
+      </div>
 
-            <Grid item xs={12} sm={6}>
-              <select
-                name="city"
-                value={formData.city}
-                onChange={(e) => setFormData({ ...formData, city: e.target.value })}
-                style={{ width: '100%', padding: '8px', borderRadius: '4px', border: '1px solid #ccc' }}
-                disabled={!formData.state}
-                required
-              >
-                <option value="">Select City *</option>
-                {cities.map((city) => <option key={city} value={city}>{city}</option>)}
-              </select>
-            </Grid>
-
-            <Grid item xs={12} sm={6}>
-              <TextField
-                label="Country"
-                fullWidth
-                variant="outlined"
-                size="small"
-                value="India"
-                disabled
-              />
-            </Grid>
-
-            <Grid item xs={12} sm={6}>
-              <TextField
-                label="Phone Number *"
-                fullWidth
-                variant="outlined"
-                size="small"
-                name="phone"
-                value={formData.phone}
-                onChange={handlePhoneChange}
-                InputProps={{
-                  startAdornment: <InputAdornment position="start">+91</InputAdornment>,
-                }}
-                helperText={formData.phone.length > 0 && formData.phone.length !== 10 ? "Phone number must be 10 digits" : "Required for delivery updates"}
-                error={formData.phone.length > 0 && formData.phone.length !== 10}
-                required
-              />
-            </Grid>
-          </Grid>
-          <div className="required-note" style={{ fontSize: '12px', color: '#666', marginTop: '8px' }}>
-            * Required fields
-          </div>
-          {!isAuthenticated && (
-            <div className="guest-info-note" style={{ 
-              fontSize: '12px', 
-              color: '#2e7d32',
-              backgroundColor: '#f1f8e9',
-              padding: '8px',
-              borderRadius: '4px',
-              marginTop: '8px'
+      {/* City Dropdown */}
+      <div className="form-field" style={{ gridColumn: 'span 6' }}>
+        <div className="custom-select-container">
+          <label className="custom-label">
+            City <span className="required-star">*</span>
+          </label>
+          <select
+            name="city"
+            value={formData.city}
+            onChange={(e) => setFormData({ ...formData, city: e.target.value })}
+            className="custom-select"
+            style={{
+              width: '100%',
+              padding: '14px 12px',
+              borderRadius: '8px',
+              border: formData.city ? '2px solid #1976d2' : '1px solid #ddd',
+              fontSize: '0.875rem',
+              backgroundColor: !formData.state ? '#f5f5f5' : 'white',
+              cursor: formData.state ? 'pointer' : 'not-allowed',
+              transition: 'all 0.3s ease',
+              appearance: 'none',
+              backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24' fill='none' stroke='%23666' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E")`,
+              backgroundRepeat: 'no-repeat',
+              backgroundPosition: 'right 10px center',
+              backgroundSize: '16px',
+              opacity: !formData.state ? 0.6 : 1
+            }}
+            disabled={!formData.state}
+            required
+          >
+            <option value="">Select City</option>
+            {cities.map((city) => (
+              <option key={city} value={city}>{city}</option>
+            ))}
+          </select>
+          {!formData.state && (
+            <div style={{
+              fontSize: '0.75rem',
+              color: '#666',
+              marginTop: '4px',
+              marginLeft: '4px'
             }}>
-              ℹ️ Your address will be saved locally for this session.
+              Please select state first
             </div>
           )}
-        </DialogContent>
-        <DialogActions sx={{ px: 3, pb: 2 }}>
-          <Button
-            onClick={handleAddAddress}
-            color="primary"
-            variant="contained"
-            sx={{ fontWeight: 600 }}
-            disabled={
-              loading || 
-              !formData.email || 
-              !isValidEmail(formData.email) ||
-              !formData.flat || 
-              !formData.landmark || 
-              !formData.city || 
-              !formData.state || 
-              formData.phone.length !== 10
+        </div>
+      </div>
+
+      {/* Country Field */}
+      <div className="form-field" style={{ gridColumn: 'span 6' }}>
+        <TextField
+          label="Country"
+          fullWidth
+          variant="outlined"
+          size="medium"
+          value="India"
+          disabled
+          InputLabelProps={{ shrink: true }}
+          sx={{
+            '& .MuiOutlinedInput-root': {
+              borderRadius: '8px',
+              backgroundColor: '#f8f9fa',
+              '&.Mui-disabled': {
+                backgroundColor: '#f8f9fa'
+              }
             }
-          >
-            {loading ? 'Saving...' : isAuthenticated ? 'Add Address' : 'Save Address'}
-          </Button>
-          <Button
-            onClick={() => setShowModal(false)}
-            color="secondary"
-            variant="outlined"
-          >
-            Cancel
-          </Button>
-        </DialogActions>
-      </Dialog>
+          }}
+        />
+      </div>
+
+      {/* Phone Field */}
+      <div className="form-field" style={{ gridColumn: 'span 6' }}>
+        <TextField
+          label="Phone Number"
+          fullWidth
+          variant="outlined"
+          size="medium"
+          value={formData.phone}
+          onChange={handlePhoneChange}
+          required
+          InputLabelProps={{ shrink: true }}
+          InputProps={{
+            startAdornment: (
+              <InputAdornment 
+                position="start" 
+                sx={{ 
+                  mr: 1,
+                  color: '#666',
+                  fontWeight: 500,
+                  fontSize: '0.875rem'
+                }}
+              >
+                +91
+              </InputAdornment>
+            ),
+          }}
+          helperText={
+            formData.phone.length > 0 && formData.phone.length !== 10 
+              ? "Phone number must be exactly 10 digits" 
+              : "Required for delivery updates"
+          }
+          error={formData.phone.length > 0 && formData.phone.length !== 10}
+          sx={{
+            '& .MuiOutlinedInput-root': {
+              borderRadius: '8px',
+              transition: 'all 0.3s ease',
+              '&:hover': {
+                '& .MuiOutlinedInput-notchedOutline': {
+                  borderColor: '#1976d2',
+                }
+              }
+            },
+            '& .MuiFormHelperText-root': {
+              marginLeft: '4px',
+              fontSize: '0.75rem'
+            }
+          }}
+        />
+      </div>
+    </div>
+
+    {/* Required Note */}
+    <div style={{ 
+      display: 'flex', 
+      alignItems: 'center', 
+      gap: '4px',
+      marginTop: '4px',
+      marginBottom: '16px'
+    }}>
+      <span style={{ 
+        color: '#d32f2f',
+        fontWeight: 700,
+        fontSize: '1.2rem',
+        lineHeight: 1
+      }}>
+        *
+      </span>
+      <span style={{ 
+        fontSize: '0.75rem',
+        color: '#666'
+      }}>
+        Required fields
+      </span>
+    </div>
+
+    {/* Guest Info Note */}
+    {!isAuthenticated && (
+      <div style={{ 
+        fontSize: '0.875rem', 
+        color: '#0c5460',
+        backgroundColor: '#d1ecf1',
+        padding: '12px 16px',
+        borderRadius: '8px',
+        marginTop: '8px',
+        border: '1px solid #bee5eb',
+        display: 'flex',
+        alignItems: 'center',
+        gap: '8px'
+      }}>
+        <span style={{
+          fontSize: '1.2rem',
+          color: '#0c5460'
+        }}>
+          ⓘ
+        </span>
+        <span>
+          Your address will be saved locally for this session only. 
+          <strong> Sign up</strong> to save addresses permanently.
+        </span>
+      </div>
+    )}
+  </DialogContent>
+  
+  <DialogActions sx={{ 
+    px: 3, 
+    pb: 3,
+    pt: 2,
+    gap: '12px',
+    background: 'linear-gradient(to bottom, #f8f9fa 0%, #ffffff 100%)',
+    borderTop: '1px solid #e0e0e0'
+  }}>
+    <button
+      onClick={() => setShowModal(false)}
+      style={{
+        padding: '10px 24px',
+        borderRadius: '8px',
+        border: '1px solid #ddd',
+        backgroundColor: 'white',
+        color: '#666',
+        fontSize: '0.875rem',
+        fontWeight: 500,
+        cursor: 'pointer',
+        transition: 'all 0.3s ease',
+        minWidth: '100px',
+        '&:hover': {
+          backgroundColor: '#f5f5f5',
+          borderColor: '#999'
+        }
+      }}
+      onMouseOver={(e) => {
+        e.currentTarget.style.backgroundColor = '#f5f5f5';
+        e.currentTarget.style.borderColor = '#999';
+      }}
+      onMouseOut={(e) => {
+        e.currentTarget.style.backgroundColor = 'white';
+        e.currentTarget.style.borderColor = '#ddd';
+      }}
+    >
+      Cancel
+    </button>
+    
+    <button
+      onClick={handleAddAddress}
+      disabled={
+        loading || 
+        !formData.email || 
+        !isValidEmail(formData.email) ||
+        !formData.flat || 
+        !formData.landmark || 
+        !formData.city || 
+        !formData.state || 
+        formData.phone.length !== 10
+      }
+      style={{
+        padding: '10px 24px',
+        borderRadius: '8px',
+        border: 'none',
+        background: 'linear-gradient(135deg, #1976d2 0%, #0d47a1 100%)',
+        color: 'white',
+        fontSize: '0.875rem',
+        fontWeight: 600,
+        cursor: 'pointer',
+        transition: 'all 0.3s ease',
+        minWidth: '140px',
+        boxShadow: '0 2px 8px rgba(25, 118, 210, 0.2)',
+        opacity: (loading || 
+          !formData.email || 
+          !isValidEmail(formData.email) ||
+          !formData.flat || 
+          !formData.landmark || 
+          !formData.city || 
+          !formData.state || 
+          formData.phone.length !== 10) ? 0.6 : 1,
+        pointerEvents: (loading || 
+          !formData.email || 
+          !isValidEmail(formData.email) ||
+          !formData.flat || 
+          !formData.landmark || 
+          !formData.city || 
+          !formData.state || 
+          formData.phone.length !== 10) ? 'none' : 'auto'
+      }}
+      onMouseOver={(e) => {
+        if (!e.currentTarget.disabled) {
+          e.currentTarget.style.transform = 'translateY(-1px)';
+          e.currentTarget.style.boxShadow = '0 4px 12px rgba(25, 118, 210, 0.3)';
+        }
+      }}
+      onMouseOut={(e) => {
+        e.currentTarget.style.transform = 'translateY(0)';
+        e.currentTarget.style.boxShadow = '0 2px 8px rgba(25, 118, 210, 0.2)';
+      }}
+    >
+      {loading ? (
+        <span style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+          <div style={{
+            width: '16px',
+            height: '16px',
+            border: '2px solid rgba(255,255,255,0.3)',
+            borderTop: '2px solid white',
+            borderRadius: '50%',
+            animation: 'spin 1s linear infinite'
+          }} />
+          Saving...
+        </span>
+      ) : isAuthenticated ? (
+        'Add Address'
+      ) : (
+        'Save Address'
+      )}
+    </button>
+  </DialogActions>
+</Dialog>
+
+
     </>
   );
 };

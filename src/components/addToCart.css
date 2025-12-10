@@ -1197,4 +1197,41 @@
   border-radius: 20px;
   font-size: 12px;
   color: #555;
+
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+    
+    .custom-label {
+      display: block;
+      font-size: 0.75rem;
+      font-weight: 500;
+      margin-bottom: 6px;
+      color: #666;
+    }
+    
+    .required-star {
+      color: #d32f2f;
+      margin-left: 2px;
+    }
+    
+    .custom-select {
+      font-family: inherit;
+    }
+    
+    .custom-select:focus {
+      outline: none;
+      border-color: #1976d2 !important;
+      box-shadow: 0 0 0 2px rgba(25, 118, 210, 0.1);
+    }
+    
+    .custom-select option {
+      padding: 8px;
+    }
+    
+    .custom-select:disabled {
+      background-color: #f5f5f5;
+      color: #999;
+    }
 }

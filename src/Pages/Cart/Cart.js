@@ -27,13 +27,17 @@ const Cart = () => {
 
   const togglePasswordVisibility = () => setShowPassword(!showPassword);
   
-  // Fixed: Commented out unused function
-  // const toggleLoginMethod = () => {
-  //   setIsMobileLogin(!isMobileLogin);
-  //   setErrors({});
-  //   setOtpSent(false);
-  //   setLoginError(null);
-  // };
+  const toggleLoginMethod = () => {
+    setIsMobileLogin(!isMobileLogin);
+    setErrors({});
+    setOtpSent(false);
+    setLoginError(null);
+    // Clear form fields when switching
+    setEmail('');
+    setPassword('');
+    setPhone('');
+    setOtp('');
+  };
 
   const validateEmail = (email) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
   const validatePhone = (phone) => /^[0-9]{10}$/.test(phone);
@@ -44,6 +48,7 @@ const Cart = () => {
       return;
     }
     setIsLoading(true);
+    // In a real app, you would call an API endpoint here
     setTimeout(() => {
       setOtpSent(true);
       setIsLoading(false);
@@ -62,9 +67,12 @@ const Cart = () => {
     if (isMobileLogin) {
       if (!validatePhone(phone)) newErrors.phone = 'Please enter a valid 10-digit mobile number';
       if (!otp) newErrors.otp = 'Please enter the OTP';
+      if (otp && otp.length !== 6) newErrors.otp = 'OTP must be 6 digits';
     } else {
-      if (!validateEmail(email)) newErrors.email = 'Please enter a valid email address';
-      if (!password || password.length < 5) newErrors.password = 'Password must be at least 5 characters';
+      if (!email) newErrors.email = 'Email is required';
+      else if (!validateEmail(email)) newErrors.email = 'Please enter a valid email address';
+      if (!password) newErrors.password = 'Password is required';
+      else if (password.length < 5) newErrors.password = 'Password must be at least 5 characters';
     }
 
     if (Object.keys(newErrors).length > 0) {
@@ -74,49 +82,74 @@ const Cart = () => {
     }
 
     try {
-      const response = await axiosInstance.post('/admin/login', {
-        email,
-        password
-      });
+      let response;
+      
+      if (isMobileLogin) {
+        // Handle mobile login with OTP
+        // This would typically call a different endpoint for mobile login
+        // For now, using email/password endpoint as fallback
+        response = await axiosInstance.post('/admin/login', {
+          phone, // Make sure your backend supports phone login
+          otp // This should be verified separately
+        });
+      } else {
+        // Email login
+        response = await axiosInstance.post('/admin/login', {
+          email,
+          password
+        });
+      }
 
-      if (response.status === 200) {
+      if (response.status === 200 && response.data.token) {
         // Store login data
         localStorage.setItem('authToken', response.data.token);
         localStorage.setItem('userData', JSON.stringify(response.data.data));
 
-        // ✅ CRITICAL: Link guest orders to this user
-        try {
-          const linkResponse = await axiosInstance.post('/api/link-guest-orders', {
-            email: email,
-            userId: response.data.data._id
-          }, {
-            headers: { 
-              Authorization: `Bearer ${response.data.token}` 
-            }
-          });
-          
-          if (linkResponse.data.success && linkResponse.data.linkedCount > 0) {
-            toast.success(`${linkResponse.data.linkedCount} previous guest orders linked to your account!`, {
-              position: 'top-right',
-              autoClose: 5000
+        // Link guest orders to this user (only for email login)
+        if (!isMobileLogin && email) {
+          try {
+            const linkResponse = await axiosInstance.post('/api/link-guest-orders', {
+              email: email,
+              userId: response.data.data._id
+            }, {
+              headers: { 
+                Authorization: `Bearer ${response.data.token}` 
+              }
             });
+            
+            if (linkResponse.data.success && linkResponse.data.linkedCount > 0) {
+              toast.success(`${linkResponse.data.linkedCount} previous guest orders linked to your account!`, {
+                position: 'top-right',
+                autoClose: 5000
+              });
+            }
+          } catch (linkError) {
+            console.log('Guest order linking failed:', linkError);
+            // Continue anyway - not critical
           }
-        } catch (linkError) {
-          console.log('Guest order linking failed:', linkError);
-          // Continue anyway - not critical
         }
 
-        // ✅ Navigate to OrderPage instead of homepage
+        // Navigate to OrderPage
         toast.success('Login successful!', {
           position: 'top-right',
           autoClose: 2000
         });
         
         navigate('/OrderPage');
+      } else {
+        throw new Error('Login failed: No token received');
       }
     } catch (error) {
       console.error("Login error:", error);
-      setLoginError(error.response?.data?.message || 'Login failed. Please try again.');
+      const errorMessage = error.response?.data?.message || 
+                          error.response?.data?.error || 
+                          error.message || 
+                          'Login failed. Please try again.';
+      setLoginError(errorMessage);
+      toast.error(errorMessage, {
+        position: 'top-right',
+        autoClose: 3000
+      });
     } finally {
       setIsLoading(false);
     }
@@ -130,6 +163,14 @@ const Cart = () => {
   const handleBackToLogin = () => {
     setShowSignUp(false);
     setIsWholesalePartner(false);
+    // Reset form state
+    setEmail('');
+    setPassword('');
+    setPhone('');
+    setOtp('');
+    setOtpSent(false);
+    setErrors({});
+    setLoginError(null);
   };
 
   return (
@@ -137,8 +178,18 @@ const Cart = () => {
       <Header />
       <div className="davaindia-auth-container">
         <div className="davaindia-illustration-side">
-          <img src="https://app.davaindia.com/images/AuthLogo.svg" alt="Health" className="davaindia-illustration" />
-          <p className="davaindia-tagline"><span className="davaindia-highlight">India's largest</span> private generic pharmacy retail chain</p>
+          <img 
+            src="https://app.davaindia.com/images/AuthLogo.svg" 
+            alt="Health" 
+            className="davaindia-illustration" 
+            onError={(e) => {
+              e.target.onerror = null;
+              e.target.src = '/images/fallback-auth-logo.png'; // Add a fallback image
+            }}
+          />
+          <p className="davaindia-tagline">
+            <span className="davaindia-highlight">India's largest</span> private generic pharmacy retail chain
+          </p>
         </div>
 
         <div className="davaindia-form-side">
@@ -148,80 +199,193 @@ const Cart = () => {
                 <h1 className="davaindia-form-title">Welcome back</h1>
                 <p className="davaindia-form-subtitle">Sign in to access your account</p>
 
-                {loginError && <div className="davaindia-error-message">{loginError}</div>}
+                {loginError && (
+                  <div className="davaindia-error-message">
+                    {loginError}
+                  </div>
+                )}
 
-                <form onSubmit={handleSubmit}>
+                {/* Login method toggle */}
+                <div className="davaindia-login-toggle">
+                  <button
+                    type="button"
+                    onClick={() => toggleLoginMethod()}
+                    className="davaindia-link-button"
+                  >
+                    {isMobileLogin ? 'Use email login' : 'Use mobile login'}
+                  </button>
+                </div>
+
+                <form onSubmit={handleSubmit} noValidate>
                   {!isMobileLogin ? (
                     <>
                       <div className={`davaindia-form-group ${errors.email ? 'error' : ''}`}>
-                        <label>Email</label>
+                        <label htmlFor="email">Email</label>
                         <div className="davaindia-input-container">
                           <Mail size={18} className="davaindia-input-icon left" />
-                          <input type="email" value={email} onChange={(e) => setEmail(e.target.value)} placeholder="Enter your email" className='w-100' />
+                          <input
+                            id="email"
+                            type="email"
+                            value={email}
+                            onChange={(e) => setEmail(e.target.value)}
+                            placeholder="Enter your email"
+                            className="w-100"
+                            disabled={isLoading}
+                            autoComplete="email"
+                          />
                         </div>
                         {errors.email && <div className="davaindia-error-message">{errors.email}</div>}
                       </div>
 
                       <div className={`davaindia-form-group ${errors.password ? 'error' : ''}`}>
-                        <label>Password</label>
+                        <label htmlFor="password">Password</label>
                         <div className="davaindia-input-container justifyBetween">
-                          <div className='davaindia-input-container1 '>
+                          <div className="davaindia-input-container1">
                             <Lock size={18} className="davaindia-input-icon left" />
-                            <input type={showPassword ? 'text' : 'password'} value={password} onChange={(e) => setPassword(e.target.value)} placeholder="Enter your password" className='w-100' />
+                            <input
+                              id="password"
+                              type={showPassword ? 'text' : 'password'}
+                              value={password}
+                              onChange={(e) => setPassword(e.target.value)}
+                              placeholder="Enter your password"
+                              className="w-100"
+                              disabled={isLoading}
+                              autoComplete="current-password"
+                            />
                           </div>
-                          <button type="button" onClick={togglePasswordVisibility}>
+                          <button 
+                            type="button" 
+                            onClick={togglePasswordVisibility}
+                            disabled={isLoading}
+                            className="davaindia-password-toggle"
+                          >
                             {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
                           </button>
                         </div>
                         {errors.password && <div className="davaindia-error-message">{errors.password}</div>}
                       </div>
-
-                      <button type="submit" className="davaindia-btn davaindia-btn-primary" disabled={isLoading}>
-                        {isLoading ? <span className="davaindia-spinner"></span> : <>Sign In <ArrowRight size={18} /></>}
-                      </button>
                     </>
                   ) : (
                     <>
                       <div className={`davaindia-form-group ${errors.phone ? 'error' : ''}`}>
-                        <label>Phone</label>
-                        <input type="tel" value={phone} onChange={(e) => setPhone(e.target.value)} placeholder="Enter phone number" />
+                        <label htmlFor="phone">Phone Number</label>
+                        <div className="davaindia-input-container">
+                          <span className="davaindia-country-code">+91</span>
+                          <input
+                            id="phone"
+                            type="tel"
+                            value={phone}
+                            onChange={(e) => {
+                              const value = e.target.value.replace(/\D/g, '');
+                              if (value.length <= 10) setPhone(value);
+                            }}
+                            placeholder="Enter phone number"
+                            className="w-100"
+                            disabled={isLoading || otpSent}
+                            maxLength="10"
+                          />
+                        </div>
                         {errors.phone && <div className="davaindia-error-message">{errors.phone}</div>}
                       </div>
+                      
                       {otpSent && (
                         <div className={`davaindia-form-group ${errors.otp ? 'error' : ''}`}>
-                          <label>OTP</label>
-                          <input type="text" value={otp} onChange={(e) => setOtp(e.target.value)} maxLength="6" placeholder="Enter OTP" />
+                          <label htmlFor="otp">OTP</label>
+                          <div className="davaindia-input-container">
+                            <input
+                              id="otp"
+                              type="text"
+                              value={otp}
+                              onChange={(e) => {
+                                const value = e.target.value.replace(/\D/g, '');
+                                if (value.length <= 6) setOtp(value);
+                              }}
+                              maxLength="6"
+                              placeholder="Enter 6-digit OTP"
+                              className="w-100"
+                              disabled={isLoading}
+                            />
+                          </div>
                           {errors.otp && <div className="davaindia-error-message">{errors.otp}</div>}
+                          <div className="davaindia-otp-resend">
+                            <button 
+                              type="button" 
+                              onClick={handleSendOtp}
+                              className="davaindia-link-button"
+                              disabled={isLoading}
+                            >
+                              Resend OTP
+                            </button>
+                          </div>
                         </div>
                       )}
-                      <button type="button" onClick={handleSendOtp} className="davaindia-btn davaindia-btn-secondary" disabled={isLoading}>
-                        {isLoading ? <span className="davaindia-spinner"></span> : 'Send OTP'}
-                      </button>
+                      
+                      {!otpSent && (
+                        <button 
+                          type="button" 
+                          onClick={handleSendOtp} 
+                          className="davaindia-btn davaindia-btn-secondary"
+                          disabled={isLoading || !phone || phone.length !== 10}
+                        >
+                          {isLoading ? <span className="davaindia-spinner"></span> : 'Send OTP'}
+                        </button>
+                      )}
                     </>
+                  )}
+
+                  {/* Submit button - only show when form is complete */}
+                  {(!isMobileLogin || (isMobileLogin && otpSent)) && (
+                    <button 
+                      type="submit" 
+                      className="davaindia-btn davaindia-btn-primary"
+                      disabled={isLoading}
+                    >
+                      {isLoading ? (
+                        <span className="davaindia-spinner"></span>
+                      ) : (
+                        <>
+                          Sign In <ArrowRight size={18} />
+                        </>
+                      )}
+                    </button>
                   )}
                 </form>
 
                 <div className="davaindia-form-footer">
                   Don't have an account?{' '}
-                  <button type="button" onClick={() => handleShowSignUp(false)} className="davaindia-link-button">
+                  <button 
+                    type="button" 
+                    onClick={() => handleShowSignUp(false)} 
+                    className="davaindia-link-button"
+                  >
                     Sign up
                   </button>
                 </div>
                 <div className="davaindia-form-footer">
                   Want to be Our WholeSale Partner?{' '}
-                  <button type="button" onClick={() => handleShowSignUp(true)} className="davaindia-link-button">
+                  <button 
+                    type="button" 
+                    onClick={() => handleShowSignUp(true)} 
+                    className="davaindia-link-button"
+                  >
                     Sign up
                   </button>
                 </div>
               </>
             ) : (
               <>
-                <h1 className="davaindia-form-title">Create Account</h1>
+                <h1 className="davaindia-form-title">
+                  {isWholesalePartner ? 'Wholesale Partner Registration' : 'Create Account'}
+                </h1>
                 {isWholesalePartner ? <WholesalePartnerForm /> : <SignUpForm />}
 
                 <div className="davaindia-form-footer">
                   Already have an account?{' '}
-                  <button type="button" onClick={handleBackToLogin} className="davaindia-link-button">
+                  <button 
+                    type="button" 
+                    onClick={handleBackToLogin} 
+                    className="davaindia-link-button"
+                  >
                     Sign in
                   </button>
                 </div>
