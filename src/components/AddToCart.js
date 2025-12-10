@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
-import { Trash2, ShoppingBag, ArrowLeft } from 'lucide-react';
+import { Trash2, ShoppingBag, ArrowLeft, CheckCircle } from 'lucide-react';
 import './addToCart.css';
 import { Link, useNavigate } from 'react-router-dom';
 import { toast } from 'react-toastify';
@@ -11,7 +11,7 @@ import { Dialog, DialogTitle, DialogContent, DialogActions, TextField, Button, G
 import JoinUrl from '../JoinUrl';
 
 const AddToCart = () => {
-  const [isAuthenticated, setIsAuthenticated] = useState(null);
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [showModal, setShowModal] = useState(false);
   const [addresses, setAddresses] = useState([]);
   const [OriginalAddress, setOriginalAddress] = useState({});
@@ -19,6 +19,7 @@ const AddToCart = () => {
   const [states, setStates] = useState([]);
   const [cities, setCities] = useState([]);
   const [checkoutLoading, setCheckoutLoading] = useState(false);
+  const [paymentProcessing, setPaymentProcessing] = useState(false);
   const [formData, setFormData] = useState({
     flat: '',
     landmark: '',
@@ -26,6 +27,7 @@ const AddToCart = () => {
     city: '',
     country: 'India',
     phone: '',
+    email: '',
     selectedAddress: ''
   });
 
@@ -34,15 +36,45 @@ const AddToCart = () => {
   const dispatch = useDispatch();
   const navigate = useNavigate();
 
+  // Initialize form data from localStorage on component mount
   useEffect(() => {
+    // Check authentication
     const userData = localStorage.getItem('userData');
     if (userData) {
       setIsAuthenticated(true);
     } else {
-      navigate('/login');
-      return;
+      setIsAuthenticated(false);
     }
-  }, [navigate]);
+
+    // Load saved data from localStorage
+    const savedEmail = localStorage.getItem('guestEmail') || '';
+    const savedPhone = localStorage.getItem('guestPhone') || '';
+    const savedAddresses = JSON.parse(localStorage.getItem('guestAddresses') || '[]');
+    
+    // Set initial form data
+    setFormData(prev => ({
+      ...prev,
+      email: savedEmail || prev.email,
+      phone: savedPhone || prev.phone
+    }));
+    
+    setAddresses(savedAddresses);
+    
+    // Auto-select first address if available
+    if (savedAddresses.length > 0 && !formData.selectedAddress) {
+      const firstAddress = savedAddresses[0];
+      const addressValue = typeof firstAddress === 'object' ? firstAddress.fullAddress : firstAddress;
+      const addressEmail = typeof firstAddress === 'object' ? firstAddress.email : savedEmail;
+      const addressPhone = typeof firstAddress === 'object' ? firstAddress.phone : savedPhone;
+      
+      setFormData(prev => ({
+        ...prev,
+        selectedAddress: addressValue,
+        email: addressEmail || savedEmail || prev.email,
+        phone: addressPhone || savedPhone || prev.phone
+      }));
+    }
+  }, []);
 
   const totalPrice = cartItems.reduce((acc, item) => {
     const price = parseFloat(item.final_price || 0);
@@ -64,54 +96,86 @@ const AddToCart = () => {
     toast.info('Item removed from cart.', { position: 'top-right', autoClose: 2000 });
   };
 
+  // Email validation function
+  const isValidEmail = (email) => {
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    return emailRegex.test(email);
+  };
+
+  // Handle email change - save to localStorage immediately
+  const handleEmailChange = (e) => {
+    const email = e.target.value;
+    setFormData(prev => ({ ...prev, email }));
+    
+    // Save to localStorage immediately (not just on checkout)
+    if (email && isValidEmail(email)) {
+      localStorage.setItem('guestEmail', email);
+      toast.success('Email saved for checkout!', { position: 'top-right', autoClose: 1500 });
+    }
+  };
+
+  // Handle phone change - save to localStorage immediately
+  const handlePhoneChange = (e) => {
+    const value = e.target.value.replace(/\D/g, '');
+    if (value.length <= 10) {
+      setFormData(prev => ({ ...prev, phone: value }));
+      
+      // Save to localStorage immediately
+      if (value.length === 10) {
+        localStorage.setItem('guestPhone', value);
+      }
+    }
+  };
+
   const handleAddAddress = async () => {
-    const userData = JSON.parse(localStorage.getItem('userData'));
-    const userId = userData?._id;
-
-    if (!userId) {
-      toast.error("Please login first");
+    // Validate email
+    if (formData.email && !isValidEmail(formData.email)) {
+      toast.error("Please enter a valid email address");
       return;
     }
 
-    if (!formData.flat || !formData.landmark || !formData.city || !formData.state || !formData.phone) {
-      toast.error("Please fill all address fields");
-      return;
-    }
-
-    if (formData.phone.length !== 10) {
+    // Validate phone
+    if (!formData.phone || formData.phone.length !== 10) {
       toast.error("Please enter a valid 10-digit phone number");
       return;
     }
 
-    setLoading(true);
-    const phoneWithCountry = `+91${formData.phone}`;
-    const fullAddress = `${formData.flat}, ${formData.landmark}, ${formData.city}, ${formData.state}, ${formData.country}`;
-
-    try {
-      const response = await axiosInstance.put(`admin/updateAdmin/${userId}`, {
-        address: [...addresses, fullAddress],
-        phone: phoneWithCountry,
-      });
-
-      if (response.status === 200) {
-        toast.success("Address added successfully");
-        setAddresses((prev) => [...prev, fullAddress]);
-        setFormData({
-          ...formData,
-          selectedAddress: fullAddress,
-          flat: '',
-          landmark: '',
-          state: '',
-          city: '',
-          phone: ''
-        });
-        setShowModal(false);
-      }
-    } catch (error) {
-      toast.error("Failed to update address");
-      console.error("Address update error:", error);
-    }
-    setLoading(false);
+    // Address object बनाएं
+    const addressObject = {
+      flat: formData.flat,
+      landmark: formData.landmark,
+      city: formData.city,
+      state: formData.state,
+      country: formData.country,
+      phone: formData.phone,
+      email: formData.email,
+      fullAddress: `${formData.flat}, ${formData.landmark}, ${formData.city}, ${formData.state}, ${formData.country}`
+    };
+    
+    // localStorage से existing addresses निकालें
+    const existingAddresses = JSON.parse(localStorage.getItem('guestAddresses') || '[]');
+    const updatedAddresses = [...existingAddresses, addressObject];
+    
+    // Save to localStorage
+    localStorage.setItem('guestAddresses', JSON.stringify(updatedAddresses));
+    
+    // Also save email and phone separately for easy access
+    localStorage.setItem('guestEmail', formData.email);
+    localStorage.setItem('guestPhone', formData.phone);
+    
+    // State update करें
+    setAddresses(updatedAddresses);
+    setFormData(prev => ({
+      ...prev,
+      selectedAddress: addressObject.fullAddress,
+      flat: '',
+      landmark: '',
+      state: '',
+      city: ''
+      // Keep email and phone as they are
+    }));
+    setShowModal(false);
+    toast.success("Address saved successfully!");
   };
 
   useEffect(() => {
@@ -145,230 +209,26 @@ const AddToCart = () => {
     fetchCities();
   }, [formData.state]);
 
+  const loadRazorpayScript = () => {
+    return new Promise((resolve) => {
+      const script = document.createElement('script');
+      script.src = 'https://checkout.razorpay.com/v1/checkout.js';
+      script.onload = () => {
+        console.log("✅ Razorpay SDK loaded");
+        resolve(true);
+      };
+      script.onerror = () => {
+        console.error("❌ Failed to load Razorpay SDK");
+        resolve(false);
+      };
+      document.body.appendChild(script);
+    });
+  };
 
-  // // 1:
-  // const handleCheckout = async () => {
-  //   console.log("=== STARTING CHECKOUT ===");
-
-  //   // Prevent double submission
-  //   if (checkoutLoading) {
-  //     console.log("Checkout already in progress");
-  //     return;
-  //   }
-
-  //   setCheckoutLoading(true);
-
-  //   try {
-  //     // Validation checks
-  //     if (!formData.selectedAddress) {
-  //       toast.warn('Please select an address before checkout.');
-  //       return;
-  //     }
-
-  //     if (!userData || !userData._id) {
-  //       toast.error('Please log in again to continue');
-  //       navigate('/login');
-  //       return;
-  //     }
-
-  //     if (!cartItems || cartItems.length === 0) {
-  //       toast.error('Your cart is empty');
-  //       return;
-  //     }
-
-  //     // Get phone number - prioritize form data, then original address
-  //     const phoneNumber = formData.phone 
-  //       ? formData.phone.toString() 
-  //       : OriginalAddress?.phone?.replace('+91', '') || "";
-
-  //     if (!phoneNumber || phoneNumber.length < 10) {
-  //       toast.error('Please provide a valid 10-digit phone number');
-  //       return;
-  //     }
-
-  //     console.log("Validation passed, creating order...");
-
-  //     // Prepare order payload with detailed validation
-  //     const orderPayload = {
-  //       userId: userData._id,
-  //       items: cartItems.map((item, index) => {
-  //         const qty = item.quantity || 1;
-  //         const price = parseFloat(item.final_price || 0);
-
-  //         console.log(`Processing item ${index}:`, {
-  //           id: item._id,
-  //           name: item.name,
-  //           quantity: qty,
-  //           price: price
-  //         });
-
-  //         if (!item._id || !item.name || qty < 1 || price <= 0) {
-  //           throw new Error(`Invalid item data for: ${item.name || 'Unknown item'}`);
-  //         }
-
-  //         return {
-  //           productId: item._id,
-  //           name: item.name.trim(),
-  //           quantity: parseInt(qty),
-  //           price: parseFloat(price)
-  //         };
-  //       }),
-  //       address: formData.selectedAddress.trim(),
-  //       phone: phoneNumber.toString(), // Send as string without +91 prefix
-  //       totalAmount: parseFloat(totalPrice)
-  //     };
-
-  //     console.log("Final Order Payload:", orderPayload);
-
-  //     // Validate total amount
-  //     const calculatedTotal = orderPayload.items.reduce((sum, item) => sum + (item.price * item.quantity), 0);
-  //     if (Math.abs(calculatedTotal - orderPayload.totalAmount) > 0.01) {
-  //       throw new Error(`Total amount mismatch. Expected: ${calculatedTotal}, Got: ${orderPayload.totalAmount}`);
-  //     }
-
-  //     // Create order in backend first
-  //     console.log("Sending order to backend...");
-  //     const orderResponse = await axiosInstance.post('/api/createOrder', orderPayload);
-
-  //     console.log("Backend response:", {
-  //       status: orderResponse.status,
-  //       data: orderResponse.data
-  //     });
-
-  //     // Check if order was created successfully
-  //     if (orderResponse.status !== 201) {
-  //       const errorMsg = orderResponse.data?.message || 'Failed to create order';
-  //       console.error("Order creation failed:", errorMsg);
-  //       toast.error(errorMsg);
-  //       return;
-  //     }
-
-  //     const { success, orderId, razorpayOrderId, message } = orderResponse.data;
-
-  //     if (!success || !orderId || !razorpayOrderId) {
-  //       const errorMsg = message || 'Order creation response missing required data';
-  //       console.error("Invalid order response:", orderResponse.data);
-  //       toast.error(errorMsg);
-  //       return;
-  //     }
-
-  //     console.log("Order created successfully:", { orderId, razorpayOrderId });
-  //     toast.success(message || 'Order created successfully');
-
-  //     // Initialize Razorpay payment
-  //     const razorpayOptions = {
-  //       key: 'rzp_live_hgk55iUzVRpKZ1',
-  //       amount: Math.round(orderPayload.totalAmount * 100), // Amount in paise
-  //       currency: 'INR',
-  //       name: 'BSK Healthcare',
-  //       description: `Order #${orderId.slice(-8)}`,
-  //       order_id: razorpayOrderId,
-
-  //       handler: async function (response) {
-  //         console.log("=== PAYMENT SUCCESS ===");
-  //         console.log("Payment response:", response);
-
-  //         try {
-  //           toast.success('Payment successful! Order placed.');
-
-  //           // Clear cart and redirect
-  //           dispatch(clearProducts());
-  //           localStorage.setItem('lastOrderId', orderId);
-  //           navigate('/successOrder');
-
-  //         } catch (err) {
-  //           console.error('Post-payment processing error:', err);
-  //           toast.error('Payment successful but there was an issue. Please contact support.');
-  //           navigate('/successOrder');
-  //         }
-  //       },
-
-  //       modal: {
-  //         ondismiss: function () {
-  //           console.log("Payment modal dismissed");
-  //           toast.info('Payment cancelled');
-  //           setCheckoutLoading(false);
-  //         }
-  //       },
-
-  //       prefill: {
-  //         name: userData.name || '',
-  //         email: userData.email || '',
-  //         contact: phoneNumber
-  //       },
-
-  //       notes: {
-  //         address: formData.selectedAddress,
-  //         orderId: orderId,
-  //         userId: userData._id,
-  //         userEmail: userData.email
-  //       },
-
-  //       theme: {
-  //         color: '#3399cc'
-  //       },
-
-  //       method: {
-  //         netbanking: true,
-  //         card: true,
-  //         upi: true,
-  //         wallet: true,
-  //         emi: false
-  //       }
-  //     };
-
-  //     console.log("Initializing Razorpay...");
-
-  //     // Create Razorpay instance and handle failures
-  //     const razorpayInstance = new window.Razorpay(razorpayOptions);
-
-  //     razorpayInstance.on('payment.failed', function (response) {
-  //       console.log("=== PAYMENT FAILED ===");
-  //       console.error("Payment failure response:", response);
-
-  //       const errorMsg = response.error?.description || response.error?.reason || 'Payment failed';
-  //       toast.error(`Payment failed: ${errorMsg}`);
-  //       setCheckoutLoading(false);
-  //     });
-
-  //     // Open payment modal
-  //     razorpayInstance.open();
-
-  //   } catch (error) {
-  //     console.error('=== CHECKOUT ERROR ===');
-  //     console.error('Error details:', {
-  //       message: error.message,
-  //       response: error.response?.data,
-  //       status: error.response?.status,
-  //       stack: error.stack
-  //     });
-
-  //     let errorMessage = 'Failed to initiate checkout. Please try again.';
-
-  //     if (error.response?.status === 500) {
-  //       errorMessage = 'Server error occurred. Please try again in a moment.';
-  //     } else if (error.response?.status === 400) {
-  //       errorMessage = error.response.data?.message || 'Invalid order data. Please check your details.';
-  //     } else if (error.response?.status === 404) {
-  //       errorMessage = 'User account not found. Please login again.';
-  //     } else if (error.response?.data?.message) {
-  //       errorMessage = error.response.data.message;
-  //     } else if (error.message) {
-  //       errorMessage = error.message;
-  //     }
-
-  //     toast.error(errorMessage);
-  //   } finally {
-  //     setCheckoutLoading(false);
-  //   }
-  // };
-
-
-  // // 2:
   const handleCheckout = async () => {
-    console.log("=== STARTING CHECKOUT ===");
-    // Prevent double submission
-    if (checkoutLoading) {
+    console.log("=== STARTING CHECKOUT PROCESS ===");
+    
+    if (checkoutLoading || paymentProcessing) {
       console.log("Checkout already in progress");
       return;
     }
@@ -376,16 +236,9 @@ const AddToCart = () => {
     setCheckoutLoading(true);
 
     try {
-      // Validation checks
+      // Form validation
       if (!formData.selectedAddress) {
         toast.warn('Please select an address before checkout.');
-        setCheckoutLoading(false);
-        return;
-      }
-
-      if (!userData || !userData._id) {
-        toast.error('Please log in again to continue');
-        navigate('/login');
         setCheckoutLoading(false);
         return;
       }
@@ -396,31 +249,43 @@ const AddToCart = () => {
         return;
       }
 
-      // Get and validate phone number
-      let phoneNumber = formData.phone?.toString().trim();
-
-      if (!phoneNumber && OriginalAddress?.phone) {
-        phoneNumber = OriginalAddress.phone.replace(/^\+91/, '').replace(/^91/, '').trim();
+      // Get email from form or localStorage
+      const checkoutEmail = formData.email || localStorage.getItem('guestEmail') || '';
+      
+      if (!checkoutEmail || !isValidEmail(checkoutEmail)) {
+        toast.error('Please provide a valid email address');
+        setCheckoutLoading(false);
+        return;
       }
 
-      // console.log("Phone number validation:", {
-      //   formDataPhone: formData.phone,
-      //   originalPhone: OriginalAddress?.phone,
-      //   finalPhone: phoneNumber
-      // });
+      // Get phone number
+      let phoneNumber = formData.phone?.toString().trim();
 
-      // Validate phone is exactly 10 digits
+      if (!phoneNumber) {
+        // Try to get from saved addresses
+        const selectedAddressObj = addresses.find(addr => 
+          typeof addr === 'object' ? addr.fullAddress === formData.selectedAddress : addr === formData.selectedAddress
+        );
+        
+        if (selectedAddressObj && typeof selectedAddressObj === 'object' && selectedAddressObj.phone) {
+          phoneNumber = selectedAddressObj.phone;
+        } else {
+          phoneNumber = localStorage.getItem('guestPhone') || '';
+        }
+      }
+
+      phoneNumber = phoneNumber.replace(/^\+91/, '').replace(/^91/, '').trim();
+
       if (!phoneNumber || !/^\d{10}$/.test(phoneNumber)) {
         toast.error('Please provide a valid 10-digit phone number');
         setCheckoutLoading(false);
         return;
       }
 
-      // Prepare order items with validation
-      const orderItems = cartItems.map((item, index) => {
+      // Prepare order items
+      const orderItems = cartItems.map((item) => {
         const qty = parseInt(item.quantity) || 1;
         const price = parseFloat(item.final_price) || 0;
-
 
         if (!item._id || !item.name || qty < 1 || price <= 0) {
           throw new Error(`Invalid item data for: ${item.name || 'Unknown item'}`);
@@ -434,228 +299,311 @@ const AddToCart = () => {
         };
       });
 
-      // Calculate total
-      const calculatedTotal = orderItems.reduce((sum, item) =>
-        sum + (item.price * item.quantity), 0
-      );
+      // Create guest user ID if not logged in
+      const userId = isAuthenticated ? userData._id : `guest_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
 
-      console.log("Total calculation:", {
-        itemsTotal: calculatedTotal.toFixed(2),
-        cartTotal: totalPrice.toFixed(2),
-        difference: Math.abs(calculatedTotal - totalPrice).toFixed(2)
-      });
-
-      // Prepare order payload
+      // Prepare order payload for Step 1
       const orderPayload = {
-        userId: userData._id,
+        userId: userId,
         items: orderItems,
         address: formData.selectedAddress.trim(),
-        phone: phoneNumber, // Send without +91 prefix
-        totalAmount: parseFloat(totalPrice.toFixed(2))
+        phone: phoneNumber,
+        email: checkoutEmail,
+        totalAmount: parseFloat(totalPrice.toFixed(2)),
+        isGuest: !isAuthenticated
       };
 
+      console.log("Step 1: Creating Razorpay order...");
+      console.log("Order payload:", JSON.stringify(orderPayload, null, 2));
+      
+      // Step 1: Create Razorpay Order
+      const orderResponse = await axiosInstance.post('/api/createPaymentOrder', orderPayload);
 
-      // Send order to backend
-      console.log("Sending POST request to /api/createOrder...");
-      const orderResponse = await axiosInstance.post('/api/createOrder', orderPayload);
-
-      // console.log("=== BACKEND RESPONSE ===");
-      // console.log("Status:", orderResponse.status);
-      // console.log("Data:", JSON.stringify(orderResponse.data, null, 2));
-
-      // Validate response
-      if (orderResponse.status !== 201) {
-        const errorMsg = orderResponse.data?.message || 'Failed to create order';
-        console.error("❌ Order creation failed:", errorMsg);
+      if (!orderResponse.data.success) {
+        const errorMsg = orderResponse.data?.message || 'Failed to create payment order';
+        console.error("❌ Razorpay order creation failed:", errorMsg);
         toast.error(errorMsg);
         setCheckoutLoading(false);
         return;
       }
 
-      const { success, orderId, razorpayOrderId, message } = orderResponse.data;
+      const { order: razorpayOrder } = orderResponse.data;
+      console.log("✅ Razorpay order created:", razorpayOrder.id);
 
-      if (!success || !orderId || !razorpayOrderId) {
-        const errorMsg = message || 'Order creation response missing required data';
-        console.error("❌ Invalid order response:", orderResponse.data);
-        toast.error(errorMsg);
+      // Load Razorpay SDK
+      const razorpayLoaded = await loadRazorpayScript();
+      if (!razorpayLoaded) {
+        toast.error('Payment system failed to load. Please refresh the page.');
         setCheckoutLoading(false);
         return;
       }
 
-      toast.success(message || 'Order created successfully');
-
-      // Verify Razorpay is loaded
-      if (!window.Razorpay) {
-        console.error("❌ Razorpay SDK not loaded!");
-        toast.error('Payment system not loaded. Please refresh and try again.');
-        setCheckoutLoading(false);
-        return;
-      }
-
-      console.log("✓ Razorpay SDK loaded");
-
-      // Initialize Razorpay payment
-      const razorpayOptions = {
-        key: 'rzp_live_hgk55iUzVRpKZ1', // Your Razorpay key
-        amount: Math.round(orderPayload.totalAmount * 100), // Amount in paise
-        currency: 'INR',
-        name: 'BSK Healthcare',
-        description: `Order #${orderId.slice(-8)}`,
-        order_id: razorpayOrderId,
-
+      // Configure Razorpay options
+      const options = {
+        key: "rzp_test_RpQ1JwSJEy6yAw",
+        amount: razorpayOrder.amount,
+        currency: razorpayOrder.currency,
+        name: "Your Store Name",
+        description: "Order Payment",
+        order_id: razorpayOrder.id,
         handler: async function (response) {
-          console.log("=== PAYMENT SUCCESS ===");
-          console.log("Payment ID:", response.razorpay_payment_id);
-          console.log("Order ID:", response.razorpay_order_id);
-          console.log("Signature:", response.razorpay_signature);
-
+          console.log("✅ Payment successful, response:", response);
+          setPaymentProcessing(true);
+          
           try {
-            toast.success('Payment successful! Order placed.');
+            // Step 2: Verify payment and create order
+            console.log("Step 2: Verifying payment and creating order...");
+            
+            const verifyPayload = {
+              razorpay_order_id: response.razorpay_order_id,
+              razorpay_payment_id: response.razorpay_payment_id,
+              razorpay_signature: response.razorpay_signature,
+              ...orderPayload // Include all order details
+            };
 
-            // Clear cart
-            dispatch(clearProducts());
+            console.log("Verification payload:", verifyPayload);
 
-            // Store order ID and redirect
-            localStorage.setItem('lastOrderId', orderId);
-            console.log("Redirecting to success page...");
-            navigate('/success');
-
-          } catch (err) {
-            console.error('Post-payment error:', err);
-            toast.error('Payment successful but there was an issue. Please contact support.');
-            navigate('/success');
-          }
-        },
-
-        modal: {
-          ondismiss: function () {
-            console.log("❌ Payment modal dismissed by user");
-            toast.info('Payment cancelled');
+            const verifyResponse = await axiosInstance.post('/api/verifyPayment', verifyPayload);
+            
+            if (verifyResponse.data.success) {
+              console.log("✅ Order created successfully:", verifyResponse.data.orderId);
+              
+              // Clear cart
+              dispatch(clearProducts());
+              localStorage.removeItem('cartItems');
+              
+              // Clear guest addresses if guest user
+              if (!isAuthenticated) {
+                localStorage.removeItem('guestAddresses');
+                localStorage.removeItem('guestEmail');
+                localStorage.removeItem('guestPhone');
+              }
+              
+              toast.success(
+                <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                  <CheckCircle size={20} />
+                  Order placed successfully! Order ID: {verifyResponse.data.orderId}
+                </div>,
+                {
+                  position: 'top-right',
+                  autoClose: 5000,
+                  hideProgressBar: false,
+                  closeOnClick: true,
+                  pauseOnHover: true,
+                  draggable: true
+                }
+              );
+              
+              // Navigate to order confirmation page
+              navigate(`/success`);
+              
+            } else {
+              console.error("❌ Order creation failed:", verifyResponse.data.message);
+              toast.error(verifyResponse.data.message || 'Failed to create order');
+            }
+          } catch (error) {
+            console.error("❌ Payment verification error:", error);
+            toast.error('Payment verification failed. Please contact support.');
+          } finally {
+            setPaymentProcessing(false);
             setCheckoutLoading(false);
           }
         },
-
         prefill: {
-          name: userData.name || '',
-          email: userData.email || '',
-          contact: phoneNumber || '',
+          name: userData.name || checkoutEmail.split('@')[0],
+          email: checkoutEmail,
+          contact: `+91${phoneNumber}`
         },
-
-        notes: {
-          orderId: orderId,
-          userId: userData._id
-        },
-
         theme: {
-          // color: '#3399cc'
-          color: '#68171b'
+          color: '#3f51b5'
+        },
+        modal: {
+          ondismiss: function() {
+            console.log("Payment modal closed by user");
+            setCheckoutLoading(false);
+          }
         }
       };
 
-      console.log("=== RAZORPAY OPTIONS ===");
-      console.log(JSON.stringify({
-        ...razorpayOptions,
-        key: razorpayOptions.key.substring(0, 10) + '...'
-      }, null, 2));
+      // Open Razorpay checkout
+      console.log("Opening Razorpay checkout...");
+      const rzp = new window.Razorpay(options);
+      rzp.open();
 
-      // Create Razorpay instance
-      const razorpayInstance = new window.Razorpay(razorpayOptions);
-
-      // Handle payment failures
-      razorpayInstance.on('payment.failed', function (response) {
-        console.log("=== PAYMENT FAILED ===");
-        console.error("Error code:", response.error?.code);
-        console.error("Error description:", response.error?.description);
-        console.error("Error reason:", response.error?.reason);
-        console.error("Full error:", JSON.stringify(response.error, null, 2));
-
-        const errorMsg = response.error?.description ||
-          response.error?.reason ||
-          'Payment failed';
-        toast.error(`Payment failed: ${errorMsg}`);
+      // Handle payment errors
+      rzp.on('payment.failed', function (response) {
+        console.error("❌ Payment failed:", response.error);
+        toast.error(`Payment failed: ${response.error.description || 'Unknown error'}`);
         setCheckoutLoading(false);
+        setPaymentProcessing(false);
       });
-
-      // Open payment modal
-      razorpayInstance.open();
 
     } catch (error) {
       console.error('=== CHECKOUT ERROR ===');
-      console.error('Error type:', error.constructor.name);
-      console.error('Error message:', error.message);
+      console.error('Error:', error.message);
+      console.error('Response:', error.response?.data);
 
-      if (error.response) {
-        console.error('Response status:', error.response.status);
-        console.error('Response data:', JSON.stringify(error.response.data, null, 2));
-        console.error('Response headers:', error.response.headers);
-      } else if (error.request) {
-        console.error('No response received');
-        console.error('Request details:', error.request);
-      }
+      let errorMessage = 'Checkout failed. Please try again.';
 
-      console.error('Error stack:', error.stack);
-
-      let errorMessage = 'Failed to initiate checkout. Please try again.';
-
-      if (error.response?.status === 500) {
-        const details = error.response.data?.details || error.response.data?.error;
-        errorMessage = 'Server error occurred. ' + (details || 'Please try again in a moment.');
-      } else if (error.response?.status === 400) {
-        errorMessage = error.response.data?.message || 'Invalid order data. Please check your details.';
-      } else if (error.response?.status === 404) {
-        errorMessage = 'User account not found. Please login again.';
+      if (error.response?.status === 400) {
+        const validationError = error.response.data?.message;
+        if (validationError) {
+          errorMessage = validationError;
+        }
       } else if (error.response?.data?.message) {
         errorMessage = error.response.data.message;
-      } else if (error.message) {
-        errorMessage = error.message;
       }
 
       toast.error(errorMessage);
       setCheckoutLoading(false);
+      setPaymentProcessing(false);
     }
   };
 
   const fetchData = async () => {
-    const userData = JSON.parse(localStorage.getItem('userData'));
-    const userId = userData?._id;
-
-    if (!userId) {
-      console.error("User ID not found.");
-      return;
+    // Guest user के लिए localStorage से data fetch करें
+    const guestAddresses = JSON.parse(localStorage.getItem('guestAddresses') || '[]');
+    const guestEmail = localStorage.getItem('guestEmail') || '';
+    const guestPhone = localStorage.getItem('guestPhone') || '';
+    
+    setAddresses(guestAddresses);
+    setOriginalAddress({ 
+      phone: guestPhone,
+      email: guestEmail 
+    });
+    
+    // Auto-select first address if available
+    if (guestAddresses.length > 0 && !formData.selectedAddress) {
+      const firstAddress = guestAddresses[0];
+      const addressValue = typeof firstAddress === 'object' ? firstAddress.fullAddress : firstAddress;
+      const addressEmail = typeof firstAddress === 'object' ? firstAddress.email : guestEmail;
+      const addressPhone = typeof firstAddress === 'object' ? firstAddress.phone : guestPhone;
+      
+      setFormData(prev => ({ 
+        ...prev, 
+        selectedAddress: addressValue,
+        email: addressEmail || guestEmail || prev.email,
+        phone: addressPhone || guestPhone || prev.phone
+      }));
     }
+    
+    // If user is authenticated, fetch their data too
+    if (isAuthenticated && userData?._id) {
+      try {
+        const response = await axiosInstance.get(`/admin/readAdmin/${userData._id}`);
+        const userInfo = response?.data?.data;
 
-    try {
-      const response = await axiosInstance.get(`/admin/readAdmin/${userId}`);
-      const userInfo = response?.data?.data;
+        console.log("Fetched user info:", userInfo);
+        setOriginalAddress(userInfo || {});
 
-      console.log("Fetched user info:", userInfo);
-      setOriginalAddress(userInfo || {});
-
-      if (Array.isArray(userInfo?.address)) {
-        setAddresses(userInfo.address);
-        // Auto-select first address if available
-        if (userInfo.address.length > 0 && !formData.selectedAddress) {
-          setFormData(prev => ({ ...prev, selectedAddress: userInfo.address[0] }));
+        // Set email in form data
+        if (userInfo?.email) {
+          setFormData(prev => ({ ...prev, email: userInfo.email }));
         }
-      } else {
-        setAddresses([]);
+
+        if (Array.isArray(userInfo?.address)) {
+          // Merge guest addresses with user addresses
+          const mergedAddresses = [...guestAddresses, ...userInfo.address];
+          setAddresses(mergedAddresses);
+          if (mergedAddresses.length > 0 && !formData.selectedAddress) {
+            const firstAddr = mergedAddresses[0];
+            const addrValue = typeof firstAddr === 'object' ? firstAddr.fullAddress : firstAddr;
+            const addrEmail = typeof firstAddr === 'object' ? firstAddr.email : userInfo.email;
+            
+            setFormData(prev => ({ 
+              ...prev, 
+              selectedAddress: addrValue,
+              email: addrEmail || userInfo.email || prev.email
+            }));
+          }
+        }
+      } catch (error) {
+        console.error("Error fetching user address:", error);
       }
-    } catch (error) {
-      console.error("Error fetching address:", error);
     }
   };
 
   useEffect(() => {
-    if (isAuthenticated) {
-      fetchData();
-    }
+    fetchData();
   }, [isAuthenticated]);
 
-  if (isAuthenticated === null) return null;
+  // Login prompt message
+  const renderLoginPrompt = () => {
+    if (!isAuthenticated) {
+      return (
+        <div className="login-prompt">
+          <p>You are browsing as a guest. 
+            <button onClick={() => navigate('/login')} className="login-link">Login</button> 
+            for order tracking and faster checkout.
+          </p>
+        </div>
+      );
+    }
+    return null;
+  };
+
+  // Render address in list
+  const renderAddressItem = (addr, index) => {
+    if (typeof addr === 'string') {
+      return (
+        <li key={index} className={`address-card ${formData.selectedAddress === addr ? 'selected' : ''}`}>
+          <label>
+            <input
+              type="radio"
+              name="selectedAddress"
+              value={addr}
+              checked={formData.selectedAddress === addr}
+              onChange={() =>
+                setFormData(prev => ({ ...prev, selectedAddress: addr }))
+              }
+            />
+            <span className='text_20'>{addr}</span>
+          </label>
+        </li>
+      );
+    } else {
+      // For object type addresses (guest users)
+      return (
+        <li key={index} className={`address-card ${formData.selectedAddress === addr.fullAddress ? 'selected' : ''}`}>
+          <label>
+            <input
+              type="radio"
+              name="selectedAddress"
+              value={addr.fullAddress}
+              checked={formData.selectedAddress === addr.fullAddress}
+              onChange={() => {
+                setFormData(prev => ({ 
+                  ...prev, 
+                  selectedAddress: addr.fullAddress,
+                  email: addr.email || prev.email,
+                  phone: addr.phone || prev.phone
+                }));
+                
+                // Save email and phone to localStorage immediately
+                if (addr.email) {
+                  localStorage.setItem('guestEmail', addr.email);
+                }
+                if (addr.phone) {
+                  localStorage.setItem('guestPhone', addr.phone);
+                }
+              }}
+            />
+            <div className="address-details">
+              <span className='text_20'>{addr.fullAddress}</span>
+              {addr.email && <span className="address-email">📧 {addr.email}</span>}
+              {addr.phone && <span className="address-phone">📱 {addr.phone}</span>}
+            </div>
+          </label>
+        </li>
+      );
+    }
+  };
 
   return (
     <>
       <div className="cart-container">
+        {renderLoginPrompt()}
+        
         <div className="cart-header">
           <div className="container">
             <button className="back-button" onClick={() => navigate(-1)}>
@@ -751,11 +699,18 @@ const AddToCart = () => {
                 <div className="summary-card">
                   <h3 className="summary-title">Order Summary</h3>
 
+                  {!isAuthenticated && (
+                    <div className="guest-notice">
+                      <p>🎯 <strong>Guest Checkout Available!</strong> Enter your details below to proceed without login.</p>
+                    </div>
+                  )}
+
+
                   <button
                     className="enhanced-add-address-btn"
                     onClick={() => setShowModal(true)}
                   >
-                    ➕ Add New Address
+                    ➕ {addresses.length > 0 ? 'Add Another Address' : 'Add Address'}
                   </button>
 
                   <div className='my_10'>
@@ -763,27 +718,12 @@ const AddToCart = () => {
                       <div className="saved-addresses">
                         <h4 className="section-subtitle">📍 Saved Addresses</h4>
                         <ul className="address-list">
-                          {addresses.map((addr, index) => (
-                            <li key={index} className={`address-card ${formData.selectedAddress === addr ? 'selected' : ''}`}>
-                              <label>
-                                <input
-                                  type="radio"
-                                  name="selectedAddress"
-                                  value={addr}
-                                  checked={formData.selectedAddress === addr}
-                                  onChange={() =>
-                                    setFormData({ ...formData, selectedAddress: addr })
-                                  }
-                                />
-                                <span className='text_20'>{addr}</span>
-                              </label>
-                            </li>
-                          ))}
+                          {addresses.map((addr, index) => renderAddressItem(addr, index))}
                         </ul>
                       </div>
                     ) : (
                       <p className="no-address-text">
-                        No address saved yet. Please add one.
+                        No address saved yet. Please add your delivery address.
                       </p>
                     )}
                   </div>
@@ -816,22 +756,51 @@ const AddToCart = () => {
                   <button
                     className="checkout-btn"
                     onClick={handleCheckout}
-                    disabled={!formData.selectedAddress || checkoutLoading}
+                    disabled={
+                      !formData.selectedAddress || 
+                      checkoutLoading || 
+                      paymentProcessing || 
+                      !formData.email ||
+                      !isValidEmail(formData.email) ||
+                      !formData.phone ||
+                      formData.phone.length !== 10
+                    }
                   >
                     {checkoutLoading ? (
                       <>
-                        <span>Processing...</span>
+                        <span>Creating Order...</span>
+                      </>
+                    ) : paymentProcessing ? (
+                      <>
+                        <span>Processing Payment...</span>
                       </>
                     ) : (
                       <>
-                        Proceed to Checkout
+                        {isAuthenticated ? 'Proceed to Payment' : 'Proceed as Guest'}
                         <ArrowLeft size={18} style={{ transform: 'rotate(180deg)' }} />
                       </>
                     )}
                   </button>
 
+                  {!isAuthenticated && (!formData.email || !isValidEmail(formData.email) || !formData.phone || formData.phone.length !== 10) && (
+                    <div className="email-warning">
+                      ⚠️ Email address and phone number are required for order confirmation
+                    </div>
+                  )}
+
+                  {!isAuthenticated && (
+                    <div className="guest-benefits">
+                      <p className="login-suggestion">
+                        <button onClick={() => navigate('/login')} className="login-suggestion-btn">
+                          Login
+                        </button> for order tracking and faster checkout next time.
+                      </p>
+                    </div>
+                  )}
+
                   <div className="security-badges">
-                    <div className="badge">🔒 Secure Checkout</div>
+                    <div className="badge">🔒 Secure Payment</div>
+                    <div className="badge">💳 Razorpay Verified</div>
                   </div>
                 </div>
               </div>
@@ -846,27 +815,47 @@ const AddToCart = () => {
         fullWidth
         maxWidth="sm"
       >
-        <DialogTitle sx={{ fontWeight: 'bold' }}>Add New Address</DialogTitle>
+        <DialogTitle sx={{ fontWeight: 'bold' }}>
+          {isAuthenticated ? 'Add New Address' : 'Add Delivery Address'}
+        </DialogTitle>
         <DialogContent sx={{ pt: 2, display: 'flex', flexDirection: 'column', gap: 2 }}>
           <Grid container spacing={2}>
+            <Grid item xs={12}>
+              <TextField
+                label="Email Address *"
+                fullWidth
+                variant="outlined"
+                size="small"
+                type="email"
+                value={formData.email}
+                onChange={handleEmailChange}
+                helperText="Required for order confirmation and updates"
+                required
+                error={formData.email && !isValidEmail(formData.email)}
+              />
+            </Grid>
+
             <Grid item xs={12} sm={6}>
               <TextField
-                label="Flat / House"
+                label="Flat / House No. *"
                 fullWidth
                 variant="outlined"
                 size="small"
                 value={formData.flat}
                 onChange={(e) => setFormData({ ...formData, flat: e.target.value })}
+                required
               />
             </Grid>
+            
             <Grid item xs={12} sm={6}>
               <TextField
-                label="Landmark"
+                label="Landmark *"
                 fullWidth
                 variant="outlined"
                 size="small"
                 value={formData.landmark}
                 onChange={(e) => setFormData({ ...formData, landmark: e.target.value })}
+                required
               />
             </Grid>
 
@@ -876,8 +865,9 @@ const AddToCart = () => {
                 value={formData.state}
                 onChange={(e) => setFormData({ ...formData, state: e.target.value, city: '' })}
                 style={{ width: '100%', padding: '8px', borderRadius: '4px', border: '1px solid #ccc' }}
+                required
               >
-                <option value="">Select State</option>
+                <option value="">Select State *</option>
                 {states.map((state) => <option key={state} value={state}>{state}</option>)}
               </select>
             </Grid>
@@ -889,8 +879,9 @@ const AddToCart = () => {
                 onChange={(e) => setFormData({ ...formData, city: e.target.value })}
                 style={{ width: '100%', padding: '8px', borderRadius: '4px', border: '1px solid #ccc' }}
                 disabled={!formData.state}
+                required
               >
-                <option value="">Select City</option>
+                <option value="">Select City *</option>
                 {cities.map((city) => <option key={city} value={city}>{city}</option>)}
               </select>
             </Grid>
@@ -908,26 +899,37 @@ const AddToCart = () => {
 
             <Grid item xs={12} sm={6}>
               <TextField
-                label="Phone Number"
+                label="Phone Number *"
                 fullWidth
                 variant="outlined"
                 size="small"
                 name="phone"
                 value={formData.phone}
-                onChange={(e) => {
-                  const value = e.target.value.replace(/\D/g, ''); // Only digits
-                  if (value.length <= 10) {
-                    setFormData({ ...formData, phone: value });
-                  }
-                }}
+                onChange={handlePhoneChange}
                 InputProps={{
                   startAdornment: <InputAdornment position="start">+91</InputAdornment>,
                 }}
-                helperText={formData.phone.length > 0 && formData.phone.length !== 10 ? "Phone number must be 10 digits" : ""}
+                helperText={formData.phone.length > 0 && formData.phone.length !== 10 ? "Phone number must be 10 digits" : "Required for delivery updates"}
                 error={formData.phone.length > 0 && formData.phone.length !== 10}
+                required
               />
             </Grid>
           </Grid>
+          <div className="required-note" style={{ fontSize: '12px', color: '#666', marginTop: '8px' }}>
+            * Required fields
+          </div>
+          {!isAuthenticated && (
+            <div className="guest-info-note" style={{ 
+              fontSize: '12px', 
+              color: '#2e7d32',
+              backgroundColor: '#f1f8e9',
+              padding: '8px',
+              borderRadius: '4px',
+              marginTop: '8px'
+            }}>
+              ℹ️ Your address will be saved locally for this session.
+            </div>
+          )}
         </DialogContent>
         <DialogActions sx={{ px: 3, pb: 2 }}>
           <Button
@@ -935,9 +937,18 @@ const AddToCart = () => {
             color="primary"
             variant="contained"
             sx={{ fontWeight: 600 }}
-            disabled={loading || !formData.flat || !formData.landmark || !formData.city || !formData.state || formData.phone.length !== 10}
+            disabled={
+              loading || 
+              !formData.email || 
+              !isValidEmail(formData.email) ||
+              !formData.flat || 
+              !formData.landmark || 
+              !formData.city || 
+              !formData.state || 
+              formData.phone.length !== 10
+            }
           >
-            {loading ? 'Adding...' : 'Add Address'}
+            {loading ? 'Saving...' : isAuthenticated ? 'Add Address' : 'Save Address'}
           </Button>
           <Button
             onClick={() => setShowModal(false)}
@@ -953,654 +964,3 @@ const AddToCart = () => {
 };
 
 export default AddToCart;
-
-// // 2:
-// import React, { useEffect, useState } from 'react';
-// import { useSelector, useDispatch } from 'react-redux';
-// import { Trash2, ShoppingBag, ArrowLeft } from 'lucide-react';
-// import './addToCart.css';
-// import { Link, useNavigate } from 'react-router-dom';
-// import { toast } from 'react-toastify';
-// import { deleteProduct, updateData, clearProducts } from '../store/Action';
-// import API_URL from '../config';
-// import axiosInstance from './AxiosInstance';
-// import { Dialog, DialogTitle, DialogContent, DialogActions, TextField, Button, Grid, InputAdornment } from '@mui/material';
-// import JoinUrl from '../JoinUrl';
-
-// const AddToCart = () => {
-//   const [isAuthenticated, setIsAuthenticated] = useState(null);
-//   const [showModal, setShowModal] = useState(false);
-//   const [addresses, setAddresses] = useState([]);
-//   const [OriginalAddress, setOriginalAddress] = useState({});
-//   const [loading, setLoading] = useState(false);
-//   const [states, setStates] = useState([]);
-//   const [cities, setCities] = useState([]);
-//   const [formData, setFormData] = useState({
-//     flat: '',
-//     landmark: '',
-//     state: '',
-//     city: '',
-//     country: 'India',
-//     phone: '',
-//     selectedAddress: ''
-//   });
-
-//   const userData = JSON.parse(localStorage.getItem('userData') || '{}');
-//   const cartItems = useSelector((state) => state.app.data);
-//   const dispatch = useDispatch();
-//   const navigate = useNavigate();
-
-//   useEffect(() => {
-//     const userData = localStorage.getItem('userData');
-//     if (userData) {
-//       setIsAuthenticated(true);
-//     } else {
-//       navigate('/login');
-//       return;
-//     }
-//   }, [navigate]);
-
-//   const totalPrice = cartItems.reduce((acc, item) => {
-//     const price = parseFloat(item.final_price || 0);
-//     return acc + price * (item.quantity || 1);
-//   }, 0);
-
-//   const handleQuantityChange = (itemId, newQuantity) => {
-//     if (newQuantity < 1) return;
-//     const updatedItem = cartItems.find((item) => item._id === itemId);
-//     if (updatedItem) {
-//       const updatedProduct = { ...updatedItem, quantity: newQuantity };
-//       dispatch(updateData(updatedProduct));
-//       toast.success('Item quantity updated!', { position: 'top-right', autoClose: 2000 });
-//     }
-//   };
-
-//   const handleRemoveItem = (itemId) => {
-//     dispatch(deleteProduct(itemId));
-//     toast.info('Item removed from cart.', { position: 'top-right', autoClose: 2000 });
-//   };
-
-//   const handleAddAddress = async () => {
-//     const userData = JSON.parse(localStorage.getItem('userData'));
-//     const userId = userData?._id;
-
-//     if (!userId) {
-//       toast.error("Please login first");
-//       return;
-//     }
-
-//     if (!formData.flat || !formData.landmark || !formData.city || !formData.state || !formData.phone) {
-//       toast.error("Please fill all address fields");
-//       return;
-//     }
-
-//     if (formData.phone.length !== 10) {
-//       toast.error("Please enter a valid 10-digit phone number");
-//       return;
-//     }
-
-//     setLoading(true);
-//     const phoneWithCountry = `+91${formData.phone}`;
-//     const fullAddress = `${formData.flat}, ${formData.landmark}, ${formData.city}, ${formData.state}, ${formData.country}`;
-
-//     try {
-//       const response = await axiosInstance.put(`admin/updateAdmin/${userId}`, {
-//         address: [...addresses, fullAddress],
-//         phone: phoneWithCountry,
-//       });
-
-//       if (response.status === 200) {
-//         toast.success("Address added successfully");
-//         setAddresses((prev) => [...prev, fullAddress]);
-//         setFormData({
-//           ...formData,
-//           selectedAddress: fullAddress,
-//           flat: '',
-//           landmark: '',
-//           state: '',
-//           city: '',
-//           phone: ''
-//         });
-//         setShowModal(false);
-//       }
-//     } catch (error) {
-//       toast.error("Failed to update address");
-//       console.error("Address update error:", error);
-//     }
-//     setLoading(false);
-//   };
-
-//   useEffect(() => {
-//     const fetchStates = async () => {
-//       try {
-//         const res = await axiosInstance.post('https://countriesnow.space/api/v0.1/countries/states', {
-//           country: 'India'
-//         });
-//         setStates(res.data.data.states.map(s => s.name));
-//       } catch (err) {
-//         console.error('Error fetching states', err);
-//       }
-//     };
-//     fetchStates();
-//   }, []);
-
-//   useEffect(() => {
-//     if (!formData.state) return;
-
-//     const fetchCities = async () => {
-//       try {
-//         const res = await axiosInstance.post('https://countriesnow.space/api/v0.1/countries/state/cities', {
-//           country: 'India',
-//           state: formData.state
-//         });
-//         setCities(res.data.data);
-//       } catch (err) {
-//         console.error('Error fetching cities', err);
-//       }
-//     };
-//     fetchCities();
-//   }, [formData.state]);
-
-//   const handleCheckout = async () => {
-//     // Validation checks
-//     if (!formData.selectedAddress) {
-//       toast.warn('Please select an address before checkout.');
-//       return;
-//     }
-
-//     if (!userData || !userData._id || !userData.email) {
-//       toast.error('Please log in again to continue');
-//       navigate('/login');
-//       return;
-//     }
-
-//     if (!cartItems || cartItems.length === 0) {
-//       toast.error('Your cart is empty');
-//       return;
-//     }
-
-//     // Get phone number - prioritize form data, then original address
-//     const phoneNumber = formData.phone ? `+91${formData.phone}` : OriginalAddress?.phone || "";
-
-//     if (!phoneNumber) {
-//       toast.error('Phone number is required for checkout');
-//       return;
-//     }
-
-//     try {
-//       // Prepare order payload with detailed validation
-//       const orderPayload = {
-//         userId: userData._id,
-//         items: cartItems.map((item, index) => {
-//           const qty = item.quantity || 1;
-//           const price = parseFloat(item.final_price || 0);
-
-//           if (!item._id || !item.name || qty < 1 || price <= 0) {
-//             throw new Error(`Invalid item data for: ${item.name || 'Unknown item'}`);
-//           }
-
-//           return {
-//             productId: item._id,
-//             name: item.name.trim(),
-//             quantity: parseInt(qty),
-//             price: parseFloat(price)
-//           };
-//         }),
-//         address: formData.selectedAddress.trim(),
-//         phone: phoneNumber.replace('+91', '').trim(),
-//         totalAmount: parseFloat(totalPrice)
-//       };
-
-//       console.log("Final Order Payload:", orderPayload);
-
-//       // Validate total amount
-//       const calculatedTotal = orderPayload.items.reduce((sum, item) => sum + (item.price * item.quantity), 0);
-//       if (Math.abs(calculatedTotal - orderPayload.totalAmount) > 0.01) {
-//         throw new Error(`Total amount mismatch. Expected: ${calculatedTotal}, Got: ${orderPayload.totalAmount}`);
-//       }
-
-//       // Create order in backend first
-//       console.log("Creating order in backend...");
-//       const orderResponse = await axiosInstance.post('/api/createOrder', orderPayload);
-
-//       console.log("Order response:", orderResponse.data);
-
-//       const { orderId, razorpayOrderId, message } = orderResponse.data || {};
-
-//       if (orderResponse.status !== 201 || !orderId || !razorpayOrderId) {
-//         toast.error(`Failed to create order${message ? `: ${message}` : ''}`);
-//         return;
-//       }
-
-//       // success path
-//       toast.success(message || 'Order created');
-
-//       console.log("Order created successfully:", { orderId, razorpayOrderId });
-
-//       // Initialize Razorpay payment
-//       const razorpayOptions = {
-//         key: 'rzp_live_hgk55iUzVRpKZ1',
-//         amount: Math.round(orderPayload.totalAmount * 100), // Amount in paise
-//         currency: 'INR',
-//         name: 'BSK Healthcare',
-//         description: `Order #${orderId.slice(-8)}`,
-//         order_id: razorpayOrderId,
-
-//         handler: async function (response) {
-//           console.log("Payment response:", response);
-
-//           try {
-//             toast.success('Payment successful! Order placed.');
-
-//             // Clear cart and redirect
-//             dispatch(clearProducts());
-//             localStorage.setItem('lastOrderId', orderId);
-//             navigate('/success');
-
-//           } catch (err) {
-//             console.error('Post-payment processing error:', err);
-//             toast.error('Payment successful but there was an issue. Please contact support.');
-//             navigate('/success');
-//           }
-//         },
-
-//         modal: {
-//           ondismiss: function () {
-//             toast.info('Payment cancelled');
-//           }
-//         },
-
-//         prefill: {
-//           name: userData.name || '',
-//           email: userData.email || '', // This ensures email shows in Razorpay dashboard
-//           contact: phoneNumber.replace('+91', '') // Remove +91 for prefill
-//         },
-
-//         notes: {
-//           address: formData.selectedAddress,
-//           orderId: orderId,
-//           userId: userData._id,
-//           userEmail: userData.email
-//         },
-
-//         theme: {
-//           color: '#3399cc'
-//         },
-
-//         method: {
-//           netbanking: true,
-//           card: true,
-//           upi: true,
-//           wallet: true,
-//           emi: false
-//         }
-//       };
-
-//       console.log("Initializing Razorpay with options:", {
-//         ...razorpayOptions,
-//         handler: '[Function]'
-//       });
-
-//       // Create Razorpay instance and handle failures
-//       const razorpayInstance = new window.Razorpay(razorpayOptions);
-
-//       razorpayInstance.on('payment.failed', function (response) {
-//         console.log("=== PAYMENT FAILED ===");
-//         console.log("Failed payment response:", response);
-
-//         const errorMsg = response.error?.description || response.error?.reason || 'Payment failed';
-//         toast.error(`Payment failed: ${errorMsg}`);
-//       });
-
-//       // Open payment modal
-//       razorpayInstance.open();
-
-//     } catch (error) {
-//       console.error('Checkout Error details:', {
-//         message: error.message,
-//         response: error.response?.data,
-//         status: error.response?.status
-//       });
-
-//       let errorMessage = 'Failed to initiate checkout. Please try again.';
-
-//       if (error.response?.data?.message) {
-//         errorMessage = error.response.data.message;
-//       } else if (error.message) {
-//         errorMessage = error.message;
-//       }
-
-//       toast.error(errorMessage);
-//     }
-//   };
-
-//   const fetchData = async () => {
-//     const userData = JSON.parse(localStorage.getItem('userData'));
-//     const userId = userData?._id;
-
-//     if (!userId) {
-//       console.error("User ID not found.");
-//       return;
-//     }
-
-//     try {
-//       const response = await axiosInstance.get(`/admin/readAdmin/${userId}`);
-//       const userInfo = response?.data?.data;
-
-//       console.log("✅ Fetched user info:", userInfo);
-//       setOriginalAddress(userInfo || {});
-
-//       if (Array.isArray(userInfo?.address)) {
-//         setAddresses(userInfo.address);
-//         // Auto-select first address if available
-//         if (userInfo.address.length > 0 && !formData.selectedAddress) {
-//           setFormData(prev => ({ ...prev, selectedAddress: userInfo.address[0] }));
-//         }
-//       } else {
-//         setAddresses([]);
-//       }
-//     } catch (error) {
-//       console.error("Error fetching address:", error);
-//     }
-//   };
-
-//   useEffect(() => {
-//     if (isAuthenticated) {
-//       fetchData();
-//     }
-//   }, [isAuthenticated]);
-
-//   if (isAuthenticated === null) return null;
-
-//   return (
-//     <>
-//       <div className="cart-container">
-//         <div className="cart-header">
-//           <div className="container">
-//             <button className="back-button" onClick={() => navigate(-1)}>
-//               <ArrowLeft size={20} /> Continue Shopping
-//             </button>
-//             <h1 className="cart-title">
-//               <ShoppingBag size={28} /> Shopping Cart
-//             </h1>
-//           </div>
-//         </div>
-
-//         <div className="container">
-//           <div className="cart-content">
-//             <div className="cart-items-section">
-//               <div className="section-header">
-//                 <h2>Your Items ({cartItems.length})</h2>
-//                 {cartItems.length > 0 && (
-//                   <button
-//                     className="clear-cart-btn"
-//                     onClick={() => {
-//                       dispatch(clearProducts());
-//                       toast.info('Cart cleared.', {
-//                         position: 'top-right',
-//                         autoClose: 2000,
-//                       });
-//                     }}
-//                   >
-//                     Clear Cart
-//                   </button>
-//                 )}
-//               </div>
-
-//               {cartItems.length === 0 ? (
-//                 <div className="empty-cart">
-//                   <div className="empty-cart-icon">
-//                     <ShoppingBag size={64} />
-//                   </div>
-//                   <h3>Your cart is empty</h3>
-//                   <p>Add some items to get started</p>
-//                   <button onClick={() => navigate("/fever")} className="continue-shopping-btn">Start Shopping</button>
-//                 </div>
-//               ) : (
-//                 <div className="cart-items">
-//                   {cartItems.map((item) => (
-//                     <div key={item._id} className="cart-item">
-//                       <Link to={`/ProductPage/${item._id}`} className="item-image">
-//                         <img src={JoinUrl(API_URL, item.media[0]?.url)} alt={item.name} />
-//                       </Link>
-
-//                       <div className="item-details">
-//                         <h3 className="item-name">{item.name}</h3>
-//                         <p className="item-description">{item.quantity} Pack</p>
-
-//                         <div className="item-pricing">
-//                           <span className="current-price">
-//                             ₹{parseFloat(item.final_price || 0).toFixed(2)}
-//                           </span>
-//                           <span className="discount">
-//                             {Math.round((item.discount))}% OFF
-//                           </span>
-//                         </div>
-//                       </div>
-
-//                       <div className="item-actions">
-//                         <div className="quantity-controls">
-//                           <button
-//                             className="quantity-btn"
-//                             onClick={() => handleQuantityChange(item._id, (item.quantity || 1) - 1)}
-//                             disabled={(item.quantity || 1) <= 1}
-//                           >
-//                             <span>-</span>
-//                           </button>
-//                           <span className="quantity">{item.quantity || 1}</span>
-//                           <button
-//                             className="quantity-btn"
-//                             onClick={() => handleQuantityChange(item._id, (item.quantity || 1) + 1)}
-//                           >
-//                             <span>+</span>
-//                           </button>
-//                         </div>
-//                         <button className="remove-btn" onClick={() => handleRemoveItem(item._id)}>
-//                           <Trash2 size={18} />
-//                         </button>
-//                       </div>
-//                     </div>
-//                   ))}
-//                 </div>
-//               )}
-//             </div>
-
-//             {cartItems.length > 0 && (
-//               <div className="order-summary">
-//                 <div className="summary-card">
-//                   <h3 className="summary-title">Order Summary</h3>
-
-//                   <button
-//                     className="enhanced-add-address-btn"
-//                     onClick={() => setShowModal(true)}
-//                   >
-//                     ➕ Add New Address
-//                   </button>
-
-//                   <div className='my_10'>
-//                     {addresses.length > 0 ? (
-//                       <div className="saved-addresses">
-//                         <h4 className="section-subtitle">📍 Saved Addresses</h4>
-//                         <ul className="address-list">
-//                           {addresses.map((addr, index) => (
-//                             <li key={index} className={`address-card ${formData.selectedAddress === addr ? 'selected' : ''}`}>
-//                               <label>
-//                                 <input
-//                                   type="radio"
-//                                   name="selectedAddress"
-//                                   value={addr}
-//                                   checked={formData.selectedAddress === addr}
-//                                   onChange={() =>
-//                                     setFormData({ ...formData, selectedAddress: addr })
-//                                   }
-//                                 />
-//                                 <span className='text_20'>{addr}</span>
-//                               </label>
-//                             </li>
-//                           ))}
-//                         </ul>
-//                       </div>
-//                     ) : (
-//                       <p className="no-address-text">
-//                         No address saved yet. Please add one.
-//                       </p>
-//                     )}
-//                   </div>
-
-//                   <div className="summary-details">
-//                     <div className="summary-row">
-//                       <span>Subtotal ({cartItems.length} items)</span>
-//                       <span>₹{totalPrice.toFixed(2)}</span>
-//                     </div>
-//                     <div className="summary-row">
-//                       <span>Shipping</span>
-//                       <span className="free-shipping">FREE</span>
-//                     </div>
-//                     <div className="summary-row">
-//                       <span>Tax</span>
-//                       <span>₹0.00</span>
-//                     </div>
-//                     <div className="summary-row discount-row">
-//                       <span>Discount</span>
-//                       <span>-₹0.00</span>
-//                     </div>
-//                   </div>
-
-//                   <div className="summary-divider"></div>
-//                   <div className="summary-total">
-//                     <span>Total</span>
-//                     <span>₹{totalPrice.toFixed(2)}</span>
-//                   </div>
-
-//                   <button
-//                     className="checkout-btn"
-//                     onClick={handleCheckout}
-//                     disabled={!formData.selectedAddress}
-//                   >
-//                     Proceed to Checkout
-//                     <ArrowLeft size={18} style={{ transform: 'rotate(180deg)' }} />
-//                   </button>
-
-//                   <div className="security-badges">
-//                     <div className="badge">🔒 Secure Checkout</div>
-//                   </div>
-//                 </div>
-//               </div>
-//             )}
-//           </div>
-//         </div>
-//       </div>
-
-//       <Dialog
-//         open={showModal}
-//         onClose={() => setShowModal(false)}
-//         fullWidth
-//         maxWidth="sm"
-//       >
-//         <DialogTitle sx={{ fontWeight: 'bold' }}>Add New Address</DialogTitle>
-//         <DialogContent sx={{ pt: 2, display: 'flex', flexDirection: 'column', gap: 2 }}>
-//           <Grid container spacing={2}>
-//             <Grid item xs={12} sm={6}>
-//               <TextField
-//                 label="Flat / House"
-//                 fullWidth
-//                 variant="outlined"
-//                 size="small"
-//                 value={formData.flat}
-//                 onChange={(e) => setFormData({ ...formData, flat: e.target.value })}
-//               />
-//             </Grid>
-//             <Grid item xs={12} sm={6}>
-//               <TextField
-//                 label="Landmark"
-//                 fullWidth
-//                 variant="outlined"
-//                 size="small"
-//                 value={formData.landmark}
-//                 onChange={(e) => setFormData({ ...formData, landmark: e.target.value })}
-//               />
-//             </Grid>
-
-//             <Grid item xs={12} sm={6}>
-//               <select
-//                 name="state"
-//                 value={formData.state}
-//                 onChange={(e) => setFormData({ ...formData, state: e.target.value, city: '' })}
-//                 style={{ width: '100%', padding: '8px', borderRadius: '4px', border: '1px solid #ccc' }}
-//               >
-//                 <option value="">Select State</option>
-//                 {states.map((state) => <option key={state} value={state}>{state}</option>)}
-//               </select>
-//             </Grid>
-
-//             <Grid item xs={12} sm={6}>
-//               <select
-//                 name="city"
-//                 value={formData.city}
-//                 onChange={(e) => setFormData({ ...formData, city: e.target.value })}
-//                 style={{ width: '100%', padding: '8px', borderRadius: '4px', border: '1px solid #ccc' }}
-//                 disabled={!formData.state}
-//               >
-//                 <option value="">Select City</option>
-//                 {cities.map((city) => <option key={city} value={city}>{city}</option>)}
-//               </select>
-//             </Grid>
-
-//             <Grid item xs={12} sm={6}>
-//               <TextField
-//                 label="Country"
-//                 fullWidth
-//                 variant="outlined"
-//                 size="small"
-//                 value="India"
-//                 disabled
-//               />
-//             </Grid>
-
-//             <Grid item xs={12} sm={6}>
-//               <TextField
-//                 label="Phone Number"
-//                 fullWidth
-//                 variant="outlined"
-//                 size="small"
-//                 name="phone"
-//                 value={formData.phone}
-//                 onChange={(e) => {
-//                   const value = e.target.value.replace(/\D/g, ''); // Only digits
-//                   if (value.length <= 10) {
-//                     setFormData({ ...formData, phone: value });
-//                   }
-//                 }}
-//                 InputProps={{
-//                   startAdornment: <InputAdornment position="start">+91</InputAdornment>,
-//                 }}
-//                 helperText={formData.phone.length > 0 && formData.phone.length !== 10 ? "Phone number must be 10 digits" : ""}
-//                 error={formData.phone.length > 0 && formData.phone.length !== 10}
-//               />
-//             </Grid>
-//           </Grid>
-//         </DialogContent>
-//         <DialogActions sx={{ px: 3, pb: 2 }}>
-//           <Button
-//             onClick={handleAddAddress}
-//             color="primary"
-//             variant="contained"
-//             sx={{ fontWeight: 600 }}
-//             disabled={loading || !formData.flat || !formData.landmark || !formData.city || !formData.state || formData.phone.length !== 10}
-//           >
-//             {loading ? 'Adding...' : 'Add Address'}
-//           </Button>
-//           <Button
-//             onClick={() => setShowModal(false)}
-//             color="secondary"
-//             variant="outlined"
-//           >
-//             Cancel
-//           </Button>
-//         </DialogActions>
-//       </Dialog>
-//     </>
-//   );
-// };
-
-// export default AddToCart;

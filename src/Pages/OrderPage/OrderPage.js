@@ -121,8 +121,8 @@ const getProductId = (item) => {
   
   return null;
 };
-// --- Add these below state declarations and above return() ---
 
+// --- Add these below state declarations and above return() ---
 const handleCancelOrder = () => {
   console.log("Cancel order clicked");
   // TODO: Add cancel order API logic
@@ -177,11 +177,11 @@ const OrderPage = () => {
   const [showModal, setShowModal] = useState(false);
   const navigate = useNavigate();
   const userData = JSON.parse(localStorage.getItem('userData') || '{}');
-  const userId = userData?._id;
+  const userEmail = userData?.email; // ✅ Email लें
 
-  // Authentication check
+  // Authentication check - email से check करें
   useEffect(() => {
-    if (!userData._id) {
+    if (!userData.email) {
       navigate('/login');
     } else {
       setIsAuthenticated(true);
@@ -190,8 +190,8 @@ const OrderPage = () => {
 
   // Initial fetch and periodic updates
   useEffect(() => {
-    if (userId) {
-      fetchOrders();
+    if (userEmail) {
+      fetchOrdersByEmail();
 
       // Update every 30 seconds to check for payment/refund status changes
       const interval = setInterval(() => {
@@ -200,7 +200,7 @@ const OrderPage = () => {
 
       return () => clearInterval(interval);
     }
-  }, [userId]);
+  }, [userEmail]); // ✅ userEmail dependency
 
   const fetchLivePaymentStatus = async (orderId) => {
     try {
@@ -222,12 +222,17 @@ const OrderPage = () => {
     }
   };
 
-  const fetchOrders = async () => {
+  // ✅ NEW: Email से orders fetch करने का function
+  const fetchOrdersByEmail = async () => {
     setLoading(true);
     try {
-      const response = await axiosInstance.get(`/api/orders/${userId}`);
+      // ✅ Backend में email से orders fetch करने का endpoint call करें
+      const response = await axiosInstance.get(`/api/orders/by-email/${userEmail}`);
+      
+      const ordersData = response.data.orders || [];
+      
       const ordersWithLiveStatus = await Promise.all(
-        (response.data.orders || []).map(async (order) => {
+        ordersData.map(async (order) => {
           // Fetch live payment status
           const paymentInfo = await fetchLivePaymentStatus(order._id);
 
@@ -243,7 +248,27 @@ const OrderPage = () => {
       );
       setOrders(ordersWithLiveStatus);
     } catch (error) {
-      console.error('Error fetching orders:', error);
+      console.error('Error fetching orders by email:', error);
+      // Fallback: अगर email-based API fail हो तो user ID से try करें
+      if (userData._id) {
+        try {
+          const fallbackResponse = await axiosInstance.get(`/api/orders/${userData._id}`);
+          const ordersWithLiveStatus = await Promise.all(
+            (fallbackResponse.data.orders || []).map(async (order) => {
+              const paymentInfo = await fetchLivePaymentStatus(order._id);
+              const refundInfo = await fetchRefundStatus(order._id);
+              return {
+                ...order,
+                paymentInfo: paymentInfo || order.paymentInfo,
+                refundInfo: refundInfo || order.refundInfo || { status: 'none' }
+              };
+            })
+          );
+          setOrders(ordersWithLiveStatus);
+        } catch (fallbackError) {
+          console.error('Fallback fetch also failed:', fallbackError);
+        }
+      }
     } finally {
       setLoading(false);
     }
@@ -251,15 +276,14 @@ const OrderPage = () => {
 
   const fetchOrdersSilently = async () => {
     try {
-      const response = await axiosInstance.get(`/api/orders/${userId}`);
+      // Same as fetchOrdersByEmail but without loading state
+      const response = await axiosInstance.get(`/api/orders/by-email/${userEmail}`);
+      const ordersData = response.data.orders || [];
+      
       const ordersWithLiveStatus = await Promise.all(
-        (response.data.orders || []).map(async (order) => {
-          // Fetch live payment status
+        ordersData.map(async (order) => {
           const paymentInfo = await fetchLivePaymentStatus(order._id);
-
-          // Fetch live refund status for all orders
           const refundInfo = await fetchRefundStatus(order._id);
-
           return {
             ...order,
             paymentInfo: paymentInfo || order.paymentInfo,
@@ -347,6 +371,7 @@ const OrderPage = () => {
             <div className="order-card">
               <div className="order-header">
                 <h2>My Orders</h2>
+                <p className="user-email-display">Email: {userEmail}</p>
               </div>
 
               {loading ? (
@@ -375,69 +400,69 @@ const OrderPage = () => {
                             <td>{index + 1}</td>
                             <td>{order._id.slice(-8)}</td>
                             <td>
-  <div className="product-names-container">
-    {order.items && Array.isArray(order.items) && order.items.length > 0
-      ? order.items.map((item, idx) => {
-          const productName = getProductName(item);
-          const productId = getProductId(item);
-          const quantity = item.quantity || 1;
-          const variant = item.variant || item.sku || null;
-          
-          return (
-            <div key={`${productId || idx}-${idx}`} className="product-name-item">
-              <div className="product-info-tooltip">
-                <span 
-                  className="clickable-product-name"
-                  onClick={() => productId && handleProductClick(item)}
-                  style={{ 
-                    cursor: productId ? 'pointer' : 'default',
-                    textDecoration: 'none'
-                  }}
-                >
-                  {productName}
-                  {quantity > 1 && (
-                    <span className="product-quantity" title={`Quantity: ${quantity}`}>
-                      ×{quantity}
-                    </span>
-                  )}
-                </span>
-                {variant && (
-                  <span className="tooltip-text">
-                    {productName}
-                    <br />
-                    <strong>Variant:</strong> {variant}
-                    <br />
-                    <strong>Qty:</strong> {quantity}
-                    {item.price && (
-                      <>
-                        <br />
-                        <strong>Price:</strong> ₹{item.price}
-                      </>
-                    )}
-                  </span>
-                )}
-              </div>
-              
-              {variant && !variant.includes(productName) && (
-                <span className="product-badge" title={`Variant: ${variant}`}>
-                  {variant.length > 12 ? variant.substring(0, 12) + '...' : variant}
-                </span>
-              )}
-              
-              {idx < order.items.length - 1 && (
-                <span className="product-separator">, </span>
-              )}
-            </div>
-          );
-        })
-      : (
-        <div className="no-items-text">
-          <span className="text-muted">No items</span>
-        </div>
-      )
-    }
-  </div>
-</td>
+                              <div className="product-names-container">
+                                {order.items && Array.isArray(order.items) && order.items.length > 0
+                                  ? order.items.map((item, idx) => {
+                                      const productName = getProductName(item);
+                                      const productId = getProductId(item);
+                                      const quantity = item.quantity || 1;
+                                      const variant = item.variant || item.sku || null;
+                                      
+                                      return (
+                                        <div key={`${productId || idx}-${idx}`} className="product-name-item">
+                                          <div className="product-info-tooltip">
+                                            <span 
+                                              className="clickable-product-name"
+                                              onClick={() => productId && handleProductClick(item)}
+                                              style={{ 
+                                                cursor: productId ? 'pointer' : 'default',
+                                                textDecoration: 'none'
+                                              }}
+                                            >
+                                              {productName}
+                                              {quantity > 1 && (
+                                                <span className="product-quantity" title={`Quantity: ${quantity}`}>
+                                                  ×{quantity}
+                                                </span>
+                                              )}
+                                            </span>
+                                            {variant && (
+                                              <span className="tooltip-text">
+                                                {productName}
+                                                <br />
+                                                <strong>Variant:</strong> {variant}
+                                                <br />
+                                                <strong>Qty:</strong> {quantity}
+                                                {item.price && (
+                                                  <>
+                                                    <br />
+                                                    <strong>Price:</strong> ₹{item.price}
+                                                  </>
+                                                )}
+                                              </span>
+                                            )}
+                                          </div>
+                                          
+                                          {variant && !variant.includes(productName) && (
+                                            <span className="product-badge" title={`Variant: ${variant}`}>
+                                              {variant.length > 12 ? variant.substring(0, 12) + '...' : variant}
+                                            </span>
+                                          )}
+                                          
+                                          {idx < order.items.length - 1 && (
+                                            <span className="product-separator">, </span>
+                                          )}
+                                        </div>
+                                      );
+                                    })
+                                  : (
+                                    <div className="no-items-text">
+                                      <span className="text-muted">No items</span>
+                                    </div>
+                                  )
+                                }
+                              </div>
+                            </td>
                             <td>
                               {order.items && Array.isArray(order.items) && order.items.length > 0 && (
                                 <div 
@@ -525,7 +550,7 @@ const OrderPage = () => {
       </div>
 
       {/* Order Details Modal */}
-{showModal && selectedOrder && (
+      {showModal && selectedOrder && (
         <div style={{
           position: 'fixed',
           top: 0,
@@ -557,6 +582,9 @@ const OrderPage = () => {
               <div>
                 <h3 style={{ margin: '0' }}>Order Details</h3>
                 <p style={{ margin: '5px 0 0 0', color: '#666' }}>Order #{selectedOrder._id.slice(-8)}</p>
+                <p style={{ margin: '5px 0 0 0', color: '#666', fontSize: '14px' }}>
+                  Email: {selectedOrder.email || selectedOrder.userEmail}
+                </p>
               </div>
               <button onClick={closeOrderDetails} style={{
                 background: 'none',
@@ -577,6 +605,7 @@ const OrderPage = () => {
                     <div>
                       <p><strong>Date:</strong> {formatDate(selectedOrder.createdAt)}</p>
                       <p><strong>Status:</strong> {selectedOrder.status}</p>
+                      <p><strong>Email:</strong> {selectedOrder.email || selectedOrder.userEmail}</p>
                       <p><strong>Total:</strong> ₹{selectedOrder.totalAmount}</p>
                     </div>
                   </div>
@@ -584,6 +613,7 @@ const OrderPage = () => {
                   <div style={{ background: '#f8f9fa', padding: '15px', borderRadius: '6px' }}>
                     <h4 style={{ margin: '0 0 10px 0' }}>Shipping Address</h4>
                     <p>{selectedOrder.address}</p>
+                    <p><strong>Phone:</strong> {selectedOrder.phone}</p>
                     {selectedOrder.deliveryInstructions && (
                       <p><strong>Instructions:</strong> {selectedOrder.deliveryInstructions}</p>
                     )}

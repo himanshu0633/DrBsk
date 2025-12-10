@@ -104,9 +104,7 @@ const OrderSuccessModal = ({ clearProducts }) => {
                 Thank you for your order. We'll send you a confirmation email
                 shortly.
               </Typography>
-              <Typography variant="body1" sx={{ mb: 4 }}>
-                Transaction ID: <strong>{data?.payment_id}</strong>
-              </Typography>
+             
               <Button
                 variant="contained"
                 color="primary"
