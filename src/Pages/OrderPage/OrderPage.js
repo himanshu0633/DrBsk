@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useCallback } from 'react';
 import './OrderPage.css';
 import Header from '../../components/Header/Header';
 import Footer from '../../components/Footer/Footer';
@@ -122,53 +122,6 @@ const getProductId = (item) => {
   return null;
 };
 
-// --- Add these below state declarations and above return() ---
-const handleCancelOrder = () => {
-  console.log("Cancel order clicked");
-  // TODO: Add cancel order API logic
-};
-
-const handleShareOrder = () => {
-  console.log("Share order clicked");
-  navigator.share
-    ? navigator.share({
-        title: "Order Details",
-        text: "Check my order details",
-        url: window.location.href
-      })
-    : alert("Share not supported on this device");
-};
-
-const getPaymentMethodIcon = (method) => {
-  switch (method?.toLowerCase()) {
-    case 'upi':
-      return '📱';
-    case 'card':
-      return '💳';
-    case 'netbanking':
-      return '🏦';
-    case 'wallet':
-      return '👛';
-    default:
-      return '💰';
-  }
-};
-
-const handleSupportRequest = () => {
-  console.log("Support request clicked");
-  alert("Our support team will contact you soon.");
-};
-
-const handleExportOrder = () => {
-  console.log("Export clicked");
-  window.print(); // temporary export
-};
-
-const handleAddNote = () => {
-  console.log("Add note clicked");
-  alert("Note feature coming soon.");
-};
-
 const OrderPage = () => {
   const [orders, setOrders] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -177,15 +130,181 @@ const OrderPage = () => {
   const [showModal, setShowModal] = useState(false);
   const navigate = useNavigate();
   const userData = JSON.parse(localStorage.getItem('userData') || '{}');
-  const userEmail = userData?.email; // ✅ Email लें
+  const userEmail = userData?.email;
 
-  // Authentication check - email से check करें
-  useEffect(() => {
-    if (!userData.email) {
-      navigate('/login');
-    } else {
-      setIsAuthenticated(true);
+  const fetchLivePaymentStatus = useCallback(async (orderId) => {
+    try {
+      const response = await axiosInstance.get(`/api/paymentStatus/${orderId}`);
+      return response.data.paymentInfo;
+    } catch (error) {
+      console.error('Error fetching payment status:', error);
+      return null;
     }
+  }, []);
+
+  const fetchRefundStatus = useCallback(async (orderId) => {
+    try {
+      const response = await axiosInstance.get(`/api/orders/${orderId}/refund-status`);
+      return response.data.refundInfo;
+    } catch (error) {
+      console.error('Error fetching refund status:', error);
+      return null;
+    }
+  }, []);
+
+  // ✅ NEW: Guest orders को link करने का function
+  const linkGuestOrders = useCallback(async () => {
+    if (!userData.email || !userData._id) return;
+
+    try {
+      const response = await axiosInstance.post('/api/orders/link-guest-orders', {
+        email: userData.email,
+        userId: userData._id
+      });
+      
+      if (response.data.linkedCount > 0) {
+        console.log(`✅ Linked ${response.data.linkedCount} guest orders for ${userData.email}`);
+        // Refresh orders list after linking
+        fetchOrdersByEmail();
+      }
+    } catch (error) {
+      console.error('Error linking guest orders:', error);
+    }
+  }, [userData.email, userData._id]);
+
+  // ✅ NEW: Email से orders fetch करने का function - UPDATED
+  const fetchOrdersByEmail = useCallback(async () => {
+    setLoading(true);
+    try {
+      // ✅ सबसे पहले guest orders link करें
+      await linkGuestOrders();
+
+      // ✅ पहले user ID से try करें (logged-in user के लिए)
+      if (userData._id) {
+        try {
+          const response = await axiosInstance.get(`/api/orders/user/${userData._id}`);
+          if (response.data.orders && response.data.orders.length > 0) {
+            const ordersWithLiveStatus = await Promise.all(
+              response.data.orders.map(async (order) => {
+                const paymentInfo = await fetchLivePaymentStatus(order._id);
+                const refundInfo = await fetchRefundStatus(order._id);
+                return {
+                  ...order,
+                  paymentInfo: paymentInfo || order.paymentInfo,
+                  refundInfo: refundInfo || order.refundInfo || { status: 'none' }
+                };
+              })
+            );
+            
+            // Sort by date (newest first)
+            const sortedOrders = ordersWithLiveStatus.sort((a, b) => 
+              new Date(b.createdAt) - new Date(a.createdAt)
+            );
+            
+            setOrders(sortedOrders);
+            setLoading(false);
+            return;
+          }
+        } catch (error) {
+          console.log('No orders found by userId, trying email...');
+        }
+      }
+
+      // ✅ Email से सभी orders fetch करें (guest + logged-in)
+      const response = await axiosInstance.get(`/api/orders/email/${userEmail}`);
+      
+      const ordersData = response.data.orders || [];
+      
+      // Filter करें: सिर्फ current user के orders
+      const userOrders = ordersData.filter(order => {
+        const orderEmail = order.email || order.userEmail;
+        return orderEmail && orderEmail.toLowerCase() === userEmail.toLowerCase();
+      });
+      
+      const ordersWithLiveStatus = await Promise.all(
+        userOrders.map(async (order) => {
+          const paymentInfo = await fetchLivePaymentStatus(order._id);
+          const refundInfo = await fetchRefundStatus(order._id);
+
+          return {
+            ...order,
+            paymentInfo: paymentInfo || order.paymentInfo,
+            refundInfo: refundInfo || order.refundInfo || { status: 'none' }
+          };
+        })
+      );
+      
+      // Sort by date (newest first)
+      const sortedOrders = ordersWithLiveStatus.sort((a, b) => 
+        new Date(b.createdAt) - new Date(a.createdAt)
+      );
+      
+      setOrders(sortedOrders);
+      
+    } catch (error) {
+      console.error('Error fetching orders:', error);
+      setOrders([]);
+    } finally {
+      setLoading(false);
+    }
+  }, [userData._id, userEmail, fetchLivePaymentStatus, fetchRefundStatus, linkGuestOrders]);
+
+  const fetchOrdersSilently = useCallback(async () => {
+    try {
+      const response = await axiosInstance.get(`/api/orders/by-email/${userEmail}`);
+      const ordersData = response.data.orders || [];
+      
+      const ordersWithLiveStatus = await Promise.all(
+        ordersData.map(async (order) => {
+          const paymentInfo = await fetchLivePaymentStatus(order._id);
+          const refundInfo = await fetchRefundStatus(order._id);
+          return {
+            ...order,
+            paymentInfo: paymentInfo || order.paymentInfo,
+            refundInfo: refundInfo || order.refundInfo || { status: 'none' }
+          };
+        })
+      );
+      
+      // Sort by date
+      const sortedOrders = ordersWithLiveStatus.sort((a, b) => 
+        new Date(b.createdAt) - new Date(a.createdAt)
+      );
+      
+      setOrders(sortedOrders);
+    } catch (error) {
+      console.error('Error fetching orders silently:', error);
+    }
+  }, [userEmail, fetchLivePaymentStatus, fetchRefundStatus]);
+
+  // Authentication check और guest orders link
+  useEffect(() => {
+    const checkAuthAndLinkOrders = async () => {
+      if (!userData.email) {
+        navigate('/login');
+        return;
+      }
+      
+      setIsAuthenticated(true);
+      
+      // ✅ Guest orders को link करें
+      if (userData._id) {
+        try {
+          const linkResponse = await axiosInstance.post('/api/orders/link-guest-orders', {
+            email: userData.email,
+            userId: userData._id
+          });
+          
+          if (linkResponse.data.linkedCount > 0) {
+            console.log(`✅ Auto-linked ${linkResponse.data.linkedCount} guest orders`);
+          }
+        } catch (error) {
+          console.error('Auto-linking guest orders failed:', error);
+        }
+      }
+    };
+
+    checkAuthAndLinkOrders();
   }, [navigate, userData]);
 
   // Initial fetch and periodic updates
@@ -200,102 +319,7 @@ const OrderPage = () => {
 
       return () => clearInterval(interval);
     }
-  }, [userEmail]); // ✅ userEmail dependency
-
-  const fetchLivePaymentStatus = async (orderId) => {
-    try {
-      const response = await axiosInstance.get(`/api/paymentStatus/${orderId}`);
-      return response.data.paymentInfo;
-    } catch (error) {
-      console.error('Error fetching payment status:', error);
-      return null;
-    }
-  };
-
-  const fetchRefundStatus = async (orderId) => {
-    try {
-      const response = await axiosInstance.get(`/api/orders/${orderId}/refund-status`);
-      return response.data.refundInfo;
-    } catch (error) {
-      console.error('Error fetching refund status:', error);
-      return null;
-    }
-  };
-
-  // ✅ NEW: Email से orders fetch करने का function
-  const fetchOrdersByEmail = async () => {
-    setLoading(true);
-    try {
-      // ✅ Backend में email से orders fetch करने का endpoint call करें
-      const response = await axiosInstance.get(`/api/orders/by-email/${userEmail}`);
-      
-      const ordersData = response.data.orders || [];
-      
-      const ordersWithLiveStatus = await Promise.all(
-        ordersData.map(async (order) => {
-          // Fetch live payment status
-          const paymentInfo = await fetchLivePaymentStatus(order._id);
-
-          // Fetch live refund status for all orders
-          const refundInfo = await fetchRefundStatus(order._id);
-
-          return {
-            ...order,
-            paymentInfo: paymentInfo || order.paymentInfo,
-            refundInfo: refundInfo || order.refundInfo || { status: 'none' }
-          };
-        })
-      );
-      setOrders(ordersWithLiveStatus);
-    } catch (error) {
-      console.error('Error fetching orders by email:', error);
-      // Fallback: अगर email-based API fail हो तो user ID से try करें
-      if (userData._id) {
-        try {
-          const fallbackResponse = await axiosInstance.get(`/api/orders/${userData._id}`);
-          const ordersWithLiveStatus = await Promise.all(
-            (fallbackResponse.data.orders || []).map(async (order) => {
-              const paymentInfo = await fetchLivePaymentStatus(order._id);
-              const refundInfo = await fetchRefundStatus(order._id);
-              return {
-                ...order,
-                paymentInfo: paymentInfo || order.paymentInfo,
-                refundInfo: refundInfo || order.refundInfo || { status: 'none' }
-              };
-            })
-          );
-          setOrders(ordersWithLiveStatus);
-        } catch (fallbackError) {
-          console.error('Fallback fetch also failed:', fallbackError);
-        }
-      }
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const fetchOrdersSilently = async () => {
-    try {
-      // Same as fetchOrdersByEmail but without loading state
-      const response = await axiosInstance.get(`/api/orders/by-email/${userEmail}`);
-      const ordersData = response.data.orders || [];
-      
-      const ordersWithLiveStatus = await Promise.all(
-        ordersData.map(async (order) => {
-          const paymentInfo = await fetchLivePaymentStatus(order._id);
-          const refundInfo = await fetchRefundStatus(order._id);
-          return {
-            ...order,
-            paymentInfo: paymentInfo || order.paymentInfo,
-            refundInfo: refundInfo || order.refundInfo || { status: 'none' }
-          };
-        })
-      );
-      setOrders(ordersWithLiveStatus);
-    } catch (error) {
-      console.error('Error fetching orders silently:', error);
-    }
-  };
+  }, [userEmail, fetchOrdersByEmail, fetchOrdersSilently]);
 
   const openOrderDetails = async (order) => {
     // Fetch the most recent data before showing modal
@@ -354,15 +378,27 @@ const OrderPage = () => {
               <p>Welcome to your account</p>
             </div>
             <nav className="sidebar-nav">
-              <a className="nav-item" onClick={() => navigate('/EditProfile')}>
+              <button 
+                className="nav-item" 
+                onClick={() => navigate('/EditProfile')}
+                style={{ background: 'none', border: 'none', width: '100%', textAlign: 'left' }}
+              >
                 My Profile
-              </a>
-              <a className="nav-item active" onClick={() => navigate('/OrderPage')}>
+              </button>
+              <button 
+                className="nav-item active" 
+                onClick={() => navigate('/OrderPage')}
+                style={{ background: 'none', border: 'none', width: '100%', textAlign: 'left' }}
+              >
                 My Orders
-              </a>
-              <a className="nav-item logout" onClick={handleLogout}>
+              </button>
+              <button 
+                className="nav-item logout" 
+                onClick={handleLogout}
+                style={{ background: 'none', border: 'none', width: '100%', textAlign: 'left' }}
+              >
                 Logout
-              </a>
+              </button>
             </nav>
           </aside>
 

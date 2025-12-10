@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useCallback } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
 import { Trash2, ShoppingBag, ArrowLeft, CheckCircle } from 'lucide-react';
 import './addToCart.css';
@@ -14,7 +14,6 @@ const AddToCart = () => {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [showModal, setShowModal] = useState(false);
   const [addresses, setAddresses] = useState([]);
-  const [OriginalAddress, setOriginalAddress] = useState({});
   const [loading, setLoading] = useState(false);
   const [states, setStates] = useState([]);
   const [cities, setCities] = useState([]);
@@ -36,11 +35,17 @@ const AddToCart = () => {
   const dispatch = useDispatch();
   const navigate = useNavigate();
 
+  // Email validation function
+  const isValidEmail = useCallback((email) => {
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    return emailRegex.test(email);
+  }, []);
+
   // Initialize form data from localStorage on component mount
   useEffect(() => {
     // Check authentication
-    const userData = localStorage.getItem('userData');
-    if (userData) {
+    const storedUserData = localStorage.getItem('userData');
+    if (storedUserData) {
       setIsAuthenticated(true);
     } else {
       setIsAuthenticated(false);
@@ -96,12 +101,6 @@ const AddToCart = () => {
     toast.info('Item removed from cart.', { position: 'top-right', autoClose: 2000 });
   };
 
-  // Email validation function
-  const isValidEmail = (email) => {
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    return emailRegex.test(email);
-  };
-
   // Handle email change - save to localStorage immediately
   const handleEmailChange = (e) => {
     const email = e.target.value;
@@ -128,15 +127,19 @@ const AddToCart = () => {
   };
 
   const handleAddAddress = async () => {
+    setLoading(true);
+    
     // Validate email
     if (formData.email && !isValidEmail(formData.email)) {
       toast.error("Please enter a valid email address");
+      setLoading(false);
       return;
     }
 
     // Validate phone
     if (!formData.phone || formData.phone.length !== 10) {
       toast.error("Please enter a valid 10-digit phone number");
+      setLoading(false);
       return;
     }
 
@@ -172,12 +175,13 @@ const AddToCart = () => {
       landmark: '',
       state: '',
       city: ''
-      // Keep email and phone as they are
     }));
     setShowModal(false);
+    setLoading(false);
     toast.success("Address saved successfully!");
   };
 
+  // Fetch states
   useEffect(() => {
     const fetchStates = async () => {
       try {
@@ -192,6 +196,7 @@ const AddToCart = () => {
     fetchStates();
   }, []);
 
+  // Fetch cities when state changes
   useEffect(() => {
     if (!formData.state) return;
 
@@ -224,6 +229,68 @@ const AddToCart = () => {
       document.body.appendChild(script);
     });
   };
+
+  const fetchData = useCallback(async () => {
+    // Guest user के लिए localStorage से data fetch करें
+    const guestAddresses = JSON.parse(localStorage.getItem('guestAddresses') || '[]');
+    const guestEmail = localStorage.getItem('guestEmail') || '';
+    const guestPhone = localStorage.getItem('guestPhone') || '';
+    
+    setAddresses(guestAddresses);
+    
+    // Auto-select first address if available
+    if (guestAddresses.length > 0 && !formData.selectedAddress) {
+      const firstAddress = guestAddresses[0];
+      const addressValue = typeof firstAddress === 'object' ? firstAddress.fullAddress : firstAddress;
+      const addressEmail = typeof firstAddress === 'object' ? firstAddress.email : guestEmail;
+      const addressPhone = typeof firstAddress === 'object' ? firstAddress.phone : guestPhone;
+      
+      setFormData(prev => ({ 
+        ...prev, 
+        selectedAddress: addressValue,
+        email: addressEmail || guestEmail || prev.email,
+        phone: addressPhone || guestPhone || prev.phone
+      }));
+    }
+    
+    // If user is authenticated, fetch their data too
+    if (isAuthenticated && userData?._id) {
+      try {
+        const response = await axiosInstance.get(`/admin/readAdmin/${userData._id}`);
+        const userInfo = response?.data?.data;
+
+        console.log("Fetched user info:", userInfo);
+
+        // Set email in form data
+        if (userInfo?.email) {
+          setFormData(prev => ({ ...prev, email: userInfo.email }));
+        }
+
+        if (Array.isArray(userInfo?.address)) {
+          // Merge guest addresses with user addresses
+          const mergedAddresses = [...guestAddresses, ...userInfo.address];
+          setAddresses(mergedAddresses);
+          if (mergedAddresses.length > 0 && !formData.selectedAddress) {
+            const firstAddr = mergedAddresses[0];
+            const addrValue = typeof firstAddr === 'object' ? firstAddr.fullAddress : firstAddr;
+            const addrEmail = typeof firstAddr === 'object' ? firstAddr.email : userInfo.email;
+            
+            setFormData(prev => ({ 
+              ...prev, 
+              selectedAddress: addrValue,
+              email: addrEmail || userInfo.email || prev.email
+            }));
+          }
+        }
+      } catch (error) {
+        console.error("Error fetching user address:", error);
+      }
+    }
+  }, [isAuthenticated, userData?._id, formData.selectedAddress]);
+
+  useEffect(() => {
+    fetchData();
+  }, [fetchData]);
 
   const handleCheckout = async () => {
     console.log("=== STARTING CHECKOUT PROCESS ===");
@@ -459,73 +526,6 @@ const AddToCart = () => {
       setPaymentProcessing(false);
     }
   };
-
-  const fetchData = async () => {
-    // Guest user के लिए localStorage से data fetch करें
-    const guestAddresses = JSON.parse(localStorage.getItem('guestAddresses') || '[]');
-    const guestEmail = localStorage.getItem('guestEmail') || '';
-    const guestPhone = localStorage.getItem('guestPhone') || '';
-    
-    setAddresses(guestAddresses);
-    setOriginalAddress({ 
-      phone: guestPhone,
-      email: guestEmail 
-    });
-    
-    // Auto-select first address if available
-    if (guestAddresses.length > 0 && !formData.selectedAddress) {
-      const firstAddress = guestAddresses[0];
-      const addressValue = typeof firstAddress === 'object' ? firstAddress.fullAddress : firstAddress;
-      const addressEmail = typeof firstAddress === 'object' ? firstAddress.email : guestEmail;
-      const addressPhone = typeof firstAddress === 'object' ? firstAddress.phone : guestPhone;
-      
-      setFormData(prev => ({ 
-        ...prev, 
-        selectedAddress: addressValue,
-        email: addressEmail || guestEmail || prev.email,
-        phone: addressPhone || guestPhone || prev.phone
-      }));
-    }
-    
-    // If user is authenticated, fetch their data too
-    if (isAuthenticated && userData?._id) {
-      try {
-        const response = await axiosInstance.get(`/admin/readAdmin/${userData._id}`);
-        const userInfo = response?.data?.data;
-
-        console.log("Fetched user info:", userInfo);
-        setOriginalAddress(userInfo || {});
-
-        // Set email in form data
-        if (userInfo?.email) {
-          setFormData(prev => ({ ...prev, email: userInfo.email }));
-        }
-
-        if (Array.isArray(userInfo?.address)) {
-          // Merge guest addresses with user addresses
-          const mergedAddresses = [...guestAddresses, ...userInfo.address];
-          setAddresses(mergedAddresses);
-          if (mergedAddresses.length > 0 && !formData.selectedAddress) {
-            const firstAddr = mergedAddresses[0];
-            const addrValue = typeof firstAddr === 'object' ? firstAddr.fullAddress : firstAddr;
-            const addrEmail = typeof firstAddr === 'object' ? firstAddr.email : userInfo.email;
-            
-            setFormData(prev => ({ 
-              ...prev, 
-              selectedAddress: addrValue,
-              email: addrEmail || userInfo.email || prev.email
-            }));
-          }
-        }
-      } catch (error) {
-        console.error("Error fetching user address:", error);
-      }
-    }
-  };
-
-  useEffect(() => {
-    fetchData();
-  }, [isAuthenticated]);
 
   // Login prompt message
   const renderLoginPrompt = () => {
@@ -963,4 +963,4 @@ const AddToCart = () => {
   );
 };
 
-export default AddToCart;
+export default AddToCart; 

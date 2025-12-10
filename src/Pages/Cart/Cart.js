@@ -16,7 +16,6 @@ const Cart = () => {
   const [showSignUp, setShowSignUp] = useState(false);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  // const [mobile, setMobile] = useState('');
   const [phone, setPhone] = useState('');
   const [otp, setOtp] = useState('');
   const [otpSent, setOtpSent] = useState(false);
@@ -27,15 +26,16 @@ const Cart = () => {
   const navigate = useNavigate();
 
   const togglePasswordVisibility = () => setShowPassword(!showPassword);
-  const toggleLoginMethod = () => {
-    setIsMobileLogin(!isMobileLogin);
-    setErrors({});
-    setOtpSent(false);
-    setLoginError(null);
-  };
+  
+  // Fixed: Commented out unused function
+  // const toggleLoginMethod = () => {
+  //   setIsMobileLogin(!isMobileLogin);
+  //   setErrors({});
+  //   setOtpSent(false);
+  //   setLoginError(null);
+  // };
 
   const validateEmail = (email) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
-  // const validateMobile = (mobile) => /^[0-9]{10}$/.test(mobile);
   const validatePhone = (phone) => /^[0-9]{10}$/.test(phone);
 
   const handleSendOtp = () => {
@@ -49,9 +49,7 @@ const Cart = () => {
       setIsLoading(false);
       toast.success(`OTP sent to +91${phone}`);
     }, 1500);
-
   };
-
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -62,7 +60,6 @@ const Cart = () => {
     const newErrors = {};
 
     if (isMobileLogin) {
-      // if (!validateMobile(mobile)) newErrors.mobile = 'Please enter a valid 10-digit mobile number';
       if (!validatePhone(phone)) newErrors.phone = 'Please enter a valid 10-digit mobile number';
       if (!otp) newErrors.otp = 'Please enter the OTP';
     } else {
@@ -83,11 +80,39 @@ const Cart = () => {
       });
 
       if (response.status === 200) {
-        // Store login data in session storage
+        // Store login data
         localStorage.setItem('authToken', response.data.token);
         localStorage.setItem('userData', JSON.stringify(response.data.data));
 
-        navigate('/homepage')
+        // ✅ CRITICAL: Link guest orders to this user
+        try {
+          const linkResponse = await axiosInstance.post('/api/link-guest-orders', {
+            email: email,
+            userId: response.data.data._id
+          }, {
+            headers: { 
+              Authorization: `Bearer ${response.data.token}` 
+            }
+          });
+          
+          if (linkResponse.data.success && linkResponse.data.linkedCount > 0) {
+            toast.success(`${linkResponse.data.linkedCount} previous guest orders linked to your account!`, {
+              position: 'top-right',
+              autoClose: 5000
+            });
+          }
+        } catch (linkError) {
+          console.log('Guest order linking failed:', linkError);
+          // Continue anyway - not critical
+        }
+
+        // ✅ Navigate to OrderPage instead of homepage
+        toast.success('Login successful!', {
+          position: 'top-right',
+          autoClose: 2000
+        });
+        
+        navigate('/OrderPage');
       }
     } catch (error) {
       console.error("Login error:", error);
@@ -157,7 +182,7 @@ const Cart = () => {
                     </>
                   ) : (
                     <>
-                      <div className={`davaindia-form-group ${errors.mobile ? 'error' : ''}`}>
+                      <div className={`davaindia-form-group ${errors.phone ? 'error' : ''}`}>
                         <label>Phone</label>
                         <input type="tel" value={phone} onChange={(e) => setPhone(e.target.value)} placeholder="Enter phone number" />
                         {errors.phone && <div className="davaindia-error-message">{errors.phone}</div>}
@@ -176,12 +201,8 @@ const Cart = () => {
                   )}
                 </form>
 
-                {/* <button type="button" onClick={toggleLoginMethod} className="davaindia-toggle-btn">
-                  {isMobileLogin ? 'Use email instead' : 'Use mobile instead'}
-                </button> */}
-
                 <div className="davaindia-form-footer">
-                  Don’t have an account?{' '}
+                  Don't have an account?{' '}
                   <button type="button" onClick={() => handleShowSignUp(false)} className="davaindia-link-button">
                     Sign up
                   </button>
@@ -191,7 +212,6 @@ const Cart = () => {
                   <button type="button" onClick={() => handleShowSignUp(true)} className="davaindia-link-button">
                     Sign up
                   </button>
-
                 </div>
               </>
             ) : (
