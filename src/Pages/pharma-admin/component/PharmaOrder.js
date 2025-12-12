@@ -190,7 +190,7 @@ const PharmaOrder = () => {
             : order
         )
       );
-      alert('Payment captured successfully!');
+      alert('Payment Paid successfully!');
       fetchData();
     } catch (error) {
       console.error("Failed to capture payment:", error);
