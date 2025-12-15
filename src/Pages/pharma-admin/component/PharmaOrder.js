@@ -279,10 +279,14 @@ const PharmaOrder = () => {
     });
   };
 
-  const getPaymentStatusLabel = (paymentInfo) => {
-    if (!paymentInfo || typeof paymentInfo !== 'object') return 'Unknown';
-    return safeString(paymentInfo.status, 'Unknown');
-  };
+const getPaymentStatusLabel = (paymentInfo) => {
+  if (!paymentInfo || typeof paymentInfo !== 'object') return 'Unknown';
+  
+  // Check if the payment status is 'captured' and return 'Paid' instead
+  const status = safeString(paymentInfo.status, 'Unknown');
+  return status === 'captured' ? 'Paid' : 'Unknown';
+};
+
 
   const getRefundStatusText = (refundInfo) => {
     if (!refundInfo || typeof refundInfo !== 'object') return 'No Refund';

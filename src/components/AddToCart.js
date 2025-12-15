@@ -411,7 +411,7 @@ const AddToCart = () => {
 
       // Configure Razorpay options
       const options = {
-        key: "rzp_live_RqbjPU4fGaUKDd", // Test Key
+        key: "rzp_test_RpQ1JwSJEy6yAw", // Test Key
         amount: razorpayOrder.amount,
         currency: razorpayOrder.currency,
         name: "Dr BSK",

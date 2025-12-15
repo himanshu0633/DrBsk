@@ -109,7 +109,7 @@ function App() {
         <Route path="/admin-login" element={<PharmaAdminLogin />} />
 
         <Route element={<ProtectedRoute />}>
-          <Route path="/pharma-admin" element={<PharmaAdmin />}>
+           <Route path="/pharma-admin" element={<PharmaAdmin />}>
             <Route path="dashboard" element={<PharmaDashboard />} />
             <Route path="category" element={<PharmaCategory />} />
             <Route path="subCategory" element={<PharmaSubCategory />} />
