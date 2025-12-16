@@ -31,7 +31,15 @@ const Landing = () => {
     window.addEventListener('scroll', handleScroll);
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
+useEffect(() => {
 
+  if (window.fbq) {
+
+    window.fbq("track", "PageView");
+
+  }
+
+}, []);
   useEffect(() => {
     const animateOnScroll = () => {
       const elements = document.querySelectorAll(

@@ -15,11 +15,13 @@ const OrderSuccessModal = ({ clearProducts }) => {
   const [showHurray, setShowHurray] = useState(false);
 
   useEffect(() => {
-    // Show "Hurray!!" and trigger confetti
-    // setShowHurray(true);
-    const duration = 2 * 1000; // 3 seconds
+    // Show "Hurray!!" message immediately
+    setShowHurray(true);
+    
+    const duration = 3000; // 3 seconds
     const end = Date.now() + duration;
 
+    // Confetti animation function
     (function frame() {
       confetti({
         particleCount: 7,
@@ -40,11 +42,19 @@ const OrderSuccessModal = ({ clearProducts }) => {
     })();
 
     // Hide "Hurray!!" after confetti finishes
-    // setTimeout(() => setShowHurray(false), duration);
+    setTimeout(() => setShowHurray(false), duration);
 
     // Show main content with delay
     setTimeout(() => setShowContent(true), duration + 500);
-  }, []);
+    
+    // ✅ Facebook Pixel – Purchase Event
+    if (window.fbq) {
+      window.fbq("track", "Purchase", {
+        value: data?.totalAmount || data?.amount || 1999,
+        currency: "INR",
+      });
+    }
+  }, [data?.totalAmount, data?.amount]);
 
   const handleClose = () => {
     setShowContent(false);
@@ -69,24 +79,33 @@ const OrderSuccessModal = ({ clearProducts }) => {
           zIndex: 9999,
         }}
       >
-        {/* {showHurray && (
+        {/* "Hurray!!" message during confetti */}
+        {showHurray && (
           <Typography
             variant="h2"
             component="div"
             sx={{
               position: "absolute",
               top: "50%",
+              left: "50%",
+              transform: "translate(-50%, -50%)",
               color: "gold",
               fontWeight: "bold",
               textShadow: "2px 2px 5px rgba(0,0,0,0.7)",
-            //   animation: "fadeInOut 3s",
+              animation: "fadeInOut 3s",
+              "@keyframes fadeInOut": {
+                "0%, 100%": { opacity: 0 },
+                "50%": { opacity: 1 }
+              }
             }}
           >
             Hurray!!
           </Typography>
-        )} */}
+        )}
+        
+        {/* Main success content */}
         {showContent && (
-          <Zoom in={showContent} timeout={50}>
+          <Zoom in={showContent} timeout={500}>
             <Box sx={{ textAlign: "center", color: "white" }}>
               <Grow in={showContent} timeout={500}>
                 <CheckCircleOutlineIcon
@@ -104,7 +123,9 @@ const OrderSuccessModal = ({ clearProducts }) => {
                 Thank you for your order. We'll send you a confirmation email
                 shortly.
               </Typography>
-             
+              <Typography variant="body1" sx={{ mb: 2 }}>
+                Order Amount: ₹{data?.totalAmount || data?.amount || "1999"}
+              </Typography>
               <Button
                 variant="contained"
                 color="primary"

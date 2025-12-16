@@ -66,6 +66,7 @@ import ShippingPolicy from "./Pages/footerLinksPages/ShippingPolicy";
 import ReturnsPolicy from "./Pages/footerLinksPages/ReturnsPolicy";
 import { MobileBottomNav } from "./components/MobileBottomNav";
 
+import FacebookPixel from "../src/Pages/FacebookPixel";
 
 function App() {
   //   useEffect(() => {
@@ -74,7 +75,10 @@ function App() {
 
   return (
     <>
+    <FacebookPixel />
+
       <Routes>
+
         <Route path="/" element={<Landing />} />
         <Route path="/homepage" element={<Dashboard />} />
         <Route path="/success" element={<OrderSuccessModal />} />

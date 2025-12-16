@@ -197,61 +197,101 @@ const ProductPage = () => {
     // Optionally reset units when switching variant
     // setUnits(1);
   };
+useEffect(() => {
+    if (!product || !product.id) return;
 
-  const handleAddToCart = () => {
-    if (!product) return;
-    const variant = product.quantity?.[selectedVariantIndex];
-    if (!variant) return;
-
-    // const cartItem = {
-    //   ...product,
-    //   selectedVariant: {
-    //     label: variant.label,
-    //     mrp: variant.mrp,
-    //     discount: variant.discount,
-    //     gst: variant.gst,
-    //     retail_price: variant.retail_price,
-    //     final_price: variant.final_price,
-    //     in_stock: variant.in_stock,
-    //   },
-    //   // keep top-level "quantity" name for your Redux if it expects units count
-    //   quantity: units,
-    //   // helpful derived values
-    //   unitPrice: variant.final_price,
-    //   totalPrice: variant.final_price != null ? variant.final_price * units : null,
-    // };
-
-    const cartItem = {
-      ...product,
-      selectedVariant: {
-        label: variant.label,
-        mrp: variant.mrp,
-        discount: variant.discount,
-        gst: variant.gst,
-        retail_price: variant.retail_price,
-        final_price: variant.final_price,
-        in_stock: variant.in_stock,
-      },
-      // ADD THESE LINES:
-      mrp: variant.mrp,                       // ensures cart page has access to mrp
-      discount: variant.discount,             // ensures cart page has discount
-      gst: variant.gst,                       // ensures cart page has gst
-      retail_price: variant.retail_price,     // ensures cart page has retail_price
-      final_price: variant.final_price,       // ensures cart page displays correct price
-      quantity: units,
-      unitPrice: variant.final_price,
-      totalPrice: variant.final_price != null ? variant.final_price * units : null,
-    };
+    if (window.fbq) {
+      window.fbq('track', 'ViewContent', {
+        content_ids: [product.id],
+        content_name: product.name,
+        content_type: 'product',
+        value:
+          product.quantity?.[selectedVariantIndex]?.final_price ||
+          product.retail_price ||
+          0,
+        currency: 'INR',
+      });
+    }
+  }, [product?.id]);
 
 
-    toast.success('Item added to cart!', {
-      position: 'top-right',
-      autoClose: 2000,
-    });
 
-    dispatch(addData(cartItem));
-    setAddedToCart(true);
+  
+  useEffect(() => {
+  if (!product) return;
+
+  const productId = product.id || product._id; // 🔥 important fix
+  if (!productId) return;
+
+  // 🔁 delay to ensure fbq is loaded
+  const timer = setTimeout(() => {
+    if (window.fbq) {
+      window.fbq("track", "ViewContent", {
+        content_ids: [productId],
+        content_name: product.name || "Product",
+        content_type: "product",
+        value:
+          product.quantity?.[selectedVariantIndex]?.final_price ||
+          product.retail_price ||
+          0,
+        currency: "INR",
+      });
+    }
+  }, 300);
+
+  return () => clearTimeout(timer);
+}, [product, selectedVariantIndex]);
+const handleAddToCart = () => {
+  if (!product) return;
+
+  const variant = product.quantity?.[selectedVariantIndex];
+  if (!variant) return;
+
+  const cartItem = {
+    ...product,
+    selectedVariant: {
+      label: variant.label,
+      mrp: variant.mrp,
+      discount: variant.discount,
+      gst: variant.gst,
+      retail_price: variant.retail_price,
+      final_price: variant.final_price,
+      in_stock: variant.in_stock,
+    },
+    mrp: variant.mrp,
+    discount: variant.discount,
+    gst: variant.gst,
+    retail_price: variant.retail_price,
+    final_price: variant.final_price,
+    quantity: units,
+    unitPrice: variant.final_price,
+    totalPrice:
+      variant.final_price != null
+        ? variant.final_price * units
+        : null,
   };
+
+  // ✅ Add to Cart Redux Action
+  dispatch(addData(cartItem));
+
+  // ✅ Facebook Pixel - AddToCart Event (HERE 👇)
+  if (window.fbq) {
+    window.fbq("track", "AddToCart", {
+      content_name: product?.name || product?.title || "Product",
+      content_ids: [product?.id],
+      content_type: "product",
+      value: cartItem.totalPrice || variant.final_price,
+      currency: "INR",
+    });
+  }
+
+  toast.success("Item added to cart!", {
+    position: "top-right",
+    autoClose: 2000,
+  });
+
+  setAddedToCart(true);
+};
 
   useEffect(() => {
     fetchData();
