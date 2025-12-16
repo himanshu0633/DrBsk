@@ -42,18 +42,64 @@ const Cart = () => {
   const validateEmail = (email) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
   const validatePhone = (phone) => /^[0-9]{10}$/.test(phone);
 
-  const handleSendOtp = () => {
+  // Email OTP send function
+  const handleSendEmailOtp = async () => {
+    if (!validateEmail(email)) {
+      setErrors({ email: 'Please enter a valid email address' });
+      return;
+    }
+    
+    setIsLoading(true);
+    try {
+      const response = await axiosInstance.post('/admin/send-otp', {
+        email: email
+      });
+      
+      if (response.data.success) {
+        setOtpSent(true);
+        toast.success(`OTP sent to ${email}`);
+      } else {
+        toast.error('Failed to send OTP');
+      }
+    } catch (error) {
+      const errorMsg = error.response?.data?.message || 'Failed to send OTP';
+      toast.error(errorMsg);
+      if (error.response?.status === 404) {
+        setErrors({ email: errorMsg });
+      }
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  // Phone OTP send function
+  const handleSendPhoneOtp = async () => {
     if (!validatePhone(phone)) {
       setErrors({ phone: 'Please enter a valid 10-digit phone number' });
       return;
     }
+    
     setIsLoading(true);
-    // In a real app, you would call an API endpoint here
-    setTimeout(() => {
-      setOtpSent(true);
+    try {
+      const response = await axiosInstance.post('/admin/send-otp', {
+        phone: phone
+      });
+      
+      if (response.data.success) {
+        setOtpSent(true);
+        toast.success(`OTP sent to +91${phone}`);
+      } else {
+        toast.error('Failed to send OTP');
+      }
+    } catch (error) {
+      const errorMsg = error.response?.data?.message || 'Failed to send OTP';
+      toast.error(errorMsg);
+      if (error.response?.status === 404) {
+        setErrors({ phone: errorMsg });
+      }
+    } finally {
       setIsLoading(false);
-      toast.success(`OTP sent to +91${phone}`);
-    }, 1500);
+    }
   };
 
   const handleSubmit = async (e) => {
@@ -71,8 +117,7 @@ const Cart = () => {
     } else {
       if (!email) newErrors.email = 'Email is required';
       else if (!validateEmail(email)) newErrors.email = 'Please enter a valid email address';
-      if (!password) newErrors.password = 'Password is required';
-      else if (password.length < 5) newErrors.password = 'Password must be at least 5 characters';
+      if (!otp) newErrors.otp = 'OTP is required'; // Changed from password to OTP
     }
 
     if (Object.keys(newErrors).length > 0) {
@@ -85,18 +130,16 @@ const Cart = () => {
       let response;
       
       if (isMobileLogin) {
-        // Handle mobile login with OTP
-        // This would typically call a different endpoint for mobile login
-        // For now, using email/password endpoint as fallback
-        response = await axiosInstance.post('/admin/login', {
-          phone, // Make sure your backend supports phone login
-          otp // This should be verified separately
+        // Phone OTP login
+        response = await axiosInstance.post('/admin/login-with-otp', {
+          phone,
+          otp
         });
       } else {
-        // Email login
-        response = await axiosInstance.post('/admin/login', {
+        // Email OTP login
+        response = await axiosInstance.post('/admin/login-with-otp', {
           email,
-          password
+          otp
         });
       }
 
@@ -105,8 +148,8 @@ const Cart = () => {
         localStorage.setItem('authToken', response.data.token);
         localStorage.setItem('userData', JSON.stringify(response.data.data));
 
-        // Link guest orders to this user (only for email login)
-        if (!isMobileLogin && email) {
+        // Link guest orders to this user
+        if (email) {
           try {
             const linkResponse = await axiosInstance.post('/api/link-guest-orders', {
               email: email,
@@ -125,7 +168,6 @@ const Cart = () => {
             }
           } catch (linkError) {
             console.log('Guest order linking failed:', linkError);
-            // Continue anyway - not critical
           }
         }
 
@@ -184,7 +226,7 @@ const Cart = () => {
             className="davaindia-illustration" 
             onError={(e) => {
               e.target.onerror = null;
-              e.target.src = '/images/fallback-auth-logo.png'; // Add a fallback image
+              e.target.src = '/images/fallback-auth-logo.png';
             }}
           />
           <p className="davaindia-tagline">
@@ -212,13 +254,14 @@ const Cart = () => {
                     onClick={() => toggleLoginMethod()}
                     className="davaindia-link-button"
                   >
-                    {isMobileLogin ? 'Use email login' : 'Use mobile login'}
+                    {isMobileLogin ? 'Use email login' : ''}
                   </button>
                 </div>
 
                 <form onSubmit={handleSubmit} noValidate>
                   {!isMobileLogin ? (
                     <>
+                      {/* Email Login */}
                       <div className={`davaindia-form-group ${errors.email ? 'error' : ''}`}>
                         <label htmlFor="email">Email</label>
                         <div className="davaindia-input-container">
@@ -227,7 +270,11 @@ const Cart = () => {
                             id="email"
                             type="email"
                             value={email}
-                            onChange={(e) => setEmail(e.target.value)}
+                            onChange={(e) => {
+                              setEmail(e.target.value);
+                              // Reset OTP sent state when email changes
+                              if (otpSent) setOtpSent(false);
+                            }}
                             placeholder="Enter your email"
                             className="w-100"
                             disabled={isLoading}
@@ -237,36 +284,67 @@ const Cart = () => {
                         {errors.email && <div className="davaindia-error-message">{errors.email}</div>}
                       </div>
 
-                      <div className={`davaindia-form-group ${errors.password ? 'error' : ''}`}>
-                        <label htmlFor="password">Password</label>
-                        <div className="davaindia-input-container justifyBetween">
-                          <div className="davaindia-input-container1">
-                            <Lock size={18} className="davaindia-input-icon left" />
-                            <input
-                              id="password"
-                              type={showPassword ? 'text' : 'password'}
-                              value={password}
-                              onChange={(e) => setPassword(e.target.value)}
-                              placeholder="Enter your password"
-                              className="w-100"
-                              disabled={isLoading}
-                              autoComplete="current-password"
-                            />
+                      {/* OTP Section for Email */}
+                      {!otpSent ? (
+                        <button 
+                          type="button" 
+                          onClick={handleSendEmailOtp} 
+                          className="davaindia-btn davaindia-btn-secondary"
+                          disabled={isLoading || !email || !validateEmail(email)}
+                        >
+                          {isLoading ? <span className="davaindia-spinner"></span> : 'Send OTP'}
+                        </button>
+                      ) : (
+                        <>
+                          <div className={`davaindia-form-group ${errors.otp ? 'error' : ''}`}>
+                            <label htmlFor="otp">OTP</label>
+                            <div className="davaindia-input-container">
+                              <input
+                                id="otp"
+                                type="text"
+                                value={otp}
+                                onChange={(e) => {
+                                  const value = e.target.value.replace(/\D/g, '');
+                                  if (value.length <= 6) setOtp(value);
+                                }}
+                                maxLength="6"
+                                placeholder="Enter 6-digit OTP"
+                                className="w-100"
+                                disabled={isLoading}
+                              />
+                            </div>
+                            {errors.otp && <div className="davaindia-error-message">{errors.otp}</div>}
+                            <div className="davaindia-otp-resend">
+                              <button 
+                                type="button" 
+                                onClick={handleSendEmailOtp}
+                                className="davaindia-link-button"
+                                disabled={isLoading}
+                              >
+                                Resend OTP
+                              </button>
+                            </div>
                           </div>
+                          
                           <button 
-                            type="button" 
-                            onClick={togglePasswordVisibility}
-                            disabled={isLoading}
-                            className="davaindia-password-toggle"
+                            type="submit" 
+                            className="davaindia-btn davaindia-btn-primary"
+                            disabled={isLoading || !otp || otp.length !== 6}
                           >
-                            {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+                            {isLoading ? (
+                              <span className="davaindia-spinner"></span>
+                            ) : (
+                              <>
+                                Sign In <ArrowRight size={18} />
+                              </>
+                            )}
                           </button>
-                        </div>
-                        {errors.password && <div className="davaindia-error-message">{errors.password}</div>}
-                      </div>
+                        </>
+                      )}
                     </>
                   ) : (
                     <>
+                      {/* Mobile Login */}
                       <div className={`davaindia-form-group ${errors.phone ? 'error' : ''}`}>
                         <label htmlFor="phone">Phone Number</label>
                         <div className="davaindia-input-container">
@@ -277,7 +355,11 @@ const Cart = () => {
                             value={phone}
                             onChange={(e) => {
                               const value = e.target.value.replace(/\D/g, '');
-                              if (value.length <= 10) setPhone(value);
+                              if (value.length <= 10) {
+                                setPhone(value);
+                                // Reset OTP sent state when phone changes
+                                if (otpSent) setOtpSent(false);
+                              }
                             }}
                             placeholder="Enter phone number"
                             className="w-100"
@@ -288,66 +370,63 @@ const Cart = () => {
                         {errors.phone && <div className="davaindia-error-message">{errors.phone}</div>}
                       </div>
                       
-                      {otpSent && (
-                        <div className={`davaindia-form-group ${errors.otp ? 'error' : ''}`}>
-                          <label htmlFor="otp">OTP</label>
-                          <div className="davaindia-input-container">
-                            <input
-                              id="otp"
-                              type="text"
-                              value={otp}
-                              onChange={(e) => {
-                                const value = e.target.value.replace(/\D/g, '');
-                                if (value.length <= 6) setOtp(value);
-                              }}
-                              maxLength="6"
-                              placeholder="Enter 6-digit OTP"
-                              className="w-100"
-                              disabled={isLoading}
-                            />
-                          </div>
-                          {errors.otp && <div className="davaindia-error-message">{errors.otp}</div>}
-                          <div className="davaindia-otp-resend">
-                            <button 
-                              type="button" 
-                              onClick={handleSendOtp}
-                              className="davaindia-link-button"
-                              disabled={isLoading}
-                            >
-                              Resend OTP
-                            </button>
-                          </div>
-                        </div>
-                      )}
-                      
-                      {!otpSent && (
+                      {!otpSent ? (
                         <button 
                           type="button" 
-                          onClick={handleSendOtp} 
+                          onClick={handleSendPhoneOtp} 
                           className="davaindia-btn davaindia-btn-secondary"
                           disabled={isLoading || !phone || phone.length !== 10}
                         >
                           {isLoading ? <span className="davaindia-spinner"></span> : 'Send OTP'}
                         </button>
-                      )}
-                    </>
-                  )}
-
-                  {/* Submit button - only show when form is complete */}
-                  {(!isMobileLogin || (isMobileLogin && otpSent)) && (
-                    <button 
-                      type="submit" 
-                      className="davaindia-btn davaindia-btn-primary"
-                      disabled={isLoading}
-                    >
-                      {isLoading ? (
-                        <span className="davaindia-spinner"></span>
                       ) : (
                         <>
-                          Sign In <ArrowRight size={18} />
+                          <div className={`davaindia-form-group ${errors.otp ? 'error' : ''}`}>
+                            <label htmlFor="otp">OTP</label>
+                            <div className="davaindia-input-container">
+                              <input
+                                id="otp"
+                                type="text"
+                                value={otp}
+                                onChange={(e) => {
+                                  const value = e.target.value.replace(/\D/g, '');
+                                  if (value.length <= 6) setOtp(value);
+                                }}
+                                maxLength="6"
+                                placeholder="Enter 6-digit OTP"
+                                className="w-100"
+                                disabled={isLoading}
+                              />
+                            </div>
+                            {errors.otp && <div className="davaindia-error-message">{errors.otp}</div>}
+                            <div className="davaindia-otp-resend">
+                              <button 
+                                type="button" 
+                                onClick={handleSendPhoneOtp}
+                                className="davaindia-link-button"
+                                disabled={isLoading}
+                              >
+                                Resend OTP
+                              </button>
+                            </div>
+                          </div>
+                          
+                          <button 
+                            type="submit" 
+                            className="davaindia-btn davaindia-btn-primary"
+                            disabled={isLoading || !otp || otp.length !== 6}
+                          >
+                            {isLoading ? (
+                              <span className="davaindia-spinner"></span>
+                            ) : (
+                              <>
+                                Sign In <ArrowRight size={18} />
+                              </>
+                            )}
+                          </button>
                         </>
                       )}
-                    </button>
+                    </>
                   )}
                 </form>
 
