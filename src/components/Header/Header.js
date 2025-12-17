@@ -1,10 +1,9 @@
 import React, { useState, useEffect, useRef } from 'react';
 import './Header.css';
-import '../../App.css';
 import logo from '../../logo/logo1.jpg';
 import { useSelector } from 'react-redux';
 import { Link, useNavigate } from 'react-router-dom';
-import { ShoppingCart, Phone, Mail, Smartphone, ChevronDown, Menu } from 'lucide-react';
+import { ShoppingCart, Phone, Mail, Smartphone, ChevronDown, Menu, Search, MapPin, Upload, User, X } from 'lucide-react';
 import axiosInstance from '../AxiosInstance';
 
 const Header = () => {
@@ -23,21 +22,32 @@ const Header = () => {
   const [categoryName, setCategoryName] = useState([]);
   const [subcategoryName, setSubCategoryName] = useState([]);
   const [menuOpen, setMenuOpen] = useState(false);
+  const [showMobileSearch, setShowMobileSearch] = useState(false);
   
   // Search functionality states
   const [searchQuery, setSearchQuery] = useState('');
   const [searchResults, setSearchResults] = useState([]);
-  const [showSearchDropdown, setShowSearchDropdown] = useState(false);
-  const searchRef = useRef(null);
-  const searchContainerRef = useRef(null); // New ref for search container
 
   const toggleMenu = () => {
-    setMenuOpen((prev) => !prev);
+    setMenuOpen(!menuOpen);
+    if (showMobileSearch) setShowMobileSearch(false);
+  };
+
+  const toggleMobileSearch = () => {
+    setShowMobileSearch(!showMobileSearch);
+    if (menuOpen) setMenuOpen(false);
   };
 
   useEffect(() => {
     fetchData();
     fetchSubCategories();
+    
+    const storedPincode = localStorage.getItem('lastPincode');
+    const storedLocation = localStorage.getItem('lastLocation');
+    if (storedPincode && storedLocation) {
+      setCurrentPincode(storedPincode);
+      setLocationName(storedLocation);
+    }
   }, []);
 
   const fetchData = async () => {
@@ -59,21 +69,14 @@ const Header = () => {
   };
 
   useEffect(() => {
-    const storedPincode = localStorage.getItem('lastPincode');
-    const storedLocation = localStorage.getItem('lastLocation');
-    if (storedPincode && storedLocation) {
-      setCurrentPincode(storedPincode);
-      setLocationName(storedLocation);
-    }
-  }, []);
-
-  useEffect(() => {
-    const handleResize = () => setIsMobile(window.innerWidth < 768);
+    const handleResize = () => {
+      setIsMobile(window.innerWidth < 768);
+    };
     window.addEventListener('resize', handleResize);
     return () => window.removeEventListener('resize', handleResize);
   }, []);
 
-  // Search functionality useEffect - HeroSection की तरह simple
+  // Search functionality useEffect
   useEffect(() => {
     const delayDebounce = setTimeout(() => {
       if (searchQuery.trim() !== '') {
@@ -81,7 +84,6 @@ const Header = () => {
           .get(`/user/search?query=${encodeURIComponent(searchQuery)}`)
           .then(res => {
             setSearchResults(res.data.results);
-            setShowSearchDropdown(true);
           })
           .catch(err => {
             console.error('Search API error:', err);
@@ -89,14 +91,13 @@ const Header = () => {
           });
       } else {
         setSearchResults([]);
-        setShowSearchDropdown(false);
       }
     }, 300);
 
     return () => clearTimeout(delayDebounce);
   }, [searchQuery]);
 
-  // Handle click outside for profile dropdown only
+  // Handle click outside
   useEffect(() => {
     const handleClickOutside = (event) => {
       if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
@@ -111,319 +112,465 @@ const Header = () => {
   }, []);
 
   const handleSearchChange = (e) => {
-    const value = e.target.value;
-    setSearchQuery(value);
+    setSearchQuery(e.target.value);
   };
 
-  // HeroSection की तरह handleSuggestionClick function
   const handleSearchSuggestionClick = (productId) => {
     navigate(`/ProductPage/${productId}`);
     setSearchQuery('');
-    setShowSearchDropdown(false);
-  };
-
-  const toggleDropdown = (e) => {
-    e.stopPropagation();
-    setShowDropdown(!showDropdown);
+    setShowMobileSearch(false);
   };
 
   const handleLogout = (e) => {
     e.preventDefault();
     localStorage.removeItem('userData');
     setShowDropdown(false);
+    setMenuOpen(false);
     navigate('/login');
   };
 
-  const handleDivClick = () => setShowInput(true);
-  const handleInputChange = (e) => setPincode(e.target.value);
-  
   const handleSubmit = async (e) => {
     e.preventDefault();
+    if (!pincode || pincode.length !== 6) {
+      alert("Please enter a valid 6-digit pincode");
+      return;
+    }
+    
     try {
       const res = await fetch(`https://nominatim.openstreetmap.org/search?postalcode=${pincode}&country=India&format=json`);
       const data = await res.json();
       if (data.length > 0) {
-        const location = data[0].display_name;
+        const location = data[0].display_name.split(",").slice(0, 3).join(", ");
         setLocationName(location);
         setCurrentPincode(pincode);
         localStorage.setItem('lastPincode', pincode);
         localStorage.setItem('lastLocation', location);
       } else {
-        setLocationName("Location not found");
-        setCurrentPincode(pincode);
-        localStorage.setItem('lastPincode', pincode);
-        localStorage.setItem('lastLocation', "Location not found");
+        setLocationName("Enter valid pincode");
+        setCurrentPincode("");
+        localStorage.removeItem('lastPincode');
+        localStorage.removeItem('lastLocation');
       }
     } catch (error) {
       setLocationName("Error fetching location");
-      setCurrentPincode(pincode);
-      localStorage.setItem('lastPincode', pincode);
-      localStorage.setItem('lastLocation', "Error fetching location");
+      setCurrentPincode("");
     }
     setShowInput(false);
     setPincode('');
   };
 
   return (
-    <div>
-      {/* --- MOBILE HEADER ROW --- */}
-      <div className="mobile-header-row">
-        <div className='d-flex align-items-center'>
-          <div className="sml-mobile-header-left"> 
-            <button onClick={toggleMenu} aria-label="Toggle menu" className="mobile-menu-btn" style={{ background: 'none', border: 'none', padding: 0 }}>
-              <Menu size={28} />
-            </button>
-            {menuOpen && (
-              <div className='smlScreenNavSet'>
-                {categoryName?.slice(0, 4).map((category) => (
-                  <div className="nav-item" key={category._id}>
-                    <span>
-                      {category.name} <ChevronDown size={14} className="dropdown-icon" />
-                    </span>
-                    <div className="dropdown subcatHeight overflow-y-scroll">
-                      {subcategoryName
-                        .filter(sub => sub.category_id?._id === category._id)
-                        .map(sub => (
-                          <Link key={sub._id} to={`/subcategory/${sub.name}`}>
-                            {sub.name}
-                          </Link>
-                        ))}
-                    </div>
-                  </div>
-                ))}
-              </div>
-            )}
-          </div>
-
-          <a className='logo_size' href="/">
-            <img src={logo} alt="Logo" className="logo" />
-          </a>
-        </div>
-        <div className="mobile-header-contact-icons">
-          <a className="header-app" onClick={() => navigate('/phone')} title="Get the App">
-            <Smartphone size={22} className="icon" />
-          </a>
-          <a className="header-phone" href="tel:+919115513759" title="Call">
-            <Phone size={22} className="icon" />
-          </a>
-          <a className="header-email" href="mailto:ukgermanpharmaceutical@gmail.com" title="Email">
-            <Mail size={22} className="icon" />
-          </a>
-        </div>
-      </div>
-
-      {/* --- DESKTOP & TABLET HEADER --- */}
-      <header className="header-container">
-        <div>
-          <div className='header1'>
-            <a className='logo_size' href="/">
-              <img src={logo} alt="Logo" className="logo" />
-            </a>
-            
-            {/* Search Box in Header - HeroSection की तरह */}
-            <div className="search-box-header" ref={searchContainerRef}>
-              <div className="search-icon-header">🔍</div>
-              <input
-                type="text"
-                placeholder="Search for medicines, health products..."
-                className="search-input-header"
-                value={searchQuery}
-                onChange={handleSearchChange}
-              />
-              
-              {/* HeroSection की तरह conditional rendering */}
-              {searchQuery.trim() !== '' && searchResults.length > 0 && (
-                <div className="search-results-header searchOverflow">
-                  {searchResults.map((product) => (
-                    <div
-                      key={product._id}
-                      className="search-result-item-header"
-                      onClick={() => handleSearchSuggestionClick(product._id)}
-                    >
-                      {product.name}
-                    </div>
-                  ))}
-                </div>
-              )}
-            </div>
-            
-            <div className='headerLocationHideLgScreen flexProp'>
-              <div className='position_relative'>
-                <div className="location-box order_4" onClick={handleDivClick}>
-                  <span className="location-icon">📍</span>
-                  <span className="pincode">{currentPincode}</span>
-                  <span className="location-name">{locationName}</span>
-                  <span className="dropdown-icon">▼</span>
-                </div>
-                {showInput && (
-                  <form onSubmit={handleSubmit} className='pincodeUi'>
-                    <h2 className='chooseLocationHead'>Choose Location</h2>
-                    <div className='borderlocation'></div>
-                    <h2 className='pincodeLabel'>Enter Pincode:</h2>
-                    <input
-                      type="text"
-                      placeholder="Enter pincode"
-                      value={pincode}
-                      onChange={handleInputChange}
-                      className='pincodeInput'
-                    />
-                    <button type="submit" className='submitBtnForm'>Submit</button>
-                  </form>
-                )}
-              </div>
-              {userData?.type === "wholesalePartner" ? null : <a onClick={() => navigate('/Prescription')} className="no-decoration order_5">
-                <div className="upload-box">
-                  <span className="upload-icon">📄</span>
-                  <span className="location-name">Upload Prescription</span>
-                </div>
-              </a>}
-            </div>
-            <div className='navbarIconFlex'>
-              <a onClick={() => navigate('/cart')} className="cart-link">
-                <ShoppingCart size={30} />
-                {cartCount > 0 && <span className="cart-badge">{cartCount}</span>}
+    <div className="header-main-container">
+      {/* --- DESKTOP HEADER --- */}
+      {!isMobile ? (
+        <div className="desktop-header">
+          {/* Top Section */}
+          <div className="desktop-top-section">
+            <div className="desktop-left">
+              <a href="/" className="desktop-logo">
+                <img src={logo} alt="Logo" />
               </a>
-              <div className="signin-dropdown-wrapper" ref={dropdownRef}>
-                {!userData ? (
-                  <div className="signin-btn" onClick={toggleDropdown}>
-                    <div className="signin-icon">👤</div>
-                    <span className='margin_left_8'>Sign In</span>
-                  </div>
-                ) : (
-                  <div className="signin-btn" onClick={toggleDropdown}>
-                    <div className="signin-icon">👤</div>
-                    <span className='margin_left_8'>Profile</span>
-                  </div>
-                )}
-                {showDropdown && userData && (
-                  <div className="dropdown-menu">
-                    <a className="dropdown-item" onClick={() => { navigate('/EditProfile') }}>
-                      <span className="dropdown-icon">👤</span> My Profile
-                    </a>
-                    <a className="dropdown-item" onClick={() => { navigate('/OrderPage') }}>
-                      <span className="dropdown-icon">📦</span> My Orders
-                    </a>
-                    <a href="#" className="dropdown-item" onClick={handleLogout}>
-                      <span className="dropdown-icon">🚪</span> Logout
-                    </a>
-                  </div>
-                )}
-                {!userData && showDropdown && (
-                  <div className="dropdown-menu">
-                    <a className="dropdown-item" onClick={() => navigate('/login')}>
-                      <span className="dropdown-icon">🔑</span> Go to Login
-                    </a>
-                  </div>
-                )}
-              </div>
-            </div>
-          </div>
-          <div className='headerLocationShowSmlScreen flexProp'>
-            <div className='position_relative'>
-              <div className="location-box order_4" onClick={handleDivClick}>
-                <span className="location-icon">📍</span>
-                <span className="pincode">{currentPincode}</span>
-                <span className="location-name">{locationName}</span>
-                <span className="dropdown-icon">▼</span>
-              </div>
-              {showInput && (
-                <form onSubmit={handleSubmit} className='pincodeUi'>
-                  <h2 className='chooseLocationHead'>Choose Location</h2>
-                  <div className='borderlocation'></div>
-                  <h2 className='pincodeLabel'>Enter Pincode:</h2>
-                  <input
-                    type="text"
-                    placeholder="Enter pincode"
-                    value={pincode}
-                    onChange={handleInputChange}
-                    className='pincodeInput'
-                  />
-                  <button type="submit" className='submitBtnForm'>Submit</button>
-                </form>
-              )}
-            </div>
-            {userData?.type === "wholesalePartner" ? null : <a onClick={() => navigate('/Prescription')} className="no-decoration order_5">
-              <div className="upload-box">
-                <span className="upload-icon">📄</span>
-                <span className="location-name smlScreenTxtNone">Upload Prescription</span>
-              </div>
-            </a>}
-          </div>
-        </div>
-      </header>
-      
-      {/* Top Navigation with Search for Mobile */}
-      <div>
-        <div className="top-nav">
-          <input type="checkbox" id="mobile-menu" className="mobile-menu-checkbox" />
-          <label htmlFor="mobile-menu" className="mobile-menu-button">
-            <Menu size={24} />
-          </label>
-          <div className="nav-left">
-            {categoryName?.slice(0, 4).map((category) => (
-              <div className="nav-item" key={category._id}>
-                <span>
-                  {category.name} <ChevronDown size={14} className="dropdown-icon" />
-                </span>
-                <div className="dropdown subcatHeight overflow-y-scroll">
-                  {subcategoryName
-                    .filter(sub => sub.category_id?._id === category._id)
-                    .map(sub => (
-                      <Link key={sub._id} to={`/subcategory/${sub.name}`}>
-                        {sub.name}
-                      </Link>
-                    ))}
-                </div>
-              </div>
-            ))}
-          </div>
-          <div className="nav-right">
-            {/* Mobile Search Box in Nav - HeroSection की तरह */}
-            <div className="search-box-nav-mobile">
-              <div className="search-icon-nav">🔍</div>
-              <input
-                type="text"
-                placeholder="Search medicines..."
-                className="search-input-nav"
-                value={searchQuery}
-                onChange={handleSearchChange}
-              />
               
-              {/* HeroSection की तरह conditional rendering */}
-              {searchQuery.trim() !== '' && searchResults.length > 0 && (
-                <div className="search-results-nav searchOverflow">
-                  {searchResults.map((product) => (
-                    <div
-                      key={product._id}
-                      className="search-result-item-nav"
-                      onClick={() => handleSearchSuggestionClick(product._id)}
-                    >
-                      {product.name}
-                    </div>
-                  ))}
+              {/* Location Box */}
+              <div className="location-container">
+                <div className="location-box" onClick={() => setShowInput(true)}>
+                  <MapPin size={16} />
+                  <div className="location-info">
+                    <span className="pincode-text">{currentPincode || "Set location"}</span>
+                    <span className="location-text">{locationName || "Enter pincode"}</span>
+                  </div>
+                  <ChevronDown size={12} />
                 </div>
-              )}
+                
+                {showInput && (
+                  <div className="location-modal">
+                    <div className="modal-content">
+                      <h3>Choose Location</h3>
+                      <form onSubmit={handleSubmit}>
+                        <input
+                          type="text"
+                          placeholder="Enter 6-digit pincode"
+                          value={pincode}
+                          onChange={(e) => setPincode(e.target.value)}
+                          className="pincode-input"
+                        />
+                        <button type="submit" className="submit-btn">Submit</button>
+                      </form>
+                    </div>
+                  </div>
+                )}
+              </div>
             </div>
             
-            <a onClick={() => navigate('/phone')} style={{ textDecoration: 'none' }}>
-              <div className="get-app">
-                <Smartphone size={16} className="icon" />
-                <span>Get the App</span>
+            {/* Search Box */}
+            <div className="search-container">
+              <div className="search-box">
+                <Search size={20} className="search-icon" />
+                <input
+                  type="text"
+                  placeholder="Search for medicines, health products..."
+                  value={searchQuery}
+                  onChange={handleSearchChange}
+                  className="search-input"
+                />
+                
+                {searchQuery.trim() !== '' && searchResults.length > 0 && (
+                  <div className="search-results">
+                    {searchResults.map((product) => (
+                      <div
+                        key={product._id}
+                        className="search-result-item"
+                        onClick={() => handleSearchSuggestionClick(product._id)}
+                      >
+                        {product.name}
+                      </div>
+                    ))}
+                  </div>
+                )}
               </div>
-            </a>
-            <div style={{ display: 'flex', flexDirection: 'column' }} className='smlDflex'>
-              <a className="text-black textDecorNone phone" href="tel:+919115513759">
-                <Phone size={16} className="icon" />
+            </div>
+            
+            {/* Right Section */}
+            <div className="desktop-right">
+              {userData?.type !== "wholesalePartner" && (
+                <button 
+                  className="upload-prescription-btn"
+                  onClick={() => navigate('/Prescription')}
+                >
+                  <Upload size={18} />
+                  <span>Upload Prescription</span>
+                </button>
+              )}
+              
+              <button 
+                className="cart-btn"
+                onClick={() => navigate('/cart')}
+              >
+                <ShoppingCart size={24} />
+                {cartCount > 0 && <span className="cart-badge">{cartCount}</span>}
+              </button>
+              
+              {/* Profile Button */}
+              <div className="profile-container" ref={dropdownRef}>
+                <button 
+                  className="profile-btn"
+                  onClick={() => setShowDropdown(!showDropdown)}
+                >
+                  <div className="profile-icon">
+                    <User size={20} />
+                  </div>
+                  <span>{userData ? 'Profile' : 'Sign In'}</span>
+                </button>
+                
+                {showDropdown && (
+                  <div className="profile-dropdown">
+                    {userData ? (
+                      <>
+                        <div className="dropdown-user-info">
+                          <div className="user-name">{userData.name || 'User'}</div>
+                          <div className="user-email">{userData.email}</div>
+                        </div>
+                        <div className="dropdown-links">
+                          <button onClick={() => { navigate('/EditProfile'); setShowDropdown(false); }}>
+                            <User size={16} />
+                            <span>My Profile</span>
+                          </button>
+                          <button onClick={() => { navigate('/OrderPage'); setShowDropdown(false); }}>
+                            <span>📦</span>
+                            <span>My Orders</span>
+                          </button>
+                          <button onClick={handleLogout} className="logout-btn">
+                            <span>🚪</span>
+                            <span>Logout</span>
+                          </button>
+                        </div>
+                      </>
+                    ) : (
+                      <button 
+                        onClick={() => { navigate('/login'); setShowDropdown(false); }}
+                        className="login-btn"
+                      >
+                        <span>🔑</span>
+                        <span>Go to Login</span>
+                      </button>
+                    )}
+                  </div>
+                )}
+              </div>
+            </div>
+          </div>
+          
+          {/* Navigation Section */}
+          <div className="desktop-navigation">
+            <div className="nav-categories">
+              {categoryName?.slice(0, 4).map((category) => (
+                <div className="nav-category" key={category._id}>
+                  <span className="category-name">
+                    {category.name} <ChevronDown size={14} />
+                  </span>
+                  <div className="subcategory-dropdown">
+                    {subcategoryName
+                      .filter(sub => sub.category_id?._id === category._id)
+                      .map(sub => (
+                        <Link 
+                          key={sub._id} 
+                          to={`/subcategory/${sub.name}`}
+                          className="subcategory-link"
+                        >
+                          {sub.name}
+                        </Link>
+                      ))}
+                  </div>
+                </div>
+              ))}
+            </div>
+            
+            <div className="nav-contact">
+              <a href="tel:+919115513759" className="contact-link">
+                <Phone size={16} />
                 <span>+91-911-551-3759</span>
               </a>
-              <a className="text-black textDecorNone email" href="mailto:ukgermanpharmaceutical@gmail.com">
-                <Mail size={16} className="icon" />
+              <a href="mailto:ukgermanpharmaceutical@gmail.com" className="contact-link">
+                <Mail size={16} />
                 <span>ukgermanpharmaceutical@gmail.com</span>
               </a>
             </div>
           </div>
         </div>
-      </div>
+      ) : (
+        /* --- MOBILE HEADER --- */
+        <div className="mobile-header">
+          {/* Mobile Top Bar */}
+          <div className="mobile-top-bar">
+            <div className="mobile-left-section">
+              <button onClick={toggleMenu} className="mobile-menu-btn">
+                <Menu size={28} />
+              </button>
+              <a href="/" className="mobile-logo">
+                <img src={logo} alt="Logo" />
+              </a>
+            </div>
+            
+            <div className="mobile-right-section">
+              <button onClick={toggleMobileSearch} className="mobile-search-btn">
+                <Search size={24} />
+              </button>
+              
+              {userData?.type !== "wholesalePartner" && (
+                <button 
+                  className="mobile-upload-btn"
+                  onClick={() => navigate('/Prescription')}
+                >
+                  <Upload size={24} />
+                </button>
+              )}
+              
+              <button 
+                className="mobile-cart-btn"
+                onClick={() => navigate('/cart')}
+              >
+                <ShoppingCart size={24} />
+                {cartCount > 0 && <span className="mobile-cart-badge">{cartCount}</span>}
+              </button>
+            </div>
+          </div>
+          
+          {/* Mobile Search Bar */}
+          {showMobileSearch && (
+            <div className="mobile-search-container">
+              <div className="mobile-search-box">
+                <Search size={20} className="mobile-search-icon" />
+                <input
+                  type="text"
+                  placeholder="Search medicines, health products..."
+                  value={searchQuery}
+                  onChange={handleSearchChange}
+                  className="mobile-search-input"
+                  autoFocus
+                />
+                <button onClick={() => setShowMobileSearch(false)} className="close-search-btn">
+                  <X size={20} />
+                </button>
+              </div>
+              
+              {searchQuery.trim() !== '' && searchResults.length > 0 && (
+                <div className="mobile-search-results">
+                  {searchResults.map((product) => (
+                    <div
+                      key={product._id}
+                      className="mobile-search-result"
+                      onClick={() => handleSearchSuggestionClick(product._id)}
+                    >
+                      {product.name}
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          )}
+          
+          {/* Mobile Menu */}
+          {menuOpen && (
+            <div className="mobile-menu-overlay">
+              <div className="mobile-menu-content">
+                <div className="mobile-menu-header">
+                  <h3>Menu</h3>
+                  <button onClick={toggleMenu} className="close-menu-btn">
+                    <X size={24} />
+                  </button>
+                </div>
+                
+                {/* Profile Section in Menu */}
+                <div className="mobile-profile-section">
+                  {userData ? (
+                    <div className="mobile-user-info">
+                      <div className="mobile-user-avatar">
+                        <User size={24} />
+                      </div>
+                      <div className="mobile-user-details">
+                        <div className="mobile-user-name">{userData.name || 'User'}</div>
+                        <div className="mobile-user-email">{userData.email}</div>
+                      </div>
+                    </div>
+                  ) : (
+                    <button 
+                      className="mobile-login-btn"
+                      onClick={() => { navigate('/login'); setMenuOpen(false); }}
+                    >
+                      <User size={20} />
+                      <span>Sign In / Register</span>
+                    </button>
+                  )}
+                </div>
+                
+                {/* Upload Prescription in Menu */}
+                {userData?.type !== "wholesalePartner" && (
+                  <button 
+                    className="mobile-upload-prescription-btn"
+                    onClick={() => { navigate('/Prescription'); setMenuOpen(false); }}
+                  >
+                    <Upload size={20} />
+                    <span>Upload Prescription</span>
+                  </button>
+                )}
+                
+                {/* Categories in Menu */}
+                <div className="mobile-categories">
+                  {categoryName?.slice(0, 4).map((category) => (
+                    <div className="mobile-category" key={category._id}>
+                      <div className="mobile-category-header">
+                        <span>{category.name}</span>
+                        <ChevronDown size={16} />
+                      </div>
+                      <div className="mobile-subcategories">
+                        {subcategoryName
+                          .filter(sub => sub.category_id?._id === category._id)
+                          .map(sub => (
+                            <Link
+                              key={sub._id}
+                              to={`/subcategory/${sub.name}`}
+                              className="mobile-subcategory"
+                              onClick={() => setMenuOpen(false)}
+                            >
+                              {sub.name}
+                            </Link>
+                          ))}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+                
+                {/* User Links for Logged In Users */}
+                {userData && (
+                  <div className="mobile-user-links">
+                    <button onClick={() => { navigate('/EditProfile'); setMenuOpen(false); }}>
+                      <User size={18} />
+                      <span>My Profile</span>
+                    </button>
+                    <button onClick={() => { navigate('/OrderPage'); setMenuOpen(false); }}>
+                      <span>📦</span>
+                      <span>My Orders</span>
+                    </button>
+                    <button onClick={handleLogout} className="mobile-logout-btn">
+                      <span>🚪</span>
+                      <span>Logout</span>
+                    </button>
+                  </div>
+                )}
+                
+                {/* Contact Info */}
+                <div className="mobile-contact-info">
+                  <a href="tel:+919115513759" className="mobile-contact-link">
+                    <Phone size={18} />
+                    <span>+91-911-551-3759</span>
+                  </a>
+                  <a href="mailto:ukgermanpharmaceutical@gmail.com" className="mobile-contact-link">
+                    <Mail size={18} />
+                    <span>ukgermanpharmaceutical@gmail.com</span>
+                  </a>
+                  <button 
+                    className="mobile-app-btn"
+                    onClick={() => { navigate('/phone'); setMenuOpen(false); }}
+                  >
+                    <Smartphone size={18} />
+                    <span>Get the App</span>
+                  </button>
+                </div>
+              </div>
+            </div>
+          )}
+          
+          {/* Mobile Bottom Bar (Location & Quick Actions) */}
+          <div className="mobile-bottom-bar">
+            <div 
+              className="mobile-location-box"
+              onClick={() => setShowInput(true)}
+            >
+              <MapPin size={16} />
+              <div className="mobile-location-info">
+                <span className="mobile-pincode">{currentPincode || "Set location"}</span>
+                <span className="mobile-location-name">{locationName || "Tap to set pincode"}</span>
+              </div>
+            </div>
+            
+            <div className="mobile-quick-actions">
+              <a href="tel:+919115513759" className="mobile-quick-btn">
+                <Phone size={18} />
+              </a>
+              <button 
+                className="mobile-quick-btn"
+                onClick={() => navigate('/phone')}
+              >
+                <Smartphone size={18} />
+              </button>
+            </div>
+          </div>
+          
+          {/* Mobile Location Modal */}
+          {showInput && (
+            <div className="mobile-location-modal">
+              <div className="mobile-location-content">
+                <div className="mobile-location-header">
+                  <h3>Set Your Location</h3>
+                  <button onClick={() => setShowInput(false)} className="close-location-btn">
+                    <X size={24} />
+                  </button>
+                </div>
+                <form onSubmit={handleSubmit} className="mobile-location-form">
+                  <input
+                    type="text"
+                    placeholder="Enter 6-digit pincode"
+                    value={pincode}
+                    onChange={(e) => setPincode(e.target.value)}
+                    className="mobile-pincode-input"
+                  />
+                  <button type="submit" className="mobile-submit-btn">Set Location</button>
+                </form>
+              </div>
+            </div>
+          )}
+        </div>
+      )}
     </div>
   );
 };

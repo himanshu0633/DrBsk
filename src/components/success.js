@@ -123,9 +123,7 @@ const OrderSuccessModal = ({ clearProducts }) => {
                 Thank you for your order. We'll send you a confirmation email
                 shortly.
               </Typography>
-              <Typography variant="body1" sx={{ mb: 2 }}>
-                Order Amount: ₹{data?.totalAmount || data?.amount || "1999"}
-              </Typography>
+             
               <Button
                 variant="contained"
                 color="primary"

@@ -54,11 +54,11 @@ function getEstimatedRefundDays(refundInfo) {
   return `Expected in ${diffDays} days`;
 }
 
-// Function to get product image URL - UPDATED
+// Function to get product image URL
 const getProductImage = (item) => {
   if (!item) return noImage;
   
-  // Check 1: If media exists directly in item (from order creation)
+  // Check 1: If media exists directly in item
   if (item.media && Array.isArray(item.media) && item.media.length > 0) {
     const firstImage = item.media.find(mediaItem => 
       mediaItem.type === 'image' || 
@@ -87,7 +87,7 @@ const getProductImage = (item) => {
   return noImage;
 };
 
-// Function to get product name - UPDATED
+// Function to get product name
 const getProductName = (item) => {
   if (!item) return 'Unknown Product';
   
@@ -100,21 +100,18 @@ const getProductName = (item) => {
   return item.name || 'Unknown Product';
 };
 
-// Function to get product ID - NEW
+// Function to get product ID
 const getProductId = (item) => {
   if (!item) return null;
   
-  // Check if item has productId directly (populated)
   if (item.productId && item.productId._id) {
     return item.productId._id;
   }
   
-  // Check if item has productId as string
   if (item.productId && typeof item.productId === 'string') {
     return item.productId;
   }
   
-  // Check if item has _id (for non-populated items)
   if (item._id) {
     return item._id;
   }
@@ -128,6 +125,7 @@ const OrderPage = () => {
   const [isAuthenticated, setIsAuthenticated] = useState(null);
   const [selectedOrder, setSelectedOrder] = useState(null);
   const [showModal, setShowModal] = useState(false);
+  const [sidebarOpen, setSidebarOpen] = useState(false);
   const navigate = useNavigate();
   const userData = JSON.parse(localStorage.getItem('userData') || '{}');
   const userEmail = userData?.email;
@@ -152,7 +150,7 @@ const OrderPage = () => {
     }
   }, []);
 
-  // ✅ NEW: Guest orders को link करने का function
+  // Guest orders link function
   const linkGuestOrders = useCallback(async () => {
     if (!userData.email || !userData._id) return;
 
@@ -163,8 +161,7 @@ const OrderPage = () => {
       });
       
       if (response.data.linkedCount > 0) {
-        console.log(`✅ Linked ${response.data.linkedCount} guest orders for ${userData.email}`);
-        // Refresh orders list after linking
+        console.log(`✅ Linked ${response.data.linkedCount} guest orders`);
         fetchOrdersByEmail();
       }
     } catch (error) {
@@ -172,14 +169,14 @@ const OrderPage = () => {
     }
   }, [userData.email, userData._id]);
 
-  // ✅ NEW: Email से orders fetch करने का function - UPDATED
+  // Email से orders fetch function
   const fetchOrdersByEmail = useCallback(async () => {
     setLoading(true);
     try {
-      // ✅ सबसे पहले guest orders link करें
+      // Guest orders link
       await linkGuestOrders();
 
-      // ✅ पहले user ID से try करें (logged-in user के लिए)
+      // User ID से try
       if (userData._id) {
         try {
           const response = await axiosInstance.get(`/api/orders/user/${userData._id}`);
@@ -196,7 +193,6 @@ const OrderPage = () => {
               })
             );
             
-            // Sort by date (newest first)
             const sortedOrders = ordersWithLiveStatus.sort((a, b) => 
               new Date(b.createdAt) - new Date(a.createdAt)
             );
@@ -210,12 +206,12 @@ const OrderPage = () => {
         }
       }
 
-      // ✅ Email से सभी orders fetch करें (guest + logged-in)
+      // Email से orders fetch
       const response = await axiosInstance.get(`/api/orders/email/${userEmail}`);
       
       const ordersData = response.data.orders || [];
       
-      // Filter करें: सिर्फ current user के orders
+      // Filter current user orders
       const userOrders = ordersData.filter(order => {
         const orderEmail = order.email || order.userEmail;
         return orderEmail && orderEmail.toLowerCase() === userEmail.toLowerCase();
@@ -234,7 +230,6 @@ const OrderPage = () => {
         })
       );
       
-      // Sort by date (newest first)
       const sortedOrders = ordersWithLiveStatus.sort((a, b) => 
         new Date(b.createdAt) - new Date(a.createdAt)
       );
@@ -266,7 +261,6 @@ const OrderPage = () => {
         })
       );
       
-      // Sort by date
       const sortedOrders = ordersWithLiveStatus.sort((a, b) => 
         new Date(b.createdAt) - new Date(a.createdAt)
       );
@@ -277,7 +271,7 @@ const OrderPage = () => {
     }
   }, [userEmail, fetchLivePaymentStatus, fetchRefundStatus]);
 
-  // Authentication check और guest orders link
+  // Authentication check
   useEffect(() => {
     const checkAuthAndLinkOrders = async () => {
       if (!userData.email) {
@@ -287,7 +281,7 @@ const OrderPage = () => {
       
       setIsAuthenticated(true);
       
-      // ✅ Guest orders को link करें
+      // Guest orders link
       if (userData._id) {
         try {
           const linkResponse = await axiosInstance.post('/api/orders/link-guest-orders', {
@@ -312,7 +306,6 @@ const OrderPage = () => {
     if (userEmail) {
       fetchOrdersByEmail();
 
-      // Update every 30 seconds to check for payment/refund status changes
       const interval = setInterval(() => {
         fetchOrdersSilently();
       }, 30000);
@@ -322,7 +315,6 @@ const OrderPage = () => {
   }, [userEmail, fetchOrdersByEmail, fetchOrdersSilently]);
 
   const openOrderDetails = async (order) => {
-    // Fetch the most recent data before showing modal
     try {
       const paymentInfo = await fetchLivePaymentStatus(order._id);
       const refundInfo = await fetchRefundStatus(order._id);
@@ -339,18 +331,12 @@ const OrderPage = () => {
     setShowModal(true);
   };
 
-  // Function to handle product click - NEW
   const handleProductClick = (item) => {
     const productId = getProductId(item);
     if (productId) {
-      // Close modal if open
       setShowModal(false);
       setSelectedOrder(null);
-      
-      // Navigate to product page
       navigate(`/ProductPage/${productId}`);
-    } else {
-      console.error('Product ID not found for item:', item);
     }
   };
 
@@ -364,40 +350,59 @@ const OrderPage = () => {
     setSelectedOrder(null);
   };
 
+  const toggleSidebar = () => {
+    setSidebarOpen(!sidebarOpen);
+  };
+
   if (isAuthenticated === null) return null;
 
   return (
     <>
       <Header />
       <div className="order-page-container">
+        {/* Mobile Sidebar Toggle */}
+        <button className="mobile-sidebar-toggle" onClick={toggleSidebar}>
+          <span className="toggle-icon">☰</span>
+          Menu
+        </button>
+
         <div className="order-layout">
           {/* Sidebar */}
-          <aside className="order-sidebar">
+          <aside className={`order-sidebar ${sidebarOpen ? 'active' : ''}`}>
             <div className="sidebar-header">
-              <h3>Hello {userData?.name}</h3>
-              <p>Welcome to your account</p>
+              <button className="mobile-close-sidebar" onClick={toggleSidebar}>×</button>
+              <div className="user-avatar">
+                {userData?.name?.charAt(0) || 'U'}
+              </div>
+              <div className="user-info">
+                <h3>Hello {userData?.name || 'User'}</h3>
+                <p>Welcome to your account</p>
+              </div>
             </div>
             <nav className="sidebar-nav">
               <button 
                 className="nav-item" 
                 onClick={() => navigate('/EditProfile')}
-                style={{ background: 'none', border: 'none', width: '100%', textAlign: 'left' }}
               >
-                My Profile
+                <span className="nav-icon">👤</span>
+                <span className="nav-text">My Profile</span>
               </button>
               <button 
                 className="nav-item active" 
                 onClick={() => navigate('/OrderPage')}
-                style={{ background: 'none', border: 'none', width: '100%', textAlign: 'left' }}
               >
-                My Orders
+                <span className="nav-icon">📦</span>
+                <span className="nav-text">My Orders</span>
+                {orders.length > 0 && (
+                  <span className="order-count">{orders.length}</span>
+                )}
               </button>
               <button 
                 className="nav-item logout" 
                 onClick={handleLogout}
-                style={{ background: 'none', border: 'none', width: '100%', textAlign: 'left' }}
               >
-                Logout
+                <span className="nav-icon">🚪</span>
+                <span className="nav-text">Logout</span>
               </button>
             </nav>
           </aside>
@@ -413,31 +418,212 @@ const OrderPage = () => {
               {loading ? (
                 <CustomLoader />
               ) : (
-                <div className="orders-table">
-                  <table>
-                    <thead>
-                      <tr>
-                        <th>#</th>
-                        <th>Order ID</th>
-                        <th>Product(s)</th>
-                        <th>Image</th>
-                        <th>Date</th>
-                        <th>Order Status</th>
-                        <th>Payment Status</th>
-                        <th>Refund Status</th>
-                        <th>Total</th>
-                        <th>Action</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {orders.length > 0 ? (
-                        orders.map((order, index) => (
-                          <tr key={order._id}>
-                            <td>{index + 1}</td>
-                            <td>{order._id.slice(-8)}</td>
-                            <td>
-                              <div className="product-names-container">
-                                {order.items && Array.isArray(order.items) && order.items.length > 0
+                <div className="orders-container">
+                  {/* Desktop Table View */}
+                  <div className="desktop-view">
+                    <div className="orders-table">
+                      <table>
+                        <thead>
+                          <tr>
+                            <th>#</th>
+                            <th>Order ID</th>
+                            <th>Product(s)</th>
+                            <th>Image</th>
+                            <th>Date</th>
+                            <th>Order Status</th>
+                            <th>Payment Status</th>
+                            <th>Refund Status</th>
+                            <th>Total</th>
+                            <th>Action</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {orders.length > 0 ? (
+                            orders.map((order, index) => (
+                              <tr key={order._id}>
+                                <td>{index + 1}</td>
+                                <td>{order._id.slice(-8)}</td>
+                                <td>
+                                  <div className="product-names-container">
+                                    {order.items && order.items.length > 0
+                                      ? order.items.map((item, idx) => {
+                                          const productName = getProductName(item);
+                                          const productId = getProductId(item);
+                                          const quantity = item.quantity || 1;
+                                          const variant = item.variant || item.sku || null;
+                                          
+                                          return (
+                                            <div key={`${productId || idx}-${idx}`} className="product-name-item">
+                                              <div className="product-info-tooltip">
+                                                <span 
+                                                  className="clickable-product-name"
+                                                  onClick={() => productId && handleProductClick(item)}
+                                                >
+                                                  {productName}
+                                                  {quantity > 1 && (
+                                                    <span className="product-quantity">×{quantity}</span>
+                                                  )}
+                                                </span>
+                                                {variant && (
+                                                  <span className="tooltip-text">
+                                                    {productName}
+                                                    <br />
+                                                    <strong>Variant:</strong> {variant}
+                                                    <br />
+                                                    <strong>Qty:</strong> {quantity}
+                                                    {item.price && (
+                                                      <>
+                                                        <br />
+                                                        <strong>Price:</strong> ₹{item.price}
+                                                      </>
+                                                    )}
+                                                  </span>
+                                                )}
+                                              </div>
+                                              
+                                              {variant && !variant.includes(productName) && (
+                                                <span className="product-badge">
+                                                  {variant.length > 12 ? variant.substring(0, 12) + '...' : variant}
+                                                </span>
+                                              )}
+                                              
+                                              {idx < order.items.length - 1 && (
+                                                <span className="product-separator">, </span>
+                                              )}
+                                            </div>
+                                          );
+                                        })
+                                      : <span className="no-items-text">No items</span>
+                                    }
+                                  </div>
+                                </td>
+                                <td>
+                                  {order.items && order.items.length > 0 && (
+                                    <div 
+                                      className="product-thumbnail"
+                                      onClick={() => {
+                                        const productId = getProductId(order.items[0]);
+                                        if (productId) {
+                                          navigate(`/ProductPage/${productId}`);
+                                        }
+                                      }}
+                                    >
+                                      <img 
+                                        src={getProductImage(order.items[0])} 
+                                        alt="Product" 
+                                        className="thumbnail-img"
+                                        onError={(e) => {
+                                          e.target.src = noImage;
+                                        }}
+                                      />
+                                      {order.items.length > 1 && (
+                                        <span className="more-items-count">+{order.items.length - 1}</span>
+                                      )}
+                                    </div>
+                                  )}
+                                </td>
+                                <td className="date-cell">{formatDate(order.createdAt)}</td>
+                                <td>
+                                  <span className={`status-badge ${order.status.toLowerCase()}`}>
+                                    {order.status}
+                                  </span>
+                                </td>
+                                <td>
+                                  <span className={`status-badge ${order.paymentInfo?.status?.toLowerCase() || 'unknown'}`}>
+                                    {order.paymentInfo
+                                      ? paymentStatusLabel(order.paymentInfo.status)
+                                      : 'Unknown'}
+                                  </span>
+                                </td>
+                                <td>
+                                  <span className={`status-badge ${order.refundInfo?.status?.toLowerCase() || 'none'}`}>
+                                    {refundStatusLabel(order.refundInfo)}
+                                  </span>
+                                  {order.refundInfo && order.refundInfo.refundId && getEstimatedRefundDays(order.refundInfo) && (
+                                    <div className="refund-estimate">
+                                      <small>{getEstimatedRefundDays(order.refundInfo)}</small>
+                                    </div>
+                                  )}
+                                </td>
+                                <td className="total-amount-cell">₹{order.totalAmount}</td>
+                                <td>
+                                  <button
+                                    className="view-details-btn"
+                                    onClick={() => openOrderDetails(order)}
+                                  >
+                                    View Details
+                                  </button>
+                                </td>
+                              </tr>
+                            ))
+                          ) : (
+                            <tr>
+                              <td colSpan="10">
+                                <div className="no-orders">
+                                  <p>No orders found.</p>
+                                  <button 
+                                    className="shop-now-btn"
+                                    onClick={() => navigate('/')}
+                                  >
+                                    Shop Now
+                                  </button>
+                                </div>
+                              </td>
+                            </tr>
+                          )}
+                        </tbody>
+                      </table>
+                    </div>
+                  </div>
+
+                  {/* Mobile Card View */}
+                  <div className="mobile-view">
+                    {orders.length > 0 ? (
+                      orders.map((order, index) => (
+                        <div key={order._id} className="mobile-order-card">
+                          <div className="mobile-order-header">
+                            <div className="mobile-order-info">
+                              <span className="mobile-order-id">Order #{order._id.slice(-8)}</span>
+                              <span className="mobile-order-date">{formatDate(order.createdAt)}</span>
+                            </div>
+                            <span className={`mobile-order-status ${order.status.toLowerCase()}`}>
+                              {order.status}
+                            </span>
+                          </div>
+                          
+                          <div className="mobile-order-content">
+                            {/* Product Image */}
+                            {order.items && order.items.length > 0 && (
+                              <div className="mobile-product-image">
+                                <div 
+                                  className="mobile-thumbnail-container"
+                                  onClick={() => {
+                                    const productId = getProductId(order.items[0]);
+                                    if (productId) {
+                                      navigate(`/ProductPage/${productId}`);
+                                    }
+                                  }}
+                                >
+                                  <img 
+                                    src={getProductImage(order.items[0])} 
+                                    alt="Product" 
+                                    className="mobile-thumbnail-img"
+                                    onError={(e) => {
+                                      e.target.src = noImage;
+                                    }}
+                                  />
+                                  {order.items.length > 1 && (
+                                    <span className="mobile-more-items">+{order.items.length - 1}</span>
+                                  )}
+                                </div>
+                              </div>
+                            )}
+                            
+                            {/* Product Name */}
+                            <div className="mobile-product-details">
+                              <h4 className="mobile-product-title">Products:</h4>
+                              <div className="mobile-products-list">
+                                {order.items && order.items.length > 0
                                   ? order.items.map((item, idx) => {
                                       const productName = getProductName(item);
                                       const productId = getProductId(item);
@@ -445,139 +631,67 @@ const OrderPage = () => {
                                       const variant = item.variant || item.sku || null;
                                       
                                       return (
-                                        <div key={`${productId || idx}-${idx}`} className="product-name-item">
-                                          <div className="product-info-tooltip">
-                                            <span 
-                                              className="clickable-product-name"
-                                              onClick={() => productId && handleProductClick(item)}
-                                              style={{ 
-                                                cursor: productId ? 'pointer' : 'default',
-                                                textDecoration: 'none'
-                                              }}
-                                            >
-                                              {productName}
-                                              {quantity > 1 && (
-                                                <span className="product-quantity" title={`Quantity: ${quantity}`}>
-                                                  ×{quantity}
-                                                </span>
-                                              )}
-                                            </span>
-                                            {variant && (
-                                              <span className="tooltip-text">
-                                                {productName}
-                                                <br />
-                                                <strong>Variant:</strong> {variant}
-                                                <br />
-                                                <strong>Qty:</strong> {quantity}
-                                                {item.price && (
-                                                  <>
-                                                    <br />
-                                                    <strong>Price:</strong> ₹{item.price}
-                                                  </>
-                                                )}
-                                              </span>
+                                        <div key={`mobile-${productId || idx}`} className="mobile-product-item">
+                                          <div 
+                                            className="mobile-product-name"
+                                            onClick={() => productId && handleProductClick(item)}
+                                          >
+                                            {productName}
+                                            {quantity > 1 && (
+                                              <span className="mobile-product-quantity"> ×{quantity}</span>
                                             )}
                                           </div>
-                                          
-                                          {variant && !variant.includes(productName) && (
-                                            <span className="product-badge" title={`Variant: ${variant}`}>
-                                              {variant.length > 12 ? variant.substring(0, 12) + '...' : variant}
-                                            </span>
-                                          )}
-                                          
-                                          {idx < order.items.length - 1 && (
-                                            <span className="product-separator">, </span>
+                                          {variant && (
+                                            <div className="mobile-product-variant">
+                                              {variant.length > 20 ? variant.substring(0, 20) + '...' : variant}
+                                            </div>
                                           )}
                                         </div>
                                       );
                                     })
-                                  : (
-                                    <div className="no-items-text">
-                                      <span className="text-muted">No items</span>
-                                    </div>
-                                  )
+                                  : <span className="mobile-no-items">No items</span>
                                 }
                               </div>
-                            </td>
-                            <td>
-                              {order.items && Array.isArray(order.items) && order.items.length > 0 && (
-                                <div 
-                                  className="product-thumbnail"
-                                  onClick={() => {
-                                    const productId = getProductId(order.items[0]);
-                                    if (productId) {
-                                      navigate(`/ProductPage/${productId}`);
-                                    }
-                                  }}
-                                  style={{ 
-                                    cursor: getProductId(order.items[0]) ? 'pointer' : 'default'
-                                  }}
-                                >
-                                  <img 
-                                    src={getProductImage(order.items[0])} 
-                                    alt="Product" 
-                                    className="thumbnail-img"
-                                    onError={(e) => {
-                                      e.target.src = noImage;
-                                    }}
-                                  />
-                                  {order.items.length > 1 && (
-                                    <span className="more-items-count">+{order.items.length - 1}</span>
-                                  )}
-                                </div>
-                              )}
-                            </td>
-                            <td>{formatDate(order.createdAt)}</td>
-                            <td>
-                              <span className={`status-badge ${order.status.toLowerCase()}`}>
-                                {order.status}
-                              </span>
-                            </td>
-                            <td>
-                              <span className={`status-badge ${order.paymentInfo?.status?.toLowerCase() || 'unknown'}`}>
-                                {order.paymentInfo
-                                  ? paymentStatusLabel(order.paymentInfo.status)
-                                  : 'Unknown'}
-                              </span>
-                            </td>
-                            <td>
-                              <span className={`status-badge ${order.refundInfo?.status?.toLowerCase() || 'none'}`}>
-                                {refundStatusLabel(order.refundInfo)}
-                              </span>
-                              {order.refundInfo && order.refundInfo.refundId && getEstimatedRefundDays(order.refundInfo) && (
-                                <div className="refund-estimate">
-                                  <small>{getEstimatedRefundDays(order.refundInfo)}</small>
-                                </div>
-                              )}
-                            </td>
-                            <td>₹{order.totalAmount}</td>
-                            <td>
-                              <button
-                                className="view-details-btn"
-                                onClick={() => openOrderDetails(order)}
-                              >
-                                View Details
-                              </button>
-                            </td>
-                          </tr>
-                        ))
-                      ) : (
-                        <tr>
-                          <td colSpan="10" style={{ textAlign: 'center', padding: '40px' }}>
-                            <div className="no-orders">
-                              <p>No orders found.</p>
-                              <button 
-                                className="shop-now-btn"
-                                onClick={() => navigate('/')}
-                              >
-                                Shop Now
-                              </button>
                             </div>
-                          </td>
-                        </tr>
-                      )}
-                    </tbody>
-                  </table>
+                          </div>
+                          
+                          <div className="mobile-order-footer">
+                            <div className="mobile-footer-left">
+                              <div className="mobile-total-amount">
+                                Total: <span className="mobile-amount">₹{order.totalAmount}</span>
+                              </div>
+                              <div className="mobile-payment-status">
+                                <span className={`mobile-status-badge ${order.paymentInfo?.status?.toLowerCase() || 'unknown'}`}>
+                                  {order.paymentInfo ? paymentStatusLabel(order.paymentInfo.status) : 'Unknown'}
+                                </span>
+                                {order.refundInfo?.status && order.refundInfo.status !== 'none' && (
+                                  <span className={`mobile-refund-badge ${order.refundInfo.status}`}>
+                                    {refundStatusLabel(order.refundInfo)}
+                                  </span>
+                                )}
+                              </div>
+                            </div>
+                            <button
+                              className="mobile-view-details-btn"
+                              onClick={() => openOrderDetails(order)}
+                            >
+                              View Details
+                            </button>
+                          </div>
+                        </div>
+                      ))
+                    ) : (
+                      <div className="mobile-no-orders">
+                        <p>No orders found.</p>
+                        <button 
+                          className="mobile-shop-now-btn"
+                          onClick={() => navigate('/')}
+                        >
+                          Shop Now
+                        </button>
+                      </div>
+                    )}
+                  </div>
                 </div>
               )}
             </div>
@@ -587,144 +701,207 @@ const OrderPage = () => {
 
       {/* Order Details Modal */}
       {showModal && selectedOrder && (
-        <div style={{
-          position: 'fixed',
-          top: 0,
-          left: 0,
-          right: 0,
-          bottom: 0,
-          background: 'rgba(0,0,0,0.5)',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          zIndex: 1000
-        }} onClick={closeOrderDetails}>
-          <div style={{
-            background: 'white',
-            borderRadius: '8px',
-            width: '90%',
-            maxWidth: '1200px',
-            maxHeight: '90vh',
-            overflow: 'auto'
-          }} onClick={(e) => e.stopPropagation()}>
+        <div className="modal-overlay" onClick={closeOrderDetails}>
+          <div className="modal-content" onClick={(e) => e.stopPropagation()}>
             {/* Modal Header */}
-            <div style={{
-              padding: '20px',
-              borderBottom: '1px solid #dee2e6',
-              display: 'flex',
-              justifyContent: 'space-between',
-              alignItems: 'center'
-            }}>
-              <div>
-                <h3 style={{ margin: '0' }}>Order Details</h3>
-                <p style={{ margin: '5px 0 0 0', color: '#666' }}>Order #{selectedOrder._id.slice(-8)}</p>
-                <p style={{ margin: '5px 0 0 0', color: '#666', fontSize: '14px' }}>
-                  Email: {selectedOrder.email || selectedOrder.userEmail}
-                </p>
+            <div className="modal-header">
+              <div className="modal-header-content">
+                <h3>Order Details</h3>
+                <p>Order #{selectedOrder._id.slice(-8)}</p>
+                <p className="modal-email">Email: {selectedOrder.email || selectedOrder.userEmail}</p>
               </div>
-              <button onClick={closeOrderDetails} style={{
-                background: 'none',
-                border: 'none',
-                fontSize: '24px',
-                cursor: 'pointer',
-                color: '#666'
-              }}>×</button>
+              <button className="modal-close" onClick={closeOrderDetails}>×</button>
             </div>
 
             {/* Modal Body */}
-            <div style={{ padding: '20px' }}>
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '20px' }}>
-                {/* Left Column */}
-                <div>
-                  <div style={{ background: '#f8f9fa', padding: '15px', borderRadius: '6px', marginBottom: '15px' }}>
-                    <h4 style={{ margin: '0 0 10px 0' }}>Order Information</h4>
-                    <div>
-                      <p><strong>Date:</strong> {formatDate(selectedOrder.createdAt)}</p>
-                      <p><strong>Status:</strong> {selectedOrder.status}</p>
-                      <p><strong>Email:</strong> {selectedOrder.email || selectedOrder.userEmail}</p>
-                      <p><strong>Total:</strong> ₹{selectedOrder.totalAmount}</p>
+            <div className="modal-body">
+              <div className="modal-grid">
+                {/* Left Column - Order Info & Shipping */}
+                <div className="modal-left-column">
+                  {/* Order Information */}
+                  <div className="modal-section order-info-section">
+                    <h4>Order Information</h4>
+                    <div className="info-grid">
+                      <div className="info-item">
+                        <span className="info-label">Order Date</span>
+                        <span className="info-value">{formatDate(selectedOrder.createdAt)}</span>
+                      </div>
+                      <div className="info-item">
+                        <span className="info-label">Order Status</span>
+                        <span className={`info-value status ${selectedOrder.status.toLowerCase()}`}>
+                          {selectedOrder.status}
+                        </span>
+                      </div>
+                      <div className="info-item">
+                        <span className="info-label">Order ID</span>
+                        <span className="info-value order-id">{selectedOrder._id}</span>
+                      </div>
                     </div>
                   </div>
 
-                  <div style={{ background: '#f8f9fa', padding: '15px', borderRadius: '6px' }}>
-                    <h4 style={{ margin: '0 0 10px 0' }}>Shipping Address</h4>
-                    <p>{selectedOrder.address}</p>
-                    <p><strong>Phone:</strong> {selectedOrder.phone}</p>
-                    {selectedOrder.deliveryInstructions && (
-                      <p><strong>Instructions:</strong> {selectedOrder.deliveryInstructions}</p>
-                    )}
+                  {/* Payment Information */}
+                  <div className="modal-section payment-info-section">
+                    <h4>Payment Information</h4>
+                    <div className="info-grid">
+                      <div className="info-item">
+                        <span className="info-label">Payment Status</span>
+                        <span className={`info-value payment-status ${selectedOrder.paymentInfo?.status?.toLowerCase() || 'unknown'}`}>
+                          {selectedOrder.paymentInfo ? paymentStatusLabel(selectedOrder.paymentInfo.status) : 'Unknown'}
+                        </span>
+                      </div>
+                      {selectedOrder.paymentInfo?.paymentId && (
+                        <div className="info-item">
+                          <span className="info-label">Payment ID</span>
+                          <span className="info-value payment-id">{selectedOrder.paymentInfo.paymentId}</span>
+                        </div>
+                      )}
+                      {selectedOrder.paymentInfo?.amount && (
+                        <div className="info-item">
+                          <span className="info-label">Amount Paid</span>
+                          <span className="info-value amount">₹{selectedOrder.paymentInfo.amount / 100}</span>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+
+                  {/* Refund Information */}
+                  {selectedOrder.refundInfo && selectedOrder.refundInfo.status !== 'none' && (
+                    <div className="modal-section refund-info-section">
+                      <h4>Refund Information</h4>
+                      <div className="info-grid">
+                        <div className="info-item">
+                          <span className="info-label">Refund Status</span>
+                          <span className={`info-value refund-status ${selectedOrder.refundInfo.status}`}>
+                            {refundStatusLabel(selectedOrder.refundInfo)}
+                          </span>
+                        </div>
+                        {selectedOrder.refundInfo.refundId && (
+                          <div className="info-item">
+                            <span className="info-label">Refund ID</span>
+                            <span className="info-value refund-id">{selectedOrder.refundInfo.refundId}</span>
+                          </div>
+                        )}
+                        {selectedOrder.refundInfo.estimatedSettlement && (
+                          <div className="info-item">
+                            <span className="info-label">Estimated Settlement</span>
+                            <span className="info-value settlement-date">
+                              {getEstimatedRefundDays(selectedOrder.refundInfo)}
+                            </span>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Shipping Address */}
+                  <div className="modal-section shipping-section">
+                    <h4>Shipping Address</h4>
+                    <div className="shipping-info">
+                      <p className="shipping-address">{selectedOrder.address}</p>
+                      <p className="shipping-phone">
+                        <strong>Phone:</strong> {selectedOrder.phone}
+                      </p>
+                      {selectedOrder.deliveryInstructions && (
+                        <p className="delivery-instructions">
+                          <strong>Instructions:</strong> {selectedOrder.deliveryInstructions}
+                        </p>
+                      )}
+                    </div>
                   </div>
                 </div>
 
-                {/* Right Column */}
-                <div>
-                  <div style={{ background: '#f8f9fa', padding: '15px', borderRadius: '6px', marginBottom: '15px' }}>
-                    <h4 style={{ margin: '0 0 10px 0' }}>Items Ordered</h4>
-                    {selectedOrder.items && selectedOrder.items.map((item, index) => (
-                      <div key={index} style={{ display: 'flex', alignItems: 'center', marginBottom: '10px', paddingBottom: '10px', borderBottom: '1px solid #dee2e6' }}>
-                        <img src={getProductImage(item)} alt={getProductName(item)} style={{ width: '50px', height: '50px', objectFit: 'cover', marginRight: '10px', borderRadius: '4px' }} />
-                        <div>
-                          <p style={{ margin: '0', fontWeight: 'bold' }}>{getProductName(item)}</p>
-                          <p style={{ margin: '5px 0 0 0', color: '#666' }}>
-                            ₹{item.price} × {item.quantity} = ₹{(item.price || 0) * (item.quantity || 0)}
-                          </p>
+                {/* Right Column - Items & Summary */}
+                <div className="modal-right-column">
+                  {/* Items Ordered */}
+                  <div className="modal-section items-section">
+                    <h4>Items Ordered</h4>
+                    <div className="modal-items">
+                      {selectedOrder.items && selectedOrder.items.map((item, index) => (
+                        <div key={index} className="modal-item">
+                          <div 
+                            className="modal-item-image"
+                            onClick={() => handleProductClick(item)}
+                          >
+                            <img 
+                              src={getProductImage(item)} 
+                              alt={getProductName(item)}
+                              onError={(e) => {
+                                e.target.src = noImage;
+                              }}
+                            />
+                          </div>
+                          <div className="modal-item-details">
+                            <h5 
+                              className="modal-item-name"
+                              onClick={() => handleProductClick(item)}
+                            >
+                              {getProductName(item)}
+                            </h5>
+                            <div className="modal-item-info">
+                              <span className="modal-item-quantity">Qty: {item.quantity || 1}</span>
+                              <span className="modal-item-price">₹{item.price || 0} each</span>
+                            </div>
+                            {item.variant && (
+                              <div className="modal-item-variant">
+                                Variant: {item.variant}
+                              </div>
+                            )}
+                            <div className="modal-item-total">
+                              Total: ₹{(item.price || 0) * (item.quantity || 1)}
+                            </div>
+                          </div>
                         </div>
-                      </div>
-                    ))}
+                      ))}
+                    </div>
                   </div>
 
-                  <div style={{ background: '#f8f9fa', padding: '15px', borderRadius: '6px' }}>
-                    <h4 style={{ margin: '0 0 10px 0' }}>Order Summary</h4>
-                    <div>
-                      <p style={{ display: 'flex', justifyContent: 'space-between' }}>
+                  {/* Order Summary */}
+                  <div className="modal-section summary-section">
+                    <h4>Order Summary</h4>
+                    <div className="modal-summary">
+                      <div className="modal-summary-row">
                         <span>Subtotal:</span>
                         <span>₹{selectedOrder.subtotal || selectedOrder.totalAmount}</span>
-                      </p>
-                      <p style={{ display: 'flex', justifyContent: 'space-between' }}>
+                      </div>
+                      <div className="modal-summary-row">
                         <span>Shipping:</span>
-                        <span>{selectedOrder.shippingCharge > 0 ? `₹${selectedOrder.shippingCharge}` : 'FREE'}</span>
-                      </p>
-                      <p style={{ display: 'flex', justifyContent: 'space-between' }}>
+                        <span className={selectedOrder.shippingCharge > 0 ? 'shipping-fee' : 'free-shipping'}>
+                          {selectedOrder.shippingCharge > 0 ? `₹${selectedOrder.shippingCharge}` : 'FREE'}
+                        </span>
+                      </div>
+                      <div className="modal-summary-row">
                         <span>Tax:</span>
                         <span>₹{selectedOrder.taxAmount || '0.00'}</span>
-                      </p>
+                      </div>
                       {selectedOrder.discount > 0 && (
-                        <p style={{ display: 'flex', justifyContent: 'space-between', color: '#28a745' }}>
+                        <div className="modal-summary-row discount">
                           <span>Discount:</span>
-                          <span>-₹{selectedOrder.discount}</span>
-                        </p>
+                          <span className="discount-amount">-₹{selectedOrder.discount}</span>
+                        </div>
                       )}
-                      <hr style={{ margin: '10px 0' }} />
-                      <p style={{ display: 'flex', justifyContent: 'space-between', fontWeight: 'bold' }}>
-                        <span>Total:</span>
+                      <div className="modal-summary-divider"></div>
+                      <div className="modal-summary-row total">
+                        <span>Total Amount:</span>
                         <span>₹{selectedOrder.totalAmount}</span>
-                      </p>
+                      </div>
                     </div>
                   </div>
                 </div>
               </div>
 
               {/* Action Buttons */}
-              <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '10px', marginTop: '20px' }}>
-                <button onClick={closeOrderDetails} style={{
-                  padding: '10px 20px',
-                  background: '#6c757d',
-                  color: 'white',
-                  border: 'none',
-                  borderRadius: '4px',
-                  cursor: 'pointer'
-                }}>
+              <div className="modal-actions">
+                <button 
+                  className="modal-btn close-btn"
+                  onClick={closeOrderDetails}
+                >
                   Close
                 </button>
-                <button onClick={() => window.print()} style={{
-                  padding: '10px 20px',
-                  background: '#17a2b8',
-                  color: 'white',
-                  border: 'none',
-                  borderRadius: '4px',
-                  cursor: 'pointer'
-                }}>
-                  Print
+                <button 
+                  className="modal-btn print-btn"
+                  onClick={() => window.print()}
+                >
+                  Print Details
                 </button>
               </div>
             </div>
