@@ -177,14 +177,14 @@ const OrderPage = () => {
       await linkGuestOrders();
 
       // User ID से try
-      if (userData._id) {
+      if (userData.id) {
         try {
-          const response = await axiosInstance.get(`/api/orders/user/${userData._id}`);
+          const response = await axiosInstance.get(`/api/orders/user/${userData.id}`);
           if (response.data.orders && response.data.orders.length > 0) {
             const ordersWithLiveStatus = await Promise.all(
               response.data.orders.map(async (order) => {
-                const paymentInfo = await fetchLivePaymentStatus(order._id);
-                const refundInfo = await fetchRefundStatus(order._id);
+                const paymentInfo = await fetchLivePaymentStatus(order.id);
+                const refundInfo = await fetchRefundStatus(order.id);
                 return {
                   ...order,
                   paymentInfo: paymentInfo || order.paymentInfo,
