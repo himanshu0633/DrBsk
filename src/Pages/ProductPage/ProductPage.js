@@ -249,6 +249,7 @@ const handleAddToCart = () => {
 
   const cartItem = {
     ...product,
+    _id: product._id || product.id, // Ensure consistent ID
     selectedVariant: {
       label: variant.label,
       mrp: variant.mrp,
@@ -271,10 +272,43 @@ const handleAddToCart = () => {
         : null,
   };
 
-  // ✅ Add to Cart Redux Action
-  dispatch(addData(cartItem));
+  // Check if product already exists in cart with same variant
+  const existingCartItems = JSON.parse(localStorage.getItem('reduxState') || '[]');
+  const existingItemIndex = existingCartItems.findIndex(
+    item => 
+      item._id === cartItem._id && 
+      item.selectedVariant?.label === cartItem.selectedVariant?.label
+  );
 
-  // ✅ Facebook Pixel - AddToCart Event (HERE 👇)
+  if (existingItemIndex !== -1) {
+    // Product already in cart with same variant
+    const existingItem = existingCartItems[existingItemIndex];
+    const newQuantity = existingItem.quantity + units;
+    
+    // Update quantity in Redux store
+    dispatch({
+      type: 'UPDATE_QUANTITY',
+      payload: {
+        productId: cartItem._id,
+        variantLabel: cartItem.selectedVariant?.label,
+        quantity: newQuantity
+      }
+    });
+
+    toast.success(`Quantity increased to ${newQuantity}`, {
+      position: "top-right",
+      autoClose: 2000,
+    });
+  } else {
+    // New product or different variant
+    dispatch(addData(cartItem));
+    toast.success("Item added to cart!", {
+      position: "top-right",
+      autoClose: 2000,
+    });
+  }
+
+  // Facebook Pixel - AddToCart Event
   if (window.fbq) {
     window.fbq("track", "AddToCart", {
       content_name: product?.name || product?.title || "Product",
@@ -284,11 +318,6 @@ const handleAddToCart = () => {
       currency: "INR",
     });
   }
-
-  toast.success("Item added to cart!", {
-    position: "top-right",
-    autoClose: 2000,
-  });
 
   setAddedToCart(true);
 };
