@@ -419,7 +419,7 @@ const OrderPage = () => {
                 <CustomLoader />
               ) : (
                 <div className="orders-container">
-                  {/* Desktop Table View */}
+                  {/* Desktop Table View - UNCHANGED */}
                   <div className="desktop-view">
                     <div className="orders-table">
                       <table>
@@ -576,27 +576,25 @@ const OrderPage = () => {
                     </div>
                   </div>
 
-                  {/* Mobile Card View */}
+                  {/* Mobile Card View - UPDATED to WhatsApp style */}
                   <div className="mobile-view">
                     {orders.length > 0 ? (
                       orders.map((order, index) => (
-                        <div key={order._id} className="mobile-order-card">
-                          <div className="mobile-order-header">
-                            <div className="mobile-order-info">
-                              <span className="mobile-order-id">Order #{order._id.slice(-8)}</span>
-                              <span className="mobile-order-date">{formatDate(order.createdAt)}</span>
+                        <div key={order._id} className="mobile-order-card-whatsapp">
+                          <div className="mobile-order-header-whatsapp">
+                            <div className="mobile-order-info-whatsapp">
+                              <div className="mobile-order-id-whatsapp">Order #{order._id.slice(-8)}</div>
+                              <div className="mobile-order-date-whatsapp">{formatDate(order.createdAt)}</div>
                             </div>
-                            <span className={`mobile-order-status ${order.status.toLowerCase()}`}>
-                              {order.status}
-                            </span>
+                            <div className="mobile-order-amount-whatsapp">₹{order.totalAmount}</div>
                           </div>
                           
-                          <div className="mobile-order-content">
+                          <div className="mobile-order-content-whatsapp">
                             {/* Product Image */}
                             {order.items && order.items.length > 0 && (
-                              <div className="mobile-product-image">
+                              <div className="mobile-product-image-whatsapp">
                                 <div 
-                                  className="mobile-thumbnail-container"
+                                  className="mobile-thumbnail-container-whatsapp"
                                   onClick={() => {
                                     const productId = getProductId(order.items[0]);
                                     if (productId) {
@@ -607,84 +605,68 @@ const OrderPage = () => {
                                   <img 
                                     src={getProductImage(order.items[0])} 
                                     alt="Product" 
-                                    className="mobile-thumbnail-img"
+                                    className="mobile-thumbnail-img-whatsapp"
                                     onError={(e) => {
                                       e.target.src = noImage;
                                     }}
                                   />
-                                  {order.items.length > 1 && (
-                                    <span className="mobile-more-items">+{order.items.length - 1}</span>
-                                  )}
                                 </div>
                               </div>
                             )}
                             
-                            {/* Product Name */}
-                            <div className="mobile-product-details">
-                              <h4 className="mobile-product-title">Products:</h4>
-                              <div className="mobile-products-list">
-                                {order.items && order.items.length > 0
-                                  ? order.items.map((item, idx) => {
-                                      const productName = getProductName(item);
-                                      const productId = getProductId(item);
-                                      const quantity = item.quantity || 1;
-                                      const variant = item.variant || item.sku || null;
-                                      
-                                      return (
-                                        <div key={`mobile-${productId || idx}`} className="mobile-product-item">
-                                          <div 
-                                            className="mobile-product-name"
-                                            onClick={() => productId && handleProductClick(item)}
-                                          >
-                                            {productName}
-                                            {quantity > 1 && (
-                                              <span className="mobile-product-quantity"> ×{quantity}</span>
-                                            )}
-                                          </div>
-                                          {variant && (
-                                            <div className="mobile-product-variant">
-                                              {variant.length > 20 ? variant.substring(0, 20) + '...' : variant}
-                                            </div>
-                                          )}
-                                        </div>
-                                      );
-                                    })
-                                  : <span className="mobile-no-items">No items</span>
+                            {/* Product Details */}
+                            <div className="mobile-product-details-whatsapp">
+                              <h4 className="mobile-product-title-whatsapp">
+                                {order.items && order.items.length > 0 
+                                  ? getProductName(order.items[0])
+                                  : 'No items'
                                 }
+                                {order.items && order.items.length > 1 && (
+                                  <span className="mobile-more-items-whatsapp"> +{order.items.length - 1} more</span>
+                                )}
+                              </h4>
+                              <div className="mobile-product-count-whatsapp">
+                                {order.items?.length || 0} item{order.items?.length !== 1 ? 's' : ''}
                               </div>
                             </div>
                           </div>
                           
-                          <div className="mobile-order-footer">
-                            <div className="mobile-footer-left">
-                              <div className="mobile-total-amount">
-                                Total: <span className="mobile-amount">₹{order.totalAmount}</span>
-                              </div>
-                              <div className="mobile-payment-status">
-                                <span className={`mobile-status-badge ${order.paymentInfo?.status?.toLowerCase() || 'unknown'}`}>
-                                  {order.paymentInfo ? paymentStatusLabel(order.paymentInfo.status) : 'Unknown'}
-                                </span>
-                                {order.refundInfo?.status && order.refundInfo.status !== 'none' && (
-                                  <span className={`mobile-refund-badge ${order.refundInfo.status}`}>
-                                    {refundStatusLabel(order.refundInfo)}
-                                  </span>
-                                )}
-                              </div>
+                          {/* Status Section */}
+                          <div className="mobile-status-section-whatsapp">
+                            <div className="mobile-status-row-whatsapp">
+                              <span className="mobile-status-label-whatsapp">Payment Status</span>
+                              <span className={`mobile-status-value-whatsapp ${order.paymentInfo?.status?.toLowerCase() || 'created'}`}>
+                                {paymentStatusLabel(order.paymentInfo?.status)}
+                              </span>
+                            </div>
+                            
+                            <div className="mobile-status-row-whatsapp">
+                              <span className="mobile-status-label-whatsapp">Refund Status</span>
+                              <span className={`mobile-status-value-whatsapp ${order.refundInfo?.status?.toLowerCase() || 'none'}`}>
+                                {refundStatusLabel(order.refundInfo)}
+                              </span>
+                            </div>
+                          </div>
+                          
+                          <div className="mobile-order-footer-whatsapp">
+                            <div className="mobile-total-section-whatsapp">
+                              <span className="mobile-total-label-whatsapp">Total Amount</span>
+                              <span className="mobile-total-value-whatsapp">₹{order.totalAmount}</span>
                             </div>
                             <button
-                              className="mobile-view-details-btn"
+                              className="mobile-view-details-btn-whatsapp"
                               onClick={() => openOrderDetails(order)}
                             >
-                              View Details
+                              VIEW ORDER DETAILS
                             </button>
                           </div>
                         </div>
                       ))
                     ) : (
-                      <div className="mobile-no-orders">
+                      <div className="mobile-no-orders-whatsapp">
                         <p>No orders found.</p>
                         <button 
-                          className="mobile-shop-now-btn"
+                          className="mobile-shop-now-btn-whatsapp"
                           onClick={() => navigate('/')}
                         >
                           Shop Now
@@ -699,211 +681,167 @@ const OrderPage = () => {
         </div>
       </div>
 
-      {/* Order Details Modal */}
+      {/* Order Details Modal - UPDATED to WhatsApp style */}
       {showModal && selectedOrder && (
-        <div className="modal-overlay" onClick={closeOrderDetails}>
-          <div className="modal-content" onClick={(e) => e.stopPropagation()}>
+        <div className="modal-overlay-whatsapp" onClick={closeOrderDetails}>
+          <div className="modal-content-whatsapp" onClick={(e) => e.stopPropagation()}>
             {/* Modal Header */}
-            <div className="modal-header">
-              <div className="modal-header-content">
-                <h3>Order Details</h3>
-                <p>Order #{selectedOrder._id.slice(-8)}</p>
-                <p className="modal-email">Email: {selectedOrder.email || selectedOrder.userEmail}</p>
+            <div className="modal-header-whatsapp">
+              <div className="modal-header-top">
+                <button className="modal-back-button" onClick={closeOrderDetails}>
+                  ←
+                </button>
+                <div className="modal-header-info">
+                  <h1 className="modal-main-title">Order Details</h1>
+                  <div className="modal-order-info">
+                    <span className="modal-order-id-detail">#{selectedOrder._id.slice(-8)}</span>
+                    <span className="modal-order-date-detail">• {formatDate(selectedOrder.createdAt)}</span>
+                  </div>
+                </div>
               </div>
-              <button className="modal-close" onClick={closeOrderDetails}>×</button>
             </div>
 
-            {/* Modal Body */}
-            <div className="modal-body">
-              <div className="modal-grid">
-                {/* Left Column - Order Info & Shipping */}
-                <div className="modal-left-column">
-                  {/* Order Information */}
-                  <div className="modal-section order-info-section">
-                    <h4>Order Information</h4>
-                    <div className="info-grid">
-                      <div className="info-item">
-                        <span className="info-label">Order Date</span>
-                        <span className="info-value">{formatDate(selectedOrder.createdAt)}</span>
-                      </div>
-                      <div className="info-item">
-                        <span className="info-label">Order Status</span>
-                        <span className={`info-value status ${selectedOrder.status.toLowerCase()}`}>
-                          {selectedOrder.status}
-                        </span>
-                      </div>
-                      <div className="info-item">
-                        <span className="info-label">Order ID</span>
-                        <span className="info-value order-id">{selectedOrder._id}</span>
-                      </div>
+            {/* Modal Body with Sections */}
+            <div className="modal-sections-container">
+              
+              {/* Order Information Section */}
+              <div className="modal-section-plain">
+                <h2 className="section-title-main">Order Information</h2>
+                <div className="info-grid-plain">
+                  <div className="info-row-plain">
+                    <span className="info-label-plain">Status</span>
+                    <div className="status-indicator">
+                      <span className={`status-bubble ${selectedOrder.status?.toLowerCase()}`}>
+                        {selectedOrder.status || 'Pending'}
+                      </span>
                     </div>
                   </div>
-
-                  {/* Payment Information */}
-                  <div className="modal-section payment-info-section">
-                    <h4>Payment Information</h4>
-                    <div className="info-grid">
-                      <div className="info-item">
-                        <span className="info-label">Payment Status</span>
-                        <span className={`info-value payment-status ${selectedOrder.paymentInfo?.status?.toLowerCase() || 'unknown'}`}>
-                          {selectedOrder.paymentInfo ? paymentStatusLabel(selectedOrder.paymentInfo.status) : 'Unknown'}
-                        </span>
-                      </div>
-                      {selectedOrder.paymentInfo?.paymentId && (
-                        <div className="info-item">
-                          <span className="info-label">Payment ID</span>
-                          <span className="info-value payment-id">{selectedOrder.paymentInfo.paymentId}</span>
-                        </div>
+                  <div className="info-row-plain">
+                    <span className="info-label-plain">Order Date</span>
+                    <span className="info-value-plain">{formatDate(selectedOrder.createdAt)}</span>
+                  </div>
+                  <div className="info-row-plain">
+                    <span className="info-label-plain">Total Amount</span>
+                    <span className="info-value-plain amount">₹{selectedOrder.totalAmount}</span>
+                  </div>
+                  <div className="info-row-plain">
+                    <span className="info-label-plain">Customer</span>
+                    <div className="customer-info">
+                      <span className="customer-name">{selectedOrder.name || 'N/A'}</span>
+                      {selectedOrder.phone && (
+                        <span className="customer-phone">• {selectedOrder.phone}</span>
                       )}
-                      {selectedOrder.paymentInfo?.amount && (
-                        <div className="info-item">
-                          <span className="info-label">Amount Paid</span>
-                          <span className="info-value amount">₹{selectedOrder.paymentInfo.amount / 100}</span>
-                        </div>
-                      )}
+                      <div className="customer-email">{selectedOrder.email || selectedOrder.userEmail}</div>
                     </div>
                   </div>
-
-                  {/* Refund Information */}
-                  {selectedOrder.refundInfo && selectedOrder.refundInfo.status !== 'none' && (
-                    <div className="modal-section refund-info-section">
-                      <h4>Refund Information</h4>
-                      <div className="info-grid">
-                        <div className="info-item">
-                          <span className="info-label">Refund Status</span>
-                          <span className={`info-value refund-status ${selectedOrder.refundInfo.status}`}>
-                            {refundStatusLabel(selectedOrder.refundInfo)}
-                          </span>
-                        </div>
-                        {selectedOrder.refundInfo.refundId && (
-                          <div className="info-item">
-                            <span className="info-label">Refund ID</span>
-                            <span className="info-value refund-id">{selectedOrder.refundInfo.refundId}</span>
-                          </div>
-                        )}
-                        {selectedOrder.refundInfo.estimatedSettlement && (
-                          <div className="info-item">
-                            <span className="info-label">Estimated Settlement</span>
-                            <span className="info-value settlement-date">
-                              {getEstimatedRefundDays(selectedOrder.refundInfo)}
-                            </span>
-                          </div>
-                        )}
-                      </div>
+                  {selectedOrder.address && (
+                    <div className="info-row-plain">
+                      <span className="info-label-plain">Delivery Address</span>
+                      <div className="address-info">{selectedOrder.address}</div>
                     </div>
                   )}
+                </div>
+              </div>
 
-                  {/* Shipping Address */}
-                  <div className="modal-section shipping-section">
-                    <h4>Shipping Address</h4>
-                    <div className="shipping-info">
-                      <p className="shipping-address">{selectedOrder.address}</p>
-                      <p className="shipping-phone">
-                        <strong>Phone:</strong> {selectedOrder.phone}
-                      </p>
-                      {selectedOrder.deliveryInstructions && (
-                        <p className="delivery-instructions">
-                          <strong>Instructions:</strong> {selectedOrder.deliveryInstructions}
-                        </p>
-                      )}
+              {/* Cancellation Details if cancelled */}
+              {selectedOrder.status?.toLowerCase() === 'cancelled' && selectedOrder.cancellationReason && (
+                <div className="modal-section-plain">
+                  <h2 className="section-title-main">Cancellation Details</h2>
+                  <div className="info-grid-plain">
+                    <div className="info-row-plain">
+                      <span className="info-label-plain">Reason</span>
+                      <span className="info-value-plain">{selectedOrder.cancellationReason}</span>
                     </div>
+                    {selectedOrder.cancelledAt && (
+                      <div className="info-row-plain">
+                        <span className="info-label-plain">Cancelled On</span>
+                        <span className="info-value-plain">{formatDate(selectedOrder.cancelledAt)}</span>
+                      </div>
+                    )}
                   </div>
                 </div>
+              )}
 
-                {/* Right Column - Items & Summary */}
-                <div className="modal-right-column">
-                  {/* Items Ordered */}
-                  <div className="modal-section items-section">
-                    <h4>Items Ordered</h4>
-                    <div className="modal-items">
-                      {selectedOrder.items && selectedOrder.items.map((item, index) => (
-                        <div key={index} className="modal-item">
-                          <div 
-                            className="modal-item-image"
-                            onClick={() => handleProductClick(item)}
-                          >
-                            <img 
-                              src={getProductImage(item)} 
-                              alt={getProductName(item)}
-                              onError={(e) => {
-                                e.target.src = noImage;
-                              }}
-                            />
-                          </div>
-                          <div className="modal-item-details">
-                            <h5 
-                              className="modal-item-name"
-                              onClick={() => handleProductClick(item)}
-                            >
-                              {getProductName(item)}
-                            </h5>
-                            <div className="modal-item-info">
-                              <span className="modal-item-quantity">Qty: {item.quantity || 1}</span>
-                              <span className="modal-item-price">₹{item.price || 0} each</span>
-                            </div>
-                            {item.variant && (
-                              <div className="modal-item-variant">
-                                Variant: {item.variant}
-                              </div>
-                            )}
-                            <div className="modal-item-total">
-                              Total: ₹{(item.price || 0) * (item.quantity || 1)}
-                            </div>
-                          </div>
-                        </div>
-                      ))}
-                    </div>
+              {/* Payment Information Section */}
+              <div className="modal-section-plain">
+                <h2 className="section-title-main">Payment Information</h2>
+                <div className="info-grid-plain">
+                  <div className="info-row-plain">
+                    <span className="info-label-plain">Payment Status</span>
+                    <span className={`info-value-plain ${selectedOrder.paymentInfo?.status?.toLowerCase() || 'created'}`}>
+                      {paymentStatusLabel(selectedOrder.paymentInfo?.status)}
+                    </span>
                   </div>
-
-                  {/* Order Summary */}
-                  <div className="modal-section summary-section">
-                    <h4>Order Summary</h4>
-                    <div className="modal-summary">
-                      <div className="modal-summary-row">
-                        <span>Subtotal:</span>
-                        <span>₹{selectedOrder.subtotal || selectedOrder.totalAmount}</span>
-                      </div>
-                      <div className="modal-summary-row">
-                        <span>Shipping:</span>
-                        <span className={selectedOrder.shippingCharge > 0 ? 'shipping-fee' : 'free-shipping'}>
-                          {selectedOrder.shippingCharge > 0 ? `₹${selectedOrder.shippingCharge}` : 'FREE'}
-                        </span>
-                      </div>
-                      <div className="modal-summary-row">
-                        <span>Tax:</span>
-                        <span>₹{selectedOrder.taxAmount || '0.00'}</span>
-                      </div>
-                      {selectedOrder.discount > 0 && (
-                        <div className="modal-summary-row discount">
-                          <span>Discount:</span>
-                          <span className="discount-amount">-₹{selectedOrder.discount}</span>
-                        </div>
-                      )}
-                      <div className="modal-summary-divider"></div>
-                      <div className="modal-summary-row total">
-                        <span>Total Amount:</span>
-                        <span>₹{selectedOrder.totalAmount}</span>
-                      </div>
-                    </div>
+                  <div className="info-row-plain">
+                    <span className="info-label-plain">Last Updated</span>
+                    <span className="info-value-plain">
+                      {selectedOrder.paymentInfo?.updatedAt 
+                        ? formatDate(selectedOrder.paymentInfo.updatedAt)
+                        : formatDate(selectedOrder.createdAt)}
+                    </span>
+                  </div>
+                  <div className="info-row-plain">
+                    <span className="info-label-plain">Amount Paid</span>
+                    <span className="info-value-plain amount">₹{selectedOrder.totalAmount}</span>
                   </div>
                 </div>
               </div>
 
-              {/* Action Buttons */}
-              <div className="modal-actions">
-                <button 
-                  className="modal-btn close-btn"
-                  onClick={closeOrderDetails}
-                >
-                  Close
-                </button>
-                <button 
-                  className="modal-btn print-btn"
-                  onClick={() => window.print()}
-                >
-                  Print Details
-                </button>
+              {/* Items Ordered Section */}
+              <div className="modal-section-plain">
+                <h2 className="section-title-main">Items Ordered ({selectedOrder.items?.length || 0})</h2>
+                <div className="items-list-plain">
+                  {selectedOrder.items && selectedOrder.items.map((item, index) => (
+                    <div key={index} className="item-row-plain">
+                      <div className="item-info">
+                        <span className="item-name">{getProductName(item)}</span>
+                        <span className="item-price">₹{item.price || '0'}</span>
+                      </div>
+                      <button 
+                        className="view-product-button"
+                        onClick={() => handleProductClick(item)}
+                      >
+                        VIEW PRODUCT ⬜
+                      </button>
+                    </div>
+                  ))}
+                </div>
               </div>
+
+              {/* Order Summary Section */}
+              <div className="modal-section-plain">
+                <h2 className="section-title-main">Order Summary</h2>
+                <div className="summary-grid-plain">
+                  <div className="summary-row-plain">
+                    <span className="summary-label">Items Total</span>
+                    <span className="summary-value">₹{selectedOrder.totalAmount}</span>
+                  </div>
+                  <div className="summary-row-plain">
+                    <span className="summary-label">Shipping</span>
+                    <span className="summary-value free-shipping">Free</span>
+                  </div>
+                  <div className="summary-row-plain">
+                    <span className="summary-label">Tax</span>
+                    <span className="summary-value">Included</span>
+                  </div>
+                  <div className="summary-divider"></div>
+                  <div className="summary-row-plain total-row">
+                    <span className="total-label">Total Amount</span>
+                    <span className="total-value">₹{selectedOrder.totalAmount}</span>
+                  </div>
+                </div>
+              </div>
+
+            </div>
+
+            {/* Close Button */}
+            <div className="modal-bottom-actions">
+              <button 
+                className="close-modal-button"
+                onClick={closeOrderDetails}
+              >
+                Close
+              </button>
             </div>
           </div>
         </div>
