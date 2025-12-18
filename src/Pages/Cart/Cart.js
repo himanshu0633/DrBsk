@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import {
-  Eye, EyeOff, Mail, Lock, ArrowRight
+  Eye, EyeOff, Mail, Lock, ArrowRight, Smartphone, User, Phone, MapPin, Building
 } from 'lucide-react';
 import './Cart.css';
 import Header from '../../components/Header/Header';
@@ -117,7 +117,7 @@ const Cart = () => {
     } else {
       if (!email) newErrors.email = 'Email is required';
       else if (!validateEmail(email)) newErrors.email = 'Please enter a valid email address';
-      if (!otp) newErrors.otp = 'OTP is required'; // Changed from password to OTP
+      if (!otp) newErrors.otp = 'OTP is required';
     }
 
     if (Object.keys(newErrors).length > 0) {
@@ -219,27 +219,36 @@ const Cart = () => {
     <div className="davaindia-cart-page">
       <Header />
       <div className="davaindia-auth-container">
+        {/* Illustration Side */}
         <div className="davaindia-illustration-side">
-          <img 
-            src="https://app.davaindia.com/images/AuthLogo.svg" 
-            alt="Health" 
-            className="davaindia-illustration" 
-            onError={(e) => {
-              e.target.onerror = null;
-              e.target.src = '/images/fallback-auth-logo.png';
-            }}
-          />
-          <p className="davaindia-tagline">
-            <span className="davaindia-highlight">India's largest</span> private generic pharmacy retail chain
-          </p>
+          <div className="davaindia-illustration-container">
+            <img 
+              src="https://app.davaindia.com/images/AuthLogo.svg" 
+              alt="Health" 
+              className="davaindia-illustration" 
+              onError={(e) => {
+                e.target.onerror = null;
+                e.target.src = '/images/fallback-auth-logo.png';
+              }}
+            />
+            <div className="davaindia-illustration-overlay"></div>
+          </div>
+          <div className="davaindia-tagline-container">
+            <p className="davaindia-tagline">
+              <span className="davaindia-highlight">India's largest</span> private generic pharmacy retail chain
+            </p>
+            <div className="davaindia-tagline-decoration"></div>
+          </div>
         </div>
 
         <div className="davaindia-form-side">
-          <div className="davaindia-form-container">
+          <div className="davaindia-form-card">
             {!showSignUp ? (
               <>
-                <h1 className="davaindia-form-title">Welcome back</h1>
-                <p className="davaindia-form-subtitle">Sign in to access your account</p>
+                <div className="davaindia-form-header">
+                  <h1 className="davaindia-form-title">Welcome back</h1>
+                  <p className="davaindia-form-subtitle">Sign in to access your account</p>
+                </div>
 
                 {loginError && (
                   <div className="davaindia-error-message">
@@ -248,35 +257,27 @@ const Cart = () => {
                 )}
 
                 {/* Login method toggle */}
-                <div className="davaindia-login-toggle">
-                  <button
-                    type="button"
-                    onClick={() => toggleLoginMethod()}
-                    className="davaindia-link-button"
-                  >
-                    {isMobileLogin ? 'Use email login' : ''}
-                  </button>
-                </div>
+       
 
                 <form onSubmit={handleSubmit} noValidate>
                   {!isMobileLogin ? (
                     <>
                       {/* Email Login */}
-                      <div className={`davaindia-form-group ${errors.email ? 'error' : ''}`}>
-                        <label htmlFor="email">Email</label>
-                        <div className="davaindia-input-container">
-                          <Mail size={18} className="davaindia-input-icon left" />
+                      <div className="davaindia-form-group">
+                        <label className="davaindia-form-label" htmlFor="email">
+                          <Mail size={14} /> Email
+                        </label>
+                        <div className={`davaindia-input-container ${errors.email ? 'error' : ''}`}>
                           <input
                             id="email"
                             type="email"
                             value={email}
                             onChange={(e) => {
                               setEmail(e.target.value);
-                              // Reset OTP sent state when email changes
                               if (otpSent) setOtpSent(false);
                             }}
                             placeholder="Enter your email"
-                            className="w-100"
+                            className="davaindia-form-control"
                             disabled={isLoading}
                             autoComplete="email"
                           />
@@ -296,9 +297,11 @@ const Cart = () => {
                         </button>
                       ) : (
                         <>
-                          <div className={`davaindia-form-group ${errors.otp ? 'error' : ''}`}>
-                            <label htmlFor="otp">OTP</label>
-                            <div className="davaindia-input-container">
+                          <div className="davaindia-form-group">
+                            <label className="davaindia-form-label" htmlFor="otp">
+                              <Lock size={14} /> OTP
+                            </label>
+                            <div className={`davaindia-input-container ${errors.otp ? 'error' : ''}`}>
                               <input
                                 id="otp"
                                 type="text"
@@ -309,7 +312,7 @@ const Cart = () => {
                                 }}
                                 maxLength="6"
                                 placeholder="Enter 6-digit OTP"
-                                className="w-100"
+                                className="davaindia-form-control davaindia-otp-input"
                                 disabled={isLoading}
                               />
                             </div>
@@ -335,7 +338,7 @@ const Cart = () => {
                               <span className="davaindia-spinner"></span>
                             ) : (
                               <>
-                                Sign In <ArrowRight size={18} />
+                                Sign In <ArrowRight size={18} className="davaindia-btn-icon" />
                               </>
                             )}
                           </button>
@@ -345,9 +348,11 @@ const Cart = () => {
                   ) : (
                     <>
                       {/* Mobile Login */}
-                      <div className={`davaindia-form-group ${errors.phone ? 'error' : ''}`}>
-                        <label htmlFor="phone">Phone Number</label>
-                        <div className="davaindia-input-container">
+                      <div className="davaindia-form-group">
+                        <label className="davaindia-form-label" htmlFor="phone">
+                          <Smartphone size={14} /> Phone Number
+                        </label>
+                        <div className={`davaindia-input-container ${errors.phone ? 'error' : ''}`}>
                           <span className="davaindia-country-code">+91</span>
                           <input
                             id="phone"
@@ -357,12 +362,11 @@ const Cart = () => {
                               const value = e.target.value.replace(/\D/g, '');
                               if (value.length <= 10) {
                                 setPhone(value);
-                                // Reset OTP sent state when phone changes
                                 if (otpSent) setOtpSent(false);
                               }
                             }}
                             placeholder="Enter phone number"
-                            className="w-100"
+                            className="davaindia-form-control"
                             disabled={isLoading || otpSent}
                             maxLength="10"
                           />
@@ -381,9 +385,11 @@ const Cart = () => {
                         </button>
                       ) : (
                         <>
-                          <div className={`davaindia-form-group ${errors.otp ? 'error' : ''}`}>
-                            <label htmlFor="otp">OTP</label>
-                            <div className="davaindia-input-container">
+                          <div className="davaindia-form-group">
+                            <label className="davaindia-form-label" htmlFor="otp">
+                              <Lock size={14} /> OTP
+                            </label>
+                            <div className={`davaindia-input-container ${errors.otp ? 'error' : ''}`}>
                               <input
                                 id="otp"
                                 type="text"
@@ -394,7 +400,7 @@ const Cart = () => {
                                 }}
                                 maxLength="6"
                                 placeholder="Enter 6-digit OTP"
-                                className="w-100"
+                                className="davaindia-form-control davaindia-otp-input"
                                 disabled={isLoading}
                               />
                             </div>
@@ -420,7 +426,7 @@ const Cart = () => {
                               <span className="davaindia-spinner"></span>
                             ) : (
                               <>
-                                Sign In <ArrowRight size={18} />
+                                Sign In <ArrowRight size={18} className="davaindia-btn-icon" />
                               </>
                             )}
                           </button>
@@ -440,23 +446,42 @@ const Cart = () => {
                     Sign up
                   </button>
                 </div>
-                <div className="davaindia-form-footer">
-                  Want to be Our WholeSale Partner?{' '}
+                
+                <div className="davaindia-wholesale-cta">
+                  <p style={{ marginBottom: '0.5rem', fontWeight: '500' }}>Want to be Our Wholesale Partner?</p>
                   <button 
                     type="button" 
                     onClick={() => handleShowSignUp(true)} 
                     className="davaindia-link-button"
                   >
-                    Sign up
+                    <Building size={16} /> Register as Wholesale Partner
                   </button>
                 </div>
               </>
             ) : (
               <>
-                <h1 className="davaindia-form-title">
-                  {isWholesalePartner ? 'Wholesale Partner Registration' : 'Create Account'}
-                </h1>
-                {isWholesalePartner ? <WholesalePartnerForm /> : <SignUpForm />}
+                <div className="davaindia-form-header">
+                  <button 
+                    type="button" 
+                    onClick={handleBackToLogin}
+                    className="davaindia-back-button"
+                  >
+                    ← Back to Login
+                  </button>
+                  <h1 className="davaindia-form-title">
+                    {isWholesalePartner ? 'Wholesale Partner Registration' : 'Create Account'}
+                  </h1>
+                  <p className="davaindia-form-subtitle">
+                    {isWholesalePartner 
+                      ? 'Join our wholesale partner program for exclusive benefits'
+                      : 'Create your account to start shopping with us'
+                    }
+                  </p>
+                </div>
+                
+                <div className="davaindia-signup-form">
+                  {isWholesalePartner ? <WholesalePartnerForm /> : <SignUpForm />}
+                </div>
 
                 <div className="davaindia-form-footer">
                   Already have an account?{' '}

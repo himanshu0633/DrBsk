@@ -1,3 +1,5 @@
+/* Modern Login/Signup UI - Complete Cart.css Update */
+
 :root {
   --davaindia-primary: #FF5B00;
   --davaindia-primary-light: #FFF1EB;
@@ -12,6 +14,10 @@
   --davaindia-error: #E53E3E;
   --davaindia-facebook: #1877F2;
   --davaindia-google: #4285F4;
+  --davaindia-shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.1);
+  --davaindia-shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+  --davaindia-shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+  --davaindia-gradient: linear-gradient(135deg, #FF5B00 0%, #FF8C42 100%);
 }
 
 * {
@@ -21,7 +27,7 @@
 }
 
 body {
-  font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
   background-color: var(--davaindia-bg);
   color: var(--davaindia-text);
   line-height: 1.6;
@@ -33,23 +39,35 @@ body {
   flex-direction: column;
 }
 
+/* Main Auth Container */
 .davaindia-auth-container {
   display: flex;
   flex: 1;
-  min-height: calc(100vh - 60px);
+  min-height: calc(100vh - 70px);
 }
 
-/* Illustration Side */
+/* ==================== ILLUSTRATION SIDE ==================== */
 .davaindia-illustration-side {
   flex: 1;
-  background: linear-gradient(135deg, var(--davaindia-primary-light) 0%, #fff 100%);
+  background: linear-gradient(135deg, #FF5B00 0%, #FF8C42 100%);
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  padding: 2rem;
+  padding: 3rem 2rem;
   position: relative;
   overflow: hidden;
+}
+
+.davaindia-illustration-side::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" preserveAspectRatio="none"><path fill="rgba(255,255,255,0.05)" d="M0,0 L100,0 L100,100 Z"/></svg>');
+  background-size: cover;
 }
 
 .davaindia-illustration-container {
@@ -57,12 +75,15 @@ body {
   z-index: 2;
   text-align: center;
   margin-bottom: 2rem;
+  animation: fadeInUp 0.8s ease-out;
 }
 
 .davaindia-illustration {
   max-width: 400px;
   width: 100%;
-  animation: davaindia-float 6s ease-in-out infinite;
+  filter: drop-shadow(0 10px 20px rgba(0, 0, 0, 0.2));
+  transform-origin: center;
+  animation: float 6s ease-in-out infinite;
 }
 
 .davaindia-illustration-overlay {
@@ -72,7 +93,7 @@ body {
   transform: translate(-50%, -50%);
   width: 120%;
   height: 120%;
-  background: radial-gradient(circle, rgba(255, 91, 0, 0.1) 0%, rgba(255, 255, 255, 0) 70%);
+  background: radial-gradient(circle, rgba(255, 255, 255, 0.1) 0%, rgba(255, 255, 255, 0) 70%);
   z-index: -1;
 }
 
@@ -80,546 +101,606 @@ body {
   position: relative;
   z-index: 2;
   text-align: center;
+  animation: fadeInUp 0.8s ease-out 0.2s both;
 }
 
 .davaindia-tagline {
-  font-size: 1.25rem;
-  color: var(--davaindia-text-light);
+  font-size: 1.5rem;
+  color: white;
   max-width: 400px;
-  position: relative;
-  display: inline-block;
-  padding: 0 1rem;
-}
-
-.davaindia-tagline-decoration {
-  position: absolute;
-  bottom: -8px;
-  left: 50%;
-  transform: translateX(-50%);
-  width: 60%;
-  height: 3px;
-  background: linear-gradient(90deg, transparent 0%, var(--davaindia-primary) 50%, transparent 100%);
-  border-radius: 3px;
+  font-weight: 500;
+  line-height: 1.4;
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
 }
 
 .davaindia-highlight {
-  color: var(--davaindia-primary);
-  font-weight: 600;
+  color: white;
+  font-weight: 700;
+  background: rgba(255, 255, 255, 0.15);
+  padding: 0.2rem 0.6rem;
+  border-radius: 6px;
+  backdrop-filter: blur(10px);
 }
 
-@keyframes davaindia-float {
-
-  0%,
-  100% {
-    transform: translateY(0);
-  }
-
-  50% {
-    transform: translateY(-15px);
-  }
-}
-
-/* Form Side */
+/* ==================== FORM SIDE ==================== */
 .davaindia-form-side {
   flex: 1;
   display: flex;
   align-items: center;
   justify-content: center;
   padding: 2rem;
-  background-color: white;
+  background: linear-gradient(135deg, #F7FAFC 0%, #EDF2F7 100%);
 }
 
 .davaindia-form-container {
-  max-width: 420px;
+  max-width: 440px;
   width: 100%;
-  margin: 0 auto;
 }
 
+.davaindia-form-card {
+  background: white;
+  border-radius: 24px;
+  padding: 2.5rem;
+  box-shadow: var(--davaindia-shadow-lg);
+  border: 1px solid rgba(255, 91, 0, 0.1);
+  position: relative;
+  overflow: hidden;
+  animation: slideInRight 0.6s ease-out;
+}
+
+.davaindia-form-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 4px;
+  background: var(--davaindia-gradient);
+}
+
+/* Form Header */
 .davaindia-form-header {
   margin-bottom: 2rem;
   text-align: center;
 }
 
 .davaindia-form-title {
-  font-size: 1.75rem;
+  font-size: 2rem;
   font-weight: 700;
-  margin-bottom: 30px;
+  margin-bottom: 0.5rem;
   color: var(--davaindia-text);
-  text-align: center;
+  background: linear-gradient(135deg, var(--davaindia-primary) 0%, var(--davaindia-primary-dark) 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
 }
 
 .davaindia-form-subtitle {
   color: var(--davaindia-text-light);
   font-size: 0.9375rem;
+  font-weight: 400;
 }
 
-.davaindia-form-card {
-  background: white;
-  border-radius: 16px;
-  padding: 2rem;
-  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 5px 10px -5px rgba(0, 0, 0, 0.04);
-  border: 1px solid var(--davaindia-border);
-}
-
+/* Form Elements */
 .davaindia-form-group {
   margin-bottom: 1.5rem;
-  position: relative;
 }
 
 .davaindia-form-label {
   display: block;
   margin-bottom: 0.5rem;
-  font-weight: 500;
+  font-weight: 600;
   font-size: 0.875rem;
   color: var(--davaindia-text);
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
 }
 
 .davaindia-input-container {
   position: relative;
   display: flex;
   align-items: center;
-  border-radius: 8px;
-  transition: all 0.2s;
-  border: 1px solid var(--davaindia-border);
+  border-radius: 12px;
+  border: 2px solid var(--davaindia-border);
+  background: white;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  overflow: hidden;
 }
 
-.davaindia-input-container1 {
-  position: relative;
-  display: flex;
-  align-items: center;
-  border-radius: 8px;
-  transition: all 0.2s;
-  /* border: 1px solid var(--davaindia-border); */
-}
-
-.justifyBetween {
-  justify-content: space-between;
+.davaindia-input-container:focus-within {
+  border-color: var(--davaindia-primary);
+  box-shadow: 0 0 0 4px rgba(255, 91, 0, 0.1);
+  transform: translateY(-1px);
 }
 
 .davaindia-input-container.error {
   border-color: var(--davaindia-error);
 }
 
-.davaindia-input-container:focus-within {
-  border-color: var(--davaindia-primary);
-  box-shadow: 0 0 0 3px rgba(255, 91, 0, 0.1);
-}
-
-.davaindia-input-container input {
-  outline: none;
-  background: transparent;
-  border: none;
-  padding: 10px 0px;
-}
-
 .davaindia-input-icon {
   color: var(--davaindia-text-light);
-  transition: color 0.2s;
+  transition: color 0.3s;
+  flex-shrink: 0;
 }
 
 .davaindia-input-icon.left {
-  margin-left: 12px;
-  margin-right: 8px;
+  margin-left: 16px;
+  margin-right: 12px;
 }
 
 .davaindia-input-icon.right {
-  margin-right: 12px;
+  margin-right: 16px;
+  margin-left: 12px;
   cursor: pointer;
 }
 
-.davaindia-input-icon.right:hover {
-  color: var(--davaindia-text);
-}
-
 .davaindia-country-code {
-  padding: 0 12px;
-  font-weight: 500;
+  padding: 0 16px;
+  font-weight: 600;
   color: var(--davaindia-text);
-  background-color: var(--davaindia-secondary-light);
-  border-right: 1px solid var(--davaindia-border);
-  border-radius: 8px 0 0 8px;
+  background: linear-gradient(135deg, #F3F4F6 0%, #E5E7EB 100%);
+  border-right: 2px solid var(--davaindia-border);
   height: 100%;
   display: flex;
   align-items: center;
+  font-size: 0.9375rem;
 }
 
 .davaindia-form-control {
   flex: 1;
-  padding: 0.75rem 1rem;
+  padding: 1rem;
   border: none;
-  font-size: 0.9375rem;
+  font-size: 1rem;
   background: transparent;
-  height: 100%;
-}
-
-.davaindia-form-control:focus {
   outline: none;
-}
-
-.davaindia-error-message {
-  color: var(--davaindia-error);
-  font-size: 0.75rem;
-  margin-top: 0.25rem;
-}
-
-.davaindia-forgot-password {
-  text-align: right;
-  margin-top: 0.5rem;
-}
-
-.davaindia-forgot-password a {
-  color: var(--davaindia-primary);
-  text-decoration: none;
-  font-size: 0.75rem;
   font-weight: 500;
-  transition: color 0.2s;
+  color: var(--davaindia-text);
 }
 
-.davaindia-forgot-password a:hover {
-  color: var(--davaindia-primary-dark);
-  text-decoration: underline;
+.davaindia-form-control::placeholder {
+  color: var(--davaindia-text-light);
+  font-weight: 400;
+}
+
+/* OTP Input Special Styling */
+.davaindia-otp-input {
+  letter-spacing: 8px;
+  text-align: center;
+  font-size: 1.5rem !important;
+  font-weight: 600;
+  font-family: 'Courier New', monospace;
+  background: linear-gradient(135deg, #F8FAFC 0%, #F1F5F9 100%);
 }
 
 /* Buttons */
 .davaindia-btn {
   width: 100%;
-  padding: 0.75rem;
-  border-radius: 8px;
+  padding: 1rem 1.5rem;
+  border-radius: 12px;
   font-weight: 600;
+  font-size: 1rem;
   cursor: pointer;
-  transition: all 0.2s;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   border: none;
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 0.9375rem;
+  gap: 0.75rem;
+  position: relative;
+  overflow: hidden;
+}
+
+.davaindia-btn::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+  transition: 0.5s;
+}
+
+.davaindia-btn:hover::before {
+  left: 100%;
 }
 
 .davaindia-btn-primary {
-  background-color: #68171b;
+  background: var(--davaindia-gradient);
   color: white;
+  box-shadow: 0 4px 15px rgba(255, 91, 0, 0.3);
 }
 
 .davaindia-btn-primary:hover {
-  background-color: var(--davaindia-primary-dark);
-  transform: translateY(-1px);
-  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(255, 91, 0, 0.4);
+}
+
+.davaindia-btn-primary:active {
+  transform: translateY(0);
 }
 
 .davaindia-btn-primary:disabled {
-  background-color: var(--davaindia-primary-light);
+  background: linear-gradient(135deg, #FFD1B8 0%, #FFB890 100%);
   cursor: not-allowed;
   transform: none;
   box-shadow: none;
 }
 
 .davaindia-btn-secondary {
-  background-color: var(--davaindia-secondary-light);
-  color: var(--davaindia-secondary);
+  background: linear-gradient(135deg, #F3F4F6 0%, #E5E7EB 100%);
+  color: var(--davaindia-text);
+  border: 2px solid #E5E7EB;
 }
 
 .davaindia-btn-secondary:hover {
-  background-color: #E5E7EB;
-  transform: translateY(-1px);
+  background: linear-gradient(135deg, #E5E7EB 0%, #D1D5DB 100%);
+  transform: translateY(-2px);
+  box-shadow: var(--davaindia-shadow-md);
 }
 
-.davaindia-btn-secondary:disabled {
-  background-color: var(--davaindia-secondary-light);
-  cursor: not-allowed;
-  transform: none;
-}
-
-.davaindia-btn-icon {
-  margin-left: 8px;
-}
-
-/* Social Login */
-.davaindia-social-login {
+/* Login Method Toggle */
+.davaindia-login-toggle {
   display: flex;
   gap: 1rem;
-  margin-bottom: 1.5rem;
-}
-
-.davaindia-social-btn {
-  flex: 1;
-  padding: 0.75rem;
-  border-radius: 8px;
-  border: 1px solid var(--davaindia-border);
-  background: white;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  cursor: pointer;
-  transition: all 0.2s;
-  font-size: 0.875rem;
-  font-weight: 500;
-}
-
-.davaindia-social-btn:hover {
-  transform: translateY(-1px);
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
-}
-
-.davaindia-social-btn.google {
-  color: var(--davaindia-google);
-}
-
-.davaindia-social-btn.google:hover {
-  background-color: rgba(66, 133, 244, 0.05);
-}
-
-.davaindia-social-btn.facebook {
-  color: var(--davaindia-facebook);
-}
-
-.davaindia-social-btn.facebook:hover {
-  background-color: rgba(24, 119, 242, 0.05);
-}
-
-.davaindia-social-icon {
-  width: 18px;
-  height: 18px;
-  margin-right: 8px;
-}
-
-/* Divider */
-.davaindia-divider {
-  display: flex;
-  align-items: center;
   margin: 1.5rem 0;
-  color: var(--davaindia-text-light);
-  font-size: 0.8125rem;
-}
-
-.davaindia-divider::before,
-.davaindia-divider::after {
-  content: "";
-  flex: 1;
-  border-bottom: 1px solid var(--davaindia-border);
-}
-
-.davaindia-divider::before {
-  margin-right: 1rem;
-}
-
-.davaindia-divider::after {
-  margin-left: 1rem;
-}
-
-/* Toggle Method */
-.davaindia-toggle-method {
-  text-align: center;
-  margin-top: 1.5rem;
 }
 
 .davaindia-toggle-btn {
-  background: none;
-  border: none;
-  color: #68171b;
-  font-size: 0.875rem;
+  flex: 1;
+  padding: 0.75rem;
+  border-radius: 10px;
+  background: white;
+  border: 2px solid var(--davaindia-border);
+  color: var(--davaindia-text);
   font-weight: 500;
   cursor: pointer;
-  display: inline-flex;
+  transition: all 0.3s;
+  display: flex;
   align-items: center;
-  padding: 0.25rem 0.5rem;
-  border-radius: 4px;
-  transition: all 0.2s;
+  justify-content: center;
+  gap: 0.5rem;
 }
 
-.davaindia-toggle-btn:hover {
-  background-color: var(--davaindia-primary-light);
+.davaindia-toggle-btn.active {
+  background: linear-gradient(135deg, #FFF1EB 0%, #FFE4D6 100%);
+  border-color: var(--davaindia-primary);
+  color: var(--davaindia-primary);
+  font-weight: 600;
+}
+
+.davaindia-toggle-btn:hover:not(.active) {
+  border-color: var(--davaindia-primary-light);
+  background: var(--davaindia-primary-light);
+}
+
+/* OTP Resend */
+.davaindia-otp-resend {
+  margin-top: 0.75rem;
+  text-align: right;
+}
+
+.davaindia-otp-resend .davaindia-link-button {
+  font-size: 0.875rem;
+  color: var(--davaindia-primary);
+  font-weight: 500;
 }
 
 /* Form Footer */
 .davaindia-form-footer {
   text-align: center;
   margin-top: 1.5rem;
-  font-size: 0.875rem;
+  padding-top: 1.5rem;
+  border-top: 1px solid var(--davaindia-border);
+  font-size: 0.9375rem;
   color: var(--davaindia-text-light);
 }
 
-.davaindia-form-footer a {
+.davaindia-link-button {
+  background: none;
+  border: none;
   color: var(--davaindia-primary);
+  font-weight: 600;
+  cursor: pointer;
+  padding: 0.25rem 0.5rem;
+  border-radius: 6px;
+  transition: all 0.3s;
   text-decoration: none;
-  font-weight: 500;
-  transition: color 0.2s;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
 }
 
-.davaindia-form-footer a:hover {
-  color: var(--davaindia-primary-dark);
+.davaindia-link-button:hover {
+  background: var(--davaindia-primary-light);
   text-decoration: underline;
+}
+
+/* Error Messages */
+.davaindia-error-message {
+  color: var(--davaindia-error);
+  font-size: 0.875rem;
+  margin-top: 0.5rem;
+  padding: 0.5rem 0.75rem;
+  background: rgba(229, 62, 62, 0.05);
+  border-radius: 8px;
+  border-left: 3px solid var(--davaindia-error);
 }
 
 /* Loading Spinner */
 .davaindia-spinner {
-  width: 18px;
-  height: 18px;
+  width: 20px;
+  height: 20px;
   border: 2px solid rgba(255, 255, 255, 0.3);
   border-radius: 50%;
   border-top-color: white;
-  animation: davaindia-spin 1s ease-in-out infinite;
+  animation: spin 1s linear infinite;
 }
 
-@keyframes davaindia-spin {
+.davaindia-btn-secondary .davaindia-spinner {
+  border: 2px solid rgba(107, 114, 128, 0.3);
+  border-top-color: var(--davaindia-secondary);
+}
+
+/* Signup Form Styles */
+.davaindia-signup-form {
+  margin-top: 1.5rem;
+}
+
+.davaindia-back-button {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  background: none;
+  border: none;
+  color: var(--davaindia-primary);
+  font-weight: 500;
+  cursor: pointer;
+  padding: 0.5rem;
+  border-radius: 8px;
+  transition: all 0.3s;
+  margin-bottom: 1rem;
+}
+
+.davaindia-back-button:hover {
+  background: var(--davaindia-primary-light);
+}
+
+/* Wholesale Partner CTA */
+.davaindia-wholesale-cta {
+  margin-top: 1.5rem;
+  padding: 1rem;
+  background: linear-gradient(135deg, #F0F9FF 0%, #E0F2FE 100%);
+  border-radius: 12px;
+  border: 2px dashed #38BDF8;
+  text-align: center;
+}
+
+.davaindia-wholesale-cta .davaindia-link-button {
+  background: var(--davaindia-gradient);
+  color: white;
+  padding: 0.5rem 1rem;
+  border-radius: 8px;
+  margin-top: 0.5rem;
+}
+
+/* Animations */
+@keyframes float {
+  0%, 100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-15px);
+  }
+}
+
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes slideInRight {
+  from {
+    opacity: 0;
+    transform: translateX(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@keyframes spin {
   to {
     transform: rotate(360deg);
   }
 }
 
-/* OTP Container */
-.davaindia-otp-container {
-  display: flex;
-  gap: 1rem;
-}
-
-.davaindia-otp-container .davaindia-btn {
-  flex: 1;
-}
-
-/* Responsive Styles */
+/* ==================== MOBILE RESPONSIVE ==================== */
 @media (max-width: 768px) {
   .davaindia-auth-container {
     flex-direction: column;
+    min-height: calc(100vh - 60px);
+    margin-top: 60px;
   }
 
   .davaindia-illustration-side {
-    padding: 1.5rem;
-    display: none;
+    padding: 2rem 1rem;
+    min-height: 250px;
+    display: flex !important;
+    background: linear-gradient(135deg, #FF5B00 0%, #FF8C42 100%);
+  }
+
+  .davaindia-illustration {
+    max-width: 180px;
+    max-height: 140px;
+  }
+
+  .davaindia-tagline {
+    font-size: 1.125rem;
+    padding: 0 1rem;
   }
 
   .davaindia-form-side {
-    padding: 1.5rem;
-    margin-top: 70px;
+    padding: 1.5rem 1rem;
+    align-items: flex-start;
+    justify-content: flex-start;
   }
 
   .davaindia-form-card {
-    padding: 1.5rem;
-    box-shadow: none;
-    border: none;
+    padding: 1.75rem 1.25rem;
+    border-radius: 20px;
+    margin: 0 auto;
+    width: 100%;
+    max-width: 400px;
   }
 
-  .davaindia-social-login {
+  .davaindia-form-title {
+    font-size: 1.625rem;
+  }
+
+  .davaindia-form-subtitle {
+    font-size: 0.875rem;
+  }
+
+  .davaindia-input-container {
+    height: 52px;
+  }
+
+  .davaindia-form-control {
+    padding: 0.875rem;
+    font-size: 16px; /* Prevent iOS zoom */
+  }
+
+  .davaindia-btn {
+    height: 52px;
+    font-size: 16px;
+  }
+
+  .davaindia-login-toggle {
     flex-direction: column;
+    gap: 0.75rem;
+  }
+
+  .davaindia-form-footer {
+    font-size: 0.875rem;
+    padding-top: 1.25rem;
+  }
+
+  /* Hide illustration on very small screens if needed */
+  @media (max-height: 700px) {
+    .davaindia-illustration-side {
+      min-height: 180px;
+      padding: 1rem;
+    }
+    
+    .davaindia-illustration {
+      max-width: 140px;
+      max-height: 100px;
+    }
   }
 }
 
-@media (max-width: 480px) {
+/* ==================== DESKTOP ENHANCEMENTS ==================== */
+@media (min-width: 769px) {
+  .davaindia-auth-container {
+    height: calc(100vh - 70px);
+  }
+
+  .davaindia-illustration-side {
+    flex: 0 0 50%;
+    padding: 4rem;
+  }
+
+  .davaindia-illustration {
+    max-width: 450px;
+  }
+
+  .davaindia-tagline {
+    font-size: 1.75rem;
+    max-width: 500px;
+  }
+
   .davaindia-form-side {
-    padding: 1rem;
+    flex: 0 0 50%;
+    padding: 3rem;
   }
 
   .davaindia-form-card {
-    padding: 1.25rem;
+    max-width: 440px;
+    padding: 3rem;
+  }
+
+  .davaindia-form-title {
+    font-size: 2.25rem;
+  }
+
+  .davaindia-form-subtitle {
+    font-size: 1rem;
   }
 }
 
-/* .overlay {
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100vw;
-  height: 100vh;
-  background-color: rgba(0, 0, 0, 0.6) !important;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  z-index: 1000;
-} */
-
-/* Cart.css */
-.davaindia-link-button {
-  background: none;
-  border: none;
-  color: #007bff;
-  text-decoration: underline;
-  cursor: pointer;
-  padding: 0;
-  font: inherit;
-}
-
-
-.overlay {
-  position: fixed;
-  top: 0;
-  left: 0;
+/* ==================== UTILITY CLASSES ==================== */
+.w-100 {
   width: 100%;
-  height: 100%;
-  background: rgba(0, 0, 0, 0.5);
-  /* dark background */
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  z-index: 1000;
 }
 
-.modal {
-  background: white;
-  padding: 2rem;
-  border-radius: 8px;
-  max-width: 400px;
-  width: 90%;
-  position: relative;
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+.text-center {
+  text-align: center;
 }
 
-.modal-close-btn {
-  position: absolute;
-  top: 8px;
-  right: 12px;
-  background: none;
-  border: none;
-  font-size: 1.5rem;
-  cursor: pointer;
-}/* Add these styles to your Cart.css file */
+.mt-1 { margin-top: 0.25rem; }
+.mt-2 { margin-top: 0.5rem; }
+.mt-3 { margin-top: 1rem; }
+.mt-4 { margin-top: 1.5rem; }
 
-.davaindia-btn-secondary {
-  background-color: #f0f0f0;
-  color: #333;
-  border: 1px solid #ddd;
-  margin-top: 10px;
+.mb-1 { margin-bottom: 0.25rem; }
+.mb-2 { margin-bottom: 0.5rem; }
+.mb-3 { margin-bottom: 1rem; }
+.mb-4 { margin-bottom: 1.5rem; }
+
+/* Accessibility */
+@media (prefers-reduced-motion: reduce) {
+  * {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
 }
 
-.davaindia-btn-secondary:hover:not(:disabled) {
-  background-color: #e0e0e0;
+/* Focus styles for accessibility */
+.davaindia-btn:focus,
+.davaindia-link-button:focus,
+.davaindia-form-control:focus {
+  outline: 2px solid var(--davaindia-primary);
+  outline-offset: 2px;
 }
 
-.davaindia-btn-secondary:disabled {
-  opacity: 0.6;
-  cursor: not-allowed;
+/* Dark mode support (optional) */
+@media (prefers-color-scheme: dark) {
+  .davaindia-form-card {
+    background: #1a202c;
+    border-color: #2d3748;
+  }
+  
+  .davaindia-form-title,
+  .davaindia-form-label {
+    color: #e2e8f0;
+  }
+  
+  .davaindia-input-container {
+    background: #2d3748;
+    border-color: #4a5568;
+  }
+  
+  .davaindia-form-control {
+    color: #e2e8f0;
+  }
 }
-
-.davaindia-spinner {
-  display: inline-block;
-  width: 20px;
-  height: 20px;
-  border: 2px solid rgba(255, 255, 255, 0.3);
-  border-radius: 50%;
-  border-top-color: #fff;
-  animation: spin 1s ease-in-out infinite;
-}
-
-.davaindia-btn-secondary .davaindia-spinner {
-  border: 2px solid rgba(0, 0, 0, 0.3);
-  border-top-color: #333;
-}
-
-@keyframes spin {
-  to { transform: rotate(360deg); }
-}
-
-.davaindia-otp-resend {
-  margin-top: 10px;
-  text-align: right;
-}
-
-.davaindia-country-code {
-  padding: 0 10px;
-  background-color: #f5f5f5;
-  border-right: 1px solid #ddd;
-  color: #666;
-}
-
-
-
-
-
