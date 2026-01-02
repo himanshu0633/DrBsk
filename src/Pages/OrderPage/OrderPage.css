@@ -1238,4 +1238,11 @@
 /* Hide mobile sidebar toggle */
 button.mobile-sidebar-toggle {
     display: none;
+}button.view-details-btn {
+    width: 121px;
+    padding: 10px 20px 13px;
+}
+
+button.view-details-btn {
+    border-radius: 9px;
 }
