@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useCallback, useRef } from 'react';
+import React, { useEffect, useState, useCallback } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
 import { Trash2, ShoppingBag, ArrowLeft, CheckCircle } from 'lucide-react';
 import './addToCart.css';
@@ -7,7 +7,7 @@ import { toast } from 'react-toastify';
 import { deleteProduct, updateData, clearProducts } from '../store/Action';
 import API_URL from '../config';
 import axiosInstance from './AxiosInstance';
-import { Dialog, DialogTitle, DialogContent, DialogActions, TextField, Button, Grid, InputAdornment, CircularProgress } from '@mui/material';
+import { Dialog, DialogTitle, DialogContent, DialogActions, TextField, InputAdornment } from '@mui/material';
 import JoinUrl from '../JoinUrl';
 
 const AddToCart = () => {
@@ -19,7 +19,6 @@ const AddToCart = () => {
   const [cities, setCities] = useState([]);
   const [checkoutLoading, setCheckoutLoading] = useState(false);
   const [paymentProcessing, setPaymentProcessing] = useState(false);
-  const [emailSearchLoading, setEmailSearchLoading] = useState(false);
   const [formData, setFormData] = useState({
     flat: '',
     landmark: '',
@@ -35,121 +34,16 @@ const AddToCart = () => {
   const cartItems = useSelector((state) => state.app.data);
   const dispatch = useDispatch();
   const navigate = useNavigate();
-  const emailFieldRef = useRef(null);
   
-  // Loader states
   const [isProcessing, setIsProcessing] = useState(false);
   const [processingMessage, setProcessingMessage] = useState('');
 
-  // Email validation function
   const isValidEmail = useCallback((email) => {
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     return emailRegex.test(email);
   }, []);
 
-  // Function to fetch addresses by email
-  const fetchAddressesByEmail = useCallback(async (email) => {
-    if (!email || !isValidEmail(email)) {
-      return;
-    }
-
-    setEmailSearchLoading(true);
-    
-    try {
-      let fetchedAddresses = [];
-      let userPhone = '';
-
-      // 1. First check localStorage for guest addresses
-      const guestAddresses = JSON.parse(localStorage.getItem('guestAddresses') || '[]');
-      
-      // Filter addresses by email (case insensitive)
-      const guestFilteredAddresses = guestAddresses.filter(addr => 
-        typeof addr === 'object' && 
-        addr.email && 
-        addr.email.toLowerCase() === email.toLowerCase()
-      );
-      
-      fetchedAddresses = [...guestFilteredAddresses];
-      
-      // Get phone from first address
-      if (guestFilteredAddresses.length > 0) {
-        userPhone = guestFilteredAddresses[0]?.phone || '';
-      }
-
-      // 2. If user is authenticated, fetch from backend
-      if (isAuthenticated && userData?._id) {
-        try {
-          const response = await axiosInstance.get(`/admin/readAdmin/${userData._id}`);
-          const userInfo = response?.data?.data;
-          
-          if (Array.isArray(userInfo?.address)) {
-            // Filter user addresses by email
-            const userFilteredAddresses = userInfo.address.filter(addr => 
-              typeof addr === 'object' && 
-              addr.email && 
-              addr.email.toLowerCase() === email.toLowerCase()
-            );
-            
-            // Merge with existing addresses (avoid duplicates)
-            userFilteredAddresses.forEach(newAddr => {
-              if (!fetchedAddresses.some(existingAddr => 
-                JSON.stringify(existingAddr) === JSON.stringify(newAddr)
-              )) {
-                fetchedAddresses.push(newAddr);
-              }
-            });
-            
-            // Get phone from user info if not already found
-            if (!userPhone && userInfo.phone) {
-              userPhone = userInfo.phone;
-            }
-          }
-        } catch (error) {
-          console.error("Error fetching user addresses:", error);
-        }
-      }
-
-      console.log("Fetched addresses for email:", email, fetchedAddresses);
-
-      // Update state
-      setAddresses(fetchedAddresses);
-      
-      if (fetchedAddresses.length > 0) {
-        // Auto-select first address if no address is selected
-        if (!formData.selectedAddress) {
-          const firstAddress = fetchedAddresses[0];
-          setFormData(prev => ({
-            ...prev,
-            selectedAddress: firstAddress.fullAddress,
-            phone: userPhone || firstAddress.phone || prev.phone
-          }));
-        }
-        
-        toast.success(`Found ${fetchedAddresses.length} saved address(es)!`, {
-          position: 'top-right',
-          autoClose: 1500
-        });
-      } else {
-        // Clear selected address if no addresses found
-        setFormData(prev => ({ ...prev, selectedAddress: '' }));
-        
-        // Only show info if email was entered
-        toast.info('No saved addresses found for this email. Add a new address.', {
-          position: 'top-right',
-          autoClose: 1500
-        });
-      }
-    } catch (error) {
-      console.error("Error fetching addresses by email:", error);
-      toast.error('Error fetching addresses. Please try again.');
-    } finally {
-      setEmailSearchLoading(false);
-    }
-  }, [isAuthenticated, userData?._id, formData.selectedAddress, isValidEmail]);
-
-  // Initialize form data from localStorage on component mount
   useEffect(() => {
-    // Check authentication
     const storedUserData = localStorage.getItem('userData');
     if (storedUserData) {
       setIsAuthenticated(true);
@@ -157,45 +51,32 @@ const AddToCart = () => {
       setIsAuthenticated(false);
     }
 
-    // Load saved data from localStorage
     const savedEmail = localStorage.getItem('guestEmail') || '';
     const savedPhone = localStorage.getItem('guestPhone') || '';
     const savedAddresses = JSON.parse(localStorage.getItem('guestAddresses') || '[]');
     
-    // Set initial form data
     setFormData(prev => ({
       ...prev,
       email: savedEmail || prev.email,
       phone: savedPhone || prev.phone
     }));
     
-    // If there's a saved email, fetch addresses for it
-    if (savedEmail && isValidEmail(savedEmail)) {
-      fetchAddressesByEmail(savedEmail);
-    } else {
-      setAddresses(savedAddresses);
+    setAddresses(savedAddresses);
+    
+    if (savedAddresses.length > 0 && !formData.selectedAddress) {
+      const firstAddress = savedAddresses[0];
+      const addressValue = typeof firstAddress === 'object' ? firstAddress.fullAddress : firstAddress;
+      const addressEmail = typeof firstAddress === 'object' ? firstAddress.email : savedEmail;
+      const addressPhone = typeof firstAddress === 'object' ? firstAddress.phone : savedPhone;
       
-      // Auto-select first address if available
-      if (savedAddresses.length > 0 && !formData.selectedAddress) {
-        const firstAddress = savedAddresses[0];
-        if (typeof firstAddress === 'object') {
-          setFormData(prev => ({
-            ...prev,
-            selectedAddress: firstAddress.fullAddress,
-            email: firstAddress.email || savedEmail || prev.email,
-            phone: firstAddress.phone || savedPhone || prev.phone
-          }));
-        }
-      }
+      setFormData(prev => ({
+        ...prev,
+        selectedAddress: addressValue,
+        email: addressEmail || savedEmail || prev.email,
+        phone: addressPhone || savedPhone || prev.phone
+      }));
     }
   }, []);
-
-  // Handle email blur - search addresses when user leaves email field
-  const handleEmailBlur = () => {
-    if (formData.email && isValidEmail(formData.email)) {
-      fetchAddressesByEmail(formData.email);
-    }
-  };
 
   const totalPrice = cartItems.reduce((acc, item) => {
     const price = parseFloat(item.final_price || 0);
@@ -217,24 +98,21 @@ const AddToCart = () => {
     toast.info('Item removed from cart.', { position: 'top-right', autoClose: 2000 });
   };
 
-  // Handle email change
   const handleEmailChange = (e) => {
     const email = e.target.value;
     setFormData(prev => ({ ...prev, email }));
     
-    // Save to localStorage when email is valid
     if (email && isValidEmail(email)) {
       localStorage.setItem('guestEmail', email);
+      toast.success('Email saved for checkout!', { position: 'top-right', autoClose: 1500 });
     }
   };
 
-  // Handle phone change - save to localStorage immediately
   const handlePhoneChange = (e) => {
     const value = e.target.value.replace(/\D/g, '');
     if (value.length <= 10) {
       setFormData(prev => ({ ...prev, phone: value }));
       
-      // Save to localStorage immediately
       if (value.length === 10) {
         localStorage.setItem('guestPhone', value);
       }
@@ -244,28 +122,18 @@ const AddToCart = () => {
   const handleAddAddress = async () => {
     setLoading(true);
     
-    // Validate email
-    if (!formData.email || !isValidEmail(formData.email)) {
+    if (formData.email && !isValidEmail(formData.email)) {
       toast.error("Please enter a valid email address");
       setLoading(false);
       return;
     }
 
-    // Validate phone
     if (!formData.phone || formData.phone.length !== 10) {
       toast.error("Please enter a valid 10-digit phone number");
       setLoading(false);
       return;
     }
 
-    // Validate address fields
-    if (!formData.flat || !formData.landmark || !formData.city || !formData.state) {
-      toast.error("Please fill all address fields");
-      setLoading(false);
-      return;
-    }
-
-    // Address object बनाएं
     const addressObject = {
       flat: formData.flat,
       landmark: formData.landmark,
@@ -274,73 +142,30 @@ const AddToCart = () => {
       country: formData.country,
       phone: formData.phone,
       email: formData.email,
-      fullAddress: `${formData.flat}, ${formData.landmark}, ${formData.city}, ${formData.state}, ${formData.country}`,
-      timestamp: new Date().toISOString()
+      fullAddress: `${formData.flat}, ${formData.landmark}, ${formData.city}, ${formData.state}, ${formData.country}`
     };
     
-    // localStorage से existing addresses निकालें
     const existingAddresses = JSON.parse(localStorage.getItem('guestAddresses') || '[]');
+    const updatedAddresses = [...existingAddresses, addressObject];
     
-    // Check for duplicate address
-    const isDuplicate = existingAddresses.some(addr => 
-      typeof addr === 'object' &&
-      addr.email === addressObject.email &&
-      addr.fullAddress === addressObject.fullAddress
-    );
+    localStorage.setItem('guestAddresses', JSON.stringify(updatedAddresses));
+    localStorage.setItem('guestEmail', formData.email);
+    localStorage.setItem('guestPhone', formData.phone);
     
-    if (!isDuplicate) {
-      const updatedAddresses = [...existingAddresses, addressObject];
-      
-      // Save to localStorage
-      localStorage.setItem('guestAddresses', JSON.stringify(updatedAddresses));
-      
-      // Also save email and phone separately for easy access
-      localStorage.setItem('guestEmail', formData.email);
-      localStorage.setItem('guestPhone', formData.phone);
-      
-      // State update करें
-      setAddresses(updatedAddresses);
-      setFormData(prev => ({
-        ...prev,
-        selectedAddress: addressObject.fullAddress
-      }));
-      
-      toast.success("Address saved successfully!", {
-        position: 'top-right',
-        autoClose: 1500
-      });
-    } else {
-      // Select the existing address
-      const existingAddr = existingAddresses.find(addr => 
-        addr.email === addressObject.email && 
-        addr.fullAddress === addressObject.fullAddress
-      );
-      if (existingAddr) {
-        setFormData(prev => ({
-          ...prev,
-          selectedAddress: existingAddr.fullAddress
-        }));
-      }
-      toast.info("This address is already saved. Selected existing address.", {
-        position: 'top-right',
-        autoClose: 1500
-      });
-    }
-    
-    // Clear form fields except email and phone
+    setAddresses(updatedAddresses);
     setFormData(prev => ({
       ...prev,
+      selectedAddress: addressObject.fullAddress,
       flat: '',
       landmark: '',
       state: '',
       city: ''
     }));
-    
     setShowModal(false);
     setLoading(false);
+    toast.success("Address saved successfully!");
   };
 
-  // Fetch states
   useEffect(() => {
     const fetchStates = async () => {
       try {
@@ -355,7 +180,6 @@ const AddToCart = () => {
     fetchStates();
   }, []);
 
-  // Fetch cities when state changes
   useEffect(() => {
     if (!formData.state) return;
 
@@ -375,14 +199,21 @@ const AddToCart = () => {
 
   const loadRazorpayScript = () => {
     return new Promise((resolve) => {
+      if (window.Razorpay) {
+        console.log("✅ Razorpay SDK already loaded");
+        resolve(true);
+        return;
+      }
+
       const script = document.createElement('script');
       script.src = 'https://checkout.razorpay.com/v1/checkout.js';
+      script.async = true;
       script.onload = () => {
-        console.log("✅ Razorpay SDK loaded");
+        console.log("✅ Razorpay SDK loaded successfully");
         resolve(true);
       };
-      script.onerror = () => {
-        console.error("❌ Failed to load Razorpay SDK");
+      script.onerror = (error) => {
+        console.error("❌ Failed to load Razorpay SDK:", error);
         resolve(false);
       };
       document.body.appendChild(script);
@@ -390,56 +221,70 @@ const AddToCart = () => {
   };
 
   const fetchData = useCallback(async () => {
-    // Guest user के लिए localStorage से data fetch करें
     const guestAddresses = JSON.parse(localStorage.getItem('guestAddresses') || '[]');
     const guestEmail = localStorage.getItem('guestEmail') || '';
     const guestPhone = localStorage.getItem('guestPhone') || '';
     
     setAddresses(guestAddresses);
     
-    // Auto-select first address if available
     if (guestAddresses.length > 0 && !formData.selectedAddress) {
       const firstAddress = guestAddresses[0];
-      if (typeof firstAddress === 'object') {
-        setFormData(prev => ({ 
-          ...prev, 
-          selectedAddress: firstAddress.fullAddress,
-          email: firstAddress.email || guestEmail || prev.email,
-          phone: firstAddress.phone || guestPhone || prev.phone
-        }));
-      }
+      const addressValue = typeof firstAddress === 'object' ? firstAddress.fullAddress : firstAddress;
+      const addressEmail = typeof firstAddress === 'object' ? firstAddress.email : guestEmail;
+      const addressPhone = typeof firstAddress === 'object' ? firstAddress.phone : guestPhone;
+      
+      setFormData(prev => ({ 
+        ...prev, 
+        selectedAddress: addressValue,
+        email: addressEmail || guestEmail || prev.email,
+        phone: addressPhone || guestPhone || prev.phone
+      }));
     }
     
-    // If user is authenticated, fetch their data too
     if (isAuthenticated && userData?._id) {
       try {
-        const response = await axiosInstance.get(`/admin/readAdmin/${userData._id}`);
-        const userInfo = response?.data?.data;
+        const response = await axiosInstance.get(`/api/user/${userData._id}`);
+        
+        if (response.data.success) {
+          const userInfo = response.data.data;
+          console.log("Fetched user info:", userInfo);
 
-        console.log("Fetched user info:", userInfo);
+          if (userInfo?.email) {
+            setFormData(prev => ({ ...prev, email: userInfo.email }));
+          }
 
-        // Set email in form data
-        if (userInfo?.email) {
-          setFormData(prev => ({ ...prev, email: userInfo.email }));
-        }
-
-        if (Array.isArray(userInfo?.address)) {
-          // Merge guest addresses with user addresses
-          const mergedAddresses = [...guestAddresses, ...userInfo.address];
-          setAddresses(mergedAddresses);
-          if (mergedAddresses.length > 0 && !formData.selectedAddress) {
-            const firstAddr = mergedAddresses[0];
-            if (typeof firstAddr === 'object') {
+          if (userInfo?.address && Array.isArray(userInfo.address)) {
+            const mergedAddresses = [...guestAddresses];
+            
+            userInfo.address.forEach(addr => {
+              if (addr) {
+                mergedAddresses.push(addr);
+              }
+            });
+            
+            setAddresses(mergedAddresses);
+            
+            if (mergedAddresses.length > 0 && !formData.selectedAddress) {
+              const firstAddr = mergedAddresses[0];
+              const addrValue = typeof firstAddr === 'object' ? firstAddr.fullAddress || firstAddr : firstAddr;
+              const addrEmail = typeof firstAddr === 'object' ? firstAddr.email : userInfo.email;
+              
               setFormData(prev => ({ 
                 ...prev, 
-                selectedAddress: firstAddr.fullAddress,
-                email: firstAddr.email || userInfo.email || prev.email
+                selectedAddress: addrValue,
+                email: addrEmail || userInfo.email || prev.email
               }));
             }
           }
+        } else {
+          console.warn("User fetch returned unsuccessful:", response.data.message);
         }
       } catch (error) {
-        console.error("Error fetching user address:", error);
+        console.error("Error fetching user data:", error);
+        
+        if (userData?.email) {
+          setFormData(prev => ({ ...prev, email: userData.email }));
+        }
       }
     }
   }, [isAuthenticated, userData?._id, formData.selectedAddress]);
@@ -448,13 +293,278 @@ const AddToCart = () => {
     fetchData();
   }, [fetchData]);
 
-  // Handle checkout function remains the same...
   const handleCheckout = async () => {
-    // ... existing checkout code remains unchanged ...
-    // (Keep all your existing checkout logic here)
+    console.log("=== STARTING CHECKOUT PROCESS ===");
+    
+    if (checkoutLoading || paymentProcessing) {
+      console.log("Checkout already in progress");
+      return;
+    }
+
+    setCheckoutLoading(true);
+
+    try {
+      if (!formData.selectedAddress) {
+        toast.warn('Please select an address before checkout.');
+        setCheckoutLoading(false);
+        return;
+      }
+
+      if (!cartItems || cartItems.length === 0) {
+        toast.error('Your cart is empty');
+        setCheckoutLoading(false);
+        return;
+      }
+
+      const checkoutEmail = formData.email || localStorage.getItem('guestEmail') || '';
+      
+      if (!checkoutEmail || !isValidEmail(checkoutEmail)) {
+        toast.error('Please provide a valid email address');
+        setCheckoutLoading(false);
+        return;
+      }
+
+      let phoneNumber = formData.phone?.toString().trim();
+
+      if (!phoneNumber) {
+        const selectedAddressObj = addresses.find(addr => 
+          typeof addr === 'object' ? addr.fullAddress === formData.selectedAddress : addr === formData.selectedAddress
+        );
+        
+        if (selectedAddressObj && typeof selectedAddressObj === 'object' && selectedAddressObj.phone) {
+          phoneNumber = selectedAddressObj.phone;
+        } else {
+          phoneNumber = localStorage.getItem('guestPhone') || '';
+        }
+      }
+
+      phoneNumber = phoneNumber.replace(/^\+91/, '').replace(/^91/, '').trim();
+
+      if (!phoneNumber || !/^\d{10}$/.test(phoneNumber)) {
+        toast.error('Please provide a valid 10-digit phone number');
+        setCheckoutLoading(false);
+        return;
+      }
+
+      const orderItems = cartItems.map((item) => {
+        const qty = parseInt(item.quantity) || 1;
+        const price = parseFloat(item.final_price) || 0;
+
+        if (!item._id || !item.name || qty < 1 || price <= 0) {
+          throw new Error(`Invalid item data for: ${item.name || 'Unknown item'}`);
+        }
+
+        return {
+          productId: item._id,
+          name: item.name.trim(),
+          quantity: qty,
+          price: price
+        };
+      });
+
+      const userId = isAuthenticated ? userData._id : `guest_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+
+      const orderPayload = {
+        userId: userId,
+        items: orderItems,
+        address: formData.selectedAddress.trim(),
+        phone: phoneNumber,
+        email: checkoutEmail,
+        totalAmount: parseFloat(totalPrice.toFixed(2)),
+        isGuest: !isAuthenticated
+      };
+
+      console.log("Step 1: Creating Razorpay order...");
+      console.log("Order payload:", JSON.stringify(orderPayload, null, 2));
+      
+      const orderResponse = await axiosInstance.post('/api/createPaymentOrder', orderPayload);
+
+      if (!orderResponse.data.success) {
+        const errorMsg = orderResponse.data?.message || 'Failed to create payment order';
+        console.error("❌ Razorpay order creation failed:", errorMsg);
+        toast.error(errorMsg);
+        setCheckoutLoading(false);
+        return;
+      }
+
+      const { order: razorpayOrder, key: razorpayKey } = orderResponse.data;
+      console.log("✅ Razorpay order created:", razorpayOrder.id);
+      console.log("Razorpay Key:", razorpayKey ? `${razorpayKey.substring(0, 10)}...` : 'missing');
+
+      if (!razorpayKey) {
+        toast.error('Payment configuration error. Please try again.');
+        setCheckoutLoading(false);
+        return;
+      }
+
+      const razorpayLoaded = await loadRazorpayScript();
+      if (!razorpayLoaded) {
+        toast.error('Payment system failed to load. Please refresh the page.');
+        setCheckoutLoading(false);
+        return;
+      }
+
+      // ✅ FIXED: Use the key from backend response instead of hardcoding it
+      const options = {
+        key: razorpayKey, // Use key from backend response
+        amount: razorpayOrder.amount,
+        currency: razorpayOrder.currency,
+        name: "Dr BSK Healthcare",
+        description: `Order #${razorpayOrder.receipt}`,
+        order_id: razorpayOrder.id,
+        handler: async function (response) {
+          console.log("✅ Payment successful, response:", response);
+          
+          setIsProcessing(true);
+          setProcessingMessage("Verifying your payment...");
+          setPaymentProcessing(true);
+          
+          try {
+            console.log("Step 2: Verifying payment and creating order...");
+            
+            const verifyPayload = {
+              razorpay_order_id: response.razorpay_order_id,
+              razorpay_payment_id: response.razorpay_payment_id,
+              razorpay_signature: response.razorpay_signature,
+              ...orderPayload
+            };
+
+            setProcessingMessage("Creating your order...");
+            
+            const verifyResponse = await axiosInstance.post('/api/verifyPayment', verifyPayload);
+            
+            if (verifyResponse.data.success) {
+              console.log("✅ Order created successfully:", verifyResponse.data.orderId);
+              
+              setProcessingMessage("Finalizing your order...");
+              
+              dispatch(clearProducts());
+              localStorage.removeItem('cartItems');
+              
+              if (!isAuthenticated) {
+                localStorage.removeItem('guestAddresses');
+                localStorage.removeItem('guestEmail');
+                localStorage.removeItem('guestPhone');
+              }
+              
+              toast.success(
+                <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                  <CheckCircle size={20} />
+                  Order placed successfully! Redirecting...
+                </div>,
+                {
+                  position: 'top-right',
+                  autoClose: 2000,
+                  hideProgressBar: false,
+                  closeOnClick: true,
+                  pauseOnHover: true,
+                  draggable: true
+                }
+              );
+              
+              setTimeout(() => {
+                setIsProcessing(false);
+                navigate(`/success`, {
+                  state: {
+                    orderId: verifyResponse.data.orderId,
+                    orderDetails: verifyResponse.data.order
+                  }
+                });
+              }, 2000);
+              
+            } else {
+              console.error("❌ Order creation failed:", verifyResponse.data.message);
+              setIsProcessing(false);
+              toast.error(verifyResponse.data.message || 'Failed to create order');
+              setPaymentProcessing(false);
+            }
+          } catch (error) {
+            console.error("❌ Payment verification error:", error);
+            setIsProcessing(false);
+            setPaymentProcessing(false);
+            toast.error('Payment verification failed. Please contact support.');
+          } finally {
+            setCheckoutLoading(false);
+          }
+        },
+        prefill: {
+          name: userData.name || checkoutEmail.split('@')[0],
+          email: checkoutEmail,
+          contact: `+91${phoneNumber}`
+        },
+        theme: {
+          color: '#3f51b5'
+        },
+        modal: {
+          ondismiss: function() {
+            console.log("Payment modal closed by user");
+            if (!paymentProcessing) {
+              setCheckoutLoading(false);
+            }
+          },
+          escape: false,
+          backdropclose: false
+        },
+        notes: {
+          orderId: razorpayOrder.receipt,
+          userId: userId
+        }
+      };
+
+      console.log("Opening Razorpay checkout with options:", {
+        key: `${options.key.substring(0, 10)}...`,
+        amount: options.amount,
+        order_id: options.order_id
+      });
+      
+      const rzp = new window.Razorpay(options);
+      
+      rzp.on('payment.failed', function (response) {
+        console.error("❌ Payment failed:", response.error);
+        setIsProcessing(false);
+        setPaymentProcessing(false);
+        setCheckoutLoading(false);
+        
+        let errorMsg = 'Payment failed';
+        if (response.error && response.error.description) {
+          errorMsg = `Payment failed: ${response.error.description}`;
+        } else if (response.error && response.error.reason) {
+          errorMsg = `Payment failed: ${response.error.reason}`;
+        }
+        
+        toast.error(errorMsg, {
+          position: 'top-right',
+          autoClose: 5000
+        });
+      });
+      
+      rzp.open();
+
+    } catch (error) {
+      console.error('=== CHECKOUT ERROR ===');
+      console.error('Error:', error.message);
+      console.error('Response:', error.response?.data);
+
+      let errorMessage = 'Checkout failed. Please try again.';
+
+      if (error.response?.status === 400) {
+        const validationError = error.response.data?.message;
+        if (validationError) {
+          errorMessage = validationError;
+        }
+      } else if (error.response?.data?.message) {
+        errorMessage = error.response.data.message;
+      } else if (error.request) {
+        errorMessage = 'Network error. Please check your connection.';
+      }
+
+      toast.error(errorMessage);
+      setIsProcessing(false);
+      setCheckoutLoading(false);
+      setPaymentProcessing(false);
+    }
   };
 
-  // Loader component function
   const renderProcessingLoader = () => {
     if (!isProcessing) return null;
     
@@ -484,7 +594,6 @@ const AddToCart = () => {
     );
   };
 
-  // Login prompt message
   const renderLoginPrompt = () => {
     if (!isAuthenticated) {
       return (
@@ -499,7 +608,6 @@ const AddToCart = () => {
     return null;
   };
 
-  // Render address in list
   const renderAddressItem = (addr, index) => {
     if (typeof addr === 'string') {
       return (
@@ -514,17 +622,11 @@ const AddToCart = () => {
                 setFormData(prev => ({ ...prev, selectedAddress: addr }))
               }
             />
-            <div className="address-content">
-              <span className='text_20'>{addr}</span>
-              {formData.email && (
-                <span className="address-email-badge">📧 {formData.email}</span>
-              )}
-            </div>
+            <span className='text_20'>{addr}</span>
           </label>
         </li>
       );
     } else {
-      // For object type addresses (guest users)
       return (
         <li key={index} className={`address-card ${formData.selectedAddress === addr.fullAddress ? 'selected' : ''}`}>
           <label>
@@ -541,7 +643,6 @@ const AddToCart = () => {
                   phone: addr.phone || prev.phone
                 }));
                 
-                // Save email and phone to localStorage immediately
                 if (addr.email) {
                   localStorage.setItem('guestEmail', addr.email);
                 }
@@ -552,15 +653,8 @@ const AddToCart = () => {
             />
             <div className="address-details">
               <span className='text_20'>{addr.fullAddress}</span>
-              <div className="address-meta">
-                {addr.email && <span className="address-email">📧 {addr.email}</span>}
-                {addr.phone && <span className="address-phone">📱 {addr.phone}</span>}
-                {addr.timestamp && (
-                  <span className="address-time">
-                    Saved: {new Date(addr.timestamp).toLocaleDateString()}
-                  </span>
-                )}
-              </div>
+              {addr.email && <span className="address-email">📧 {addr.email}</span>}
+              {addr.phone && <span className="address-phone">📱 {addr.phone}</span>}
             </div>
           </label>
         </li>
@@ -570,7 +664,6 @@ const AddToCart = () => {
 
   return (
     <>
-      {/* Processing Loader */}
       {renderProcessingLoader()}
       
       <div className="cart-container">
@@ -673,91 +766,28 @@ const AddToCart = () => {
 
                   {!isAuthenticated && (
                     <div className="guest-notice">
-                      <p>🎯 <strong>Guest Checkout Available!</strong> Enter your email below to load saved addresses.</p>
+                      <p>🎯 <strong>Guest Checkout Available!</strong> Enter your details below to proceed without login.</p>
                     </div>
                   )}
-
-                  <div className="email-section">
-                    <div className="email-input-container">
-                      <TextField
-                        label="Email Address"
-                        fullWidth
-                        variant="outlined"
-                        size="small"
-                        type="email"
-                        value={formData.email}
-                        onChange={handleEmailChange}
-                        onBlur={handleEmailBlur}
-                        placeholder="Enter your email address"
-                        helperText={
-                          formData.email && !isValidEmail(formData.email) 
-                            ? "Please enter a valid email address" 
-                            : "Enter email and click outside to load saved addresses"
-                        }
-                        error={formData.email && !isValidEmail(formData.email)}
-                        InputLabelProps={{ shrink: true }}
-                        InputProps={{
-                          endAdornment: emailSearchLoading && (
-                            <InputAdornment position="end">
-                              <CircularProgress size={20} />
-                            </InputAdornment>
-                          ),
-                        }}
-                        inputRef={emailFieldRef}
-                        sx={{
-                          '& .MuiOutlinedInput-root': {
-                            borderRadius: '8px',
-                          },
-                        }}
-                      />
-                    </div>
-                    {emailSearchLoading && (
-                      <div className="search-loading">
-                        <CircularProgress size={16} /> Searching for saved addresses...
-                      </div>
-                    )}
-                  </div>
 
                   <button
                     className="enhanced-add-address-btn"
                     onClick={() => setShowModal(true)}
                   >
-                    ➕ {addresses.length > 0 ? 'Add Another Address' : 'Add New Address'}
+                    ➕ {addresses.length > 0 ? 'Add Another Address' : 'Add Address'}
                   </button>
 
                   <div className='my_10'>
                     {addresses.length > 0 ? (
                       <div className="saved-addresses">
-                        {/* <h4 className="section-subtitle">
-                          📍 Saved Addresses ({addresses.length} found)
-                          {formData.email && isValidEmail(formData.email) && (
-                            <span className="email-filter-note">
-                              for: {formData.email}
-                            </span>
-                          )}
-                        </h4> */}
+                        <h4 className="section-subtitle">📍 Saved Addresses</h4>
                         <ul className="address-list">
                           {addresses.map((addr, index) => renderAddressItem(addr, index))}
                         </ul>
                       </div>
-                    ) : formData.email && isValidEmail(formData.email) ? (
-                      <div className="no-address-found">
-                        <p className="no-address-text">
-                          No saved addresses found for this email. 
-                          <button 
-                            onClick={() => setShowModal(true)}
-                            className="add-first-address-btn"
-                          >
-                            Add your first address
-                          </button>
-                        </p>
-                      </div>
                     ) : (
                       <p className="no-address-text">
-                        {formData.email ? 
-                          "Please enter a valid email address and click outside the field to search." 
-                          : "Enter your email above to load saved addresses or add a new one."
-                        }
+                        No address saved yet. Please add your delivery address.
                       </p>
                     )}
                   </div>
@@ -833,7 +863,10 @@ const AddToCart = () => {
                     </div>
                   )}
 
-                
+                  <div className="security-badges">
+                    <div className="badge">🔒 Secure Payment</div>
+                    <div className="badge">💳 Razorpay Verified</div>
+                  </div>
                 </div>
               </div>
             )}
@@ -882,7 +915,7 @@ const AddToCart = () => {
             opacity: 0.9,
             marginTop: '4px'
           }}>
-            {formData.email && `Email: ${formData.email}`}
+            Please fill in all required fields
           </div>
         </DialogTitle>
         
@@ -901,7 +934,6 @@ const AddToCart = () => {
           }
         }}>
           <div className="form-grid">
-            {/* Email Field */}
             <div className="form-field" style={{ gridColumn: 'span 12', paddingTop: '10px' }}>
               <TextField
                 label="Email Address"
@@ -911,22 +943,14 @@ const AddToCart = () => {
                 type="email"
                 value={formData.email}
                 onChange={handleEmailChange}
-                onBlur={handleEmailBlur}
                 helperText={
                   formData.email && !isValidEmail(formData.email) 
                     ? "Please enter a valid email address" 
-                    : "Address will be linked to this email"
+                    : "Required for order confirmation and updates"
                 }
                 required
                 error={formData.email && !isValidEmail(formData.email)}
                 InputLabelProps={{ shrink: true }}
-                InputProps={{
-                  endAdornment: emailSearchLoading && (
-                    <InputAdornment position="end">
-                      <CircularProgress size={20} />
-                    </InputAdornment>
-                  ),
-                }}
                 sx={{
                   '& .MuiOutlinedInput-root': {
                     borderRadius: '8px',
@@ -943,21 +967,8 @@ const AddToCart = () => {
                   }
                 }}
               />
-              {emailSearchLoading && (
-                <div style={{
-                  fontSize: '0.75rem',
-                  color: '#1976d2',
-                  marginTop: '4px',
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: '4px'
-                }}>
-                  <CircularProgress size={12} /> Searching saved addresses...
-                </div>
-              )}
             </div>
 
-            {/* Address Fields */}
             <div className="form-field" style={{ gridColumn: 'span 6' }}>
               <TextField
                 label="Flat / House No."
@@ -1006,7 +1017,6 @@ const AddToCart = () => {
               />
             </div>
 
-            {/* State Dropdown */}
             <div className="form-field" style={{ gridColumn: 'span 6' }}>
               <div className="custom-select-container">
                 <label className="custom-label">
@@ -1042,7 +1052,6 @@ const AddToCart = () => {
               </div>
             </div>
 
-            {/* City Dropdown */}
             <div className="form-field" style={{ gridColumn: 'span 6' }}>
               <div className="custom-select-container">
                 <label className="custom-label">
@@ -1090,7 +1099,6 @@ const AddToCart = () => {
               </div>
             </div>
 
-            {/* Country Field */}
             <div className="form-field" style={{ gridColumn: 'span 6' }}>
               <TextField
                 label="Country"
@@ -1112,7 +1120,6 @@ const AddToCart = () => {
               />
             </div>
 
-            {/* Phone Field */}
             <div className="form-field" style={{ gridColumn: 'span 6' }}>
               <TextField
                 label="Phone Number"
@@ -1163,7 +1170,6 @@ const AddToCart = () => {
             </div>
           </div>
 
-          {/* Required Note */}
           <div style={{ 
             display: 'flex', 
             alignItems: 'center', 
@@ -1187,7 +1193,6 @@ const AddToCart = () => {
             </span>
           </div>
 
-          {/* Guest Info Note */}
           {!isAuthenticated && (
             <div style={{ 
               fontSize: '0.875rem', 
@@ -1208,8 +1213,8 @@ const AddToCart = () => {
                 ⓘ
               </span>
               <span>
-                Address will be saved with this email for future orders. 
-                <strong> Sign up</strong> to save addresses permanently across devices.
+                Your address will be saved locally for this session only. 
+                <strong> Sign up</strong> to save addresses permanently.
               </span>
             </div>
           )}
