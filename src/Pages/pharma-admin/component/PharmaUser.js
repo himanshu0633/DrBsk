@@ -73,7 +73,7 @@ const PharmaUser = () => {
 
   const fetchUsers = async () => {
     try {
-      const response = await axiosInstance.get('/admin/readallAdmins');
+      const response = await axiosInstance.get('/admin/read-all');
       setUsers(response.data.data);
     } catch (error) {
       console.error("Error fetching data:", error);
