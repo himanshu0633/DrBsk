@@ -91,6 +91,45 @@ const toNum = (v, fallback = 0) => {
   return Number.isFinite(n) ? n : fallback;
 };
 
+/** ---------- Facebook Pixel Functions ---------- */
+// Server-side event function
+const sendServerEvent = async (eventName, data) => {
+  try {
+    const eventData = {
+      eventName,
+      data: {
+        ...data,
+        eventSourceUrl: window.location.href,
+        actionSource: 'website',
+        eventTime: Math.floor(Date.now() / 1000),
+      },
+      fbp: getCookie('_fbp'),
+      fbc: getCookie('_fbc'),
+      clientUserAgent: navigator.userAgent,
+    };
+
+    // Send to your backend API
+    await fetch('/api/facebook-events', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(eventData),
+    });
+  } catch (error) {
+    console.error('Error sending server event:', error);
+  }
+};
+
+// Helper function to get cookies
+const getCookie = (name) => {
+  if (typeof document === 'undefined') return null;
+  const value = `; ${document.cookie}`;
+  const parts = value.split(`; ${name}=`);
+  if (parts.length === 2) return parts.pop().split(';').shift();
+  return null;
+};
+
 /** ---------- component ---------- */
 const ProductPage = () => {
   const [units, setUnits] = useState(1);
@@ -99,6 +138,8 @@ const ProductPage = () => {
 
   const [product, setProduct] = useState(null);
   const [loading, setLoading] = useState(false);
+  const [hasTrackedPageView, setHasTrackedPageView] = useState(false);
+  const [viewedProducts, setViewedProducts] = useState(new Set());
 
   const [addedToCart, setAddedToCart] = useState(false);
   const [selectedImageIndex, setSelectedImageIndex] = useState(0);
@@ -110,6 +151,74 @@ const ProductPage = () => {
   const navigate = useNavigate();
   const dispatch = useDispatch();
 
+  // Facebook Pixel Tracking Functions
+  const trackViewContent = (contentData) => {
+    if (typeof window !== 'undefined' && window.fbq) {
+      window.fbq('track', 'ViewContent', {
+        content_name: contentData.name,
+        content_ids: [contentData.id],
+        content_type: contentData.type || 'product',
+        value: contentData.value || 0,
+        currency: contentData.currency || 'INR',
+        content_category: contentData.category,
+      });
+    }
+
+    // Server-side event send
+    sendServerEvent('ViewContent', contentData);
+  };
+
+  const trackPageView = () => {
+    if (typeof window !== 'undefined' && window.fbq) {
+      window.fbq('track', 'PageView');
+    }
+    
+    // Server-side event send
+    sendServerEvent('PageView', {
+      id: 'product_page_view',
+      name: 'Product Detail Page',
+      value: 0,
+      category: 'Product Detail',
+      type: 'page',
+    });
+  };
+
+  const trackAddToCart = (productData) => {
+    if (typeof window !== 'undefined' && window.fbq) {
+      window.fbq('track', 'AddToCart', {
+        content_ids: [productData.id],
+        content_name: productData.name,
+        content_type: 'product',
+        value: productData.value || productData.price || 0,
+        currency: 'INR',
+        num_items: productData.quantity || 1,
+      });
+    }
+    sendServerEvent('AddToCart', productData);
+  };
+
+  const trackInitiateCheckout = (checkoutData) => {
+    if (typeof window !== 'undefined' && window.fbq) {
+      window.fbq('track', 'InitiateCheckout');
+    }
+    
+    sendServerEvent('InitiateCheckout', checkoutData);
+  };
+
+  const trackPurchase = (purchaseData) => {
+    if (typeof window !== 'undefined' && window.fbq) {
+      window.fbq('track', 'Purchase', {
+        value: purchaseData.value || 0,
+        currency: 'INR',
+        content_ids: purchaseData.contentIds || [],
+        content_type: 'product',
+        num_items: purchaseData.numItems || 1,
+        order_id: purchaseData.orderId,
+      });
+    }
+    sendServerEvent('Purchase', purchaseData);
+  };
+
   const handleMouseMove = (e) => {
     const { left, top, width, height } = e.currentTarget.getBoundingClientRect();
     const x = ((e.clientX - left) / width) * 100;
@@ -117,8 +226,37 @@ const ProductPage = () => {
     setZoomPosition({ x, y });
   };
 
-  const increaseUnits = () => setUnits((prev) => prev + 1);
-  const decreaseUnits = () => setUnits((prev) => (prev > 1 ? prev - 1 : prev));
+  const increaseUnits = () => {
+    setUnits((prev) => prev + 1);
+    
+    // Track quantity increase
+    trackViewContent({
+      id: `quantity_increase_${product?._id}`,
+      name: `${product?.name} - Quantity Increased`,
+      value: units + 1,
+      currency: 'INR',
+      category: 'User Interaction',
+      type: 'quantity_change',
+      action: 'increase',
+    });
+  };
+
+  const decreaseUnits = () => {
+    if (units > 1) {
+      setUnits((prev) => prev - 1);
+      
+      // Track quantity decrease
+      trackViewContent({
+        id: `quantity_decrease_${product?._id}`,
+        name: `${product?.name} - Quantity Decreased`,
+        value: units - 1,
+        currency: 'INR',
+        category: 'User Interaction',
+        type: 'quantity_change',
+        action: 'decrease',
+      });
+    }
+  };
 
   const fetchData = async () => {
     if (!id) return;
@@ -153,9 +291,51 @@ const ProductPage = () => {
       setSelectedImageIndex(0);
       setAddedToCart(false);
       setUnits(1);
+
+      // Track product page view
+      if (!hasTrackedPageView) {
+        trackPageView();
+        setHasTrackedPageView(true);
+      }
+
+      // Track product detail view
+      trackViewContent({
+        id: p._id,
+        name: p.name,
+        value: p.consumer_price || 0,
+        currency: 'INR',
+        category: p.sub_category || 'Medicine',
+        type: 'product_detail',
+        description: p.description,
+      });
+
+      // Track variants view
+      variants.forEach((variant, index) => {
+        if (variant.in_stock) {
+          trackViewContent({
+            id: `${p._id}_${variant._key || index}`,
+            name: `${p.name} - ${variant.label}`,
+            value: variant.final_price || 0,
+            currency: 'INR',
+            category: p.sub_category || 'Medicine',
+            type: 'product_variant',
+          });
+        }
+      });
+
     } catch (error) {
       console.error("Error fetching product:", error);
       toast.error("Failed to load product");
+      
+      // Track error
+      trackViewContent({
+        id: 'product_fetch_error',
+        name: 'Error Loading Product',
+        value: 0,
+        category: 'Error',
+        type: 'fetch_error',
+        error: error.message,
+      });
     } finally {
       setLoading(false);
     }
@@ -165,6 +345,20 @@ const ProductPage = () => {
     fetchData();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [id]);
+
+  // Track tab changes
+  useEffect(() => {
+    if (product && hasTrackedPageView) {
+      trackViewContent({
+        id: `tab_${activeTab}_${product._id}`,
+        name: `${product.name} - ${activeTab} Tab`,
+        value: 0,
+        category: 'User Interaction',
+        type: 'tab_view',
+        tab: activeTab,
+      });
+    }
+  }, [activeTab, product, hasTrackedPageView]);
 
   const mediaSafe = useMemo(() => (Array.isArray(product?.media) ? product.media : []), [product]);
   const variants = useMemo(() => product?.quantity || [], [product]);
@@ -179,8 +373,23 @@ const ProductPage = () => {
   const unitGst = selectedVariant?.gst ?? null;
 
   const handleSelectVariant = (i) => {
-    setSelectedVariantIndex(i);
-    setUnits(1);
+    const variant = variants[i];
+    if (variant && variant.in_stock) {
+      setSelectedVariantIndex(i);
+      setUnits(1);
+      
+      // Track variant selection
+      trackViewContent({
+        id: `${product?._id}_${variant._key || i}`,
+        name: `${product?.name} - ${variant.label} Selected`,
+        value: variant.final_price || 0,
+        currency: 'INR',
+        category: 'User Interaction',
+        type: 'variant_selection',
+        variant_label: variant.label,
+        variant_price: variant.final_price,
+      });
+    }
   };
 
   const handleAddToCart = () => {
@@ -237,15 +446,61 @@ const ProductPage = () => {
         position: "top-right",
         autoClose: 2000,
       });
+      
+      // Track quantity update
+      trackAddToCart({
+        id: cartItem._id,
+        name: cartItem.name,
+        price: cartItem.unitPrice,
+        value: cartItem.unitPrice * newQuantity,
+        currency: 'INR',
+        category: cartItem.sub_category || 'Medicine',
+        type: 'product',
+        quantity: newQuantity,
+        action: 'quantity_update',
+      });
     } else {
       dispatch(addData(cartItem));
       toast.success("Item added to cart!", {
         position: "top-right",
         autoClose: 2000,
       });
+      
+      // Track AddToCart event
+      trackAddToCart({
+        id: cartItem._id,
+        name: cartItem.name,
+        price: cartItem.unitPrice,
+        value: cartItem.unitPrice * qty,
+        currency: 'INR',
+        category: cartItem.sub_category || 'Medicine',
+        type: 'product',
+        quantity: qty,
+        variant: cartItem.selectedVariant?.label,
+      });
+      
+      // Track potential purchase initiation
+      trackInitiateCheckout({
+        id: `initiate_checkout_${cartItem._id}`,
+        name: `Initiate Checkout - ${cartItem.name}`,
+        value: cartItem.totalPrice,
+        currency: 'INR',
+        category: 'Checkout',
+        type: 'add_to_cart_flow',
+      });
     }
 
     setAddedToCart(true);
+    
+    // Track successful add to cart
+    trackViewContent({
+      id: `add_to_cart_success_${product._id}`,
+      name: `${product.name} Added to Cart`,
+      value: price * qty,
+      currency: 'INR',
+      category: 'User Conversion',
+      type: 'add_to_cart_success',
+    });
   };
 
   const handleBuyNow = () => {
@@ -270,6 +525,26 @@ const ProductPage = () => {
       inStock: selectedVariant.in_stock ?? product.stock,
     };
 
+    // Track Buy Now click
+    trackViewContent({
+      id: `buy_now_click_${product._id}`,
+      name: `Buy Now - ${product.name}`,
+      value: price * qty,
+      currency: 'INR',
+      category: 'User Conversion',
+      type: 'buy_now_click',
+    });
+    
+    // Track Initiate Checkout
+    trackInitiateCheckout({
+      id: `checkout_initiate_${product._id}`,
+      name: `Checkout Initiated - ${product.name}`,
+      value: price * qty,
+      currency: 'INR',
+      category: 'Checkout',
+      type: 'buy_now_flow',
+    });
+
     navigate("/checkout", {
       state: {
         product: checkoutProduct,
@@ -282,19 +557,67 @@ const ProductPage = () => {
     const url = window.location.href;
     navigator.clipboard
       .writeText(url)
-      .then(() =>
-        toast.info("Link copied to clipboard!", { position: "top-right", autoClose: 2000 })
-      )
-      .catch(() =>
-        toast.error("Failed to copy link.", { position: "top-right", autoClose: 2000 })
-      );
+      .then(() => {
+        toast.info("Link copied to clipboard!", { position: "top-right", autoClose: 2000 });
+        
+        // Track share action
+        trackViewContent({
+          id: `share_${product?._id}`,
+          name: `${product?.name} - Shared`,
+          value: 0,
+          category: 'User Interaction',
+          type: 'share',
+          platform: 'clipboard',
+        });
+      })
+      .catch(() => {
+        toast.error("Failed to copy link.", { position: "top-right", autoClose: 2000 });
+      });
+  };
+
+  const handleImageClick = (index) => {
+    setSelectedImageIndex(index);
+    
+    // Track image view
+    trackViewContent({
+      id: `image_view_${index}_${product?._id}`,
+      name: `${product?.name} - Image ${index + 1}`,
+      value: 0,
+      category: 'Media',
+      type: 'image_view',
+      image_index: index,
+    });
+  };
+
+  const handleTabClick = (tab) => {
+    setActiveTab(tab);
+    
+    // Track tab click
+    trackViewContent({
+      id: `tab_click_${tab}_${product?._id}`,
+      name: `${product?.name} - ${tab} Tab Clicked`,
+      value: 0,
+      category: 'User Interaction',
+      type: 'tab_click',
+      tab: tab,
+    });
   };
 
   if (loading || !product) {
     return (
       <div>
         <Header />
-        <CustomLoader />
+        <div 
+          onClick={() => trackViewContent({
+            id: 'product_page_loading',
+            name: 'Product Page Loading',
+            value: 0,
+            category: 'Loading State',
+            type: 'technical',
+          })}
+        >
+          <CustomLoader />
+        </div>
         <Footer />
       </div>
     );
@@ -315,8 +638,30 @@ const ProductPage = () => {
               <div
                 className="image-wrapper"
                 onMouseMove={handleMouseMove}
-                onMouseEnter={() => setIsZoomActive(true)}
-                onMouseLeave={() => setIsZoomActive(false)}
+                onMouseEnter={() => {
+                  setIsZoomActive(true);
+                  // Track zoom interaction
+                  trackViewContent({
+                    id: `image_zoom_start_${product._id}`,
+                    name: `${product.name} - Zoom Started`,
+                    value: 0,
+                    category: 'User Interaction',
+                    type: 'image_zoom',
+                    action: 'start',
+                  });
+                }}
+                onMouseLeave={() => {
+                  setIsZoomActive(false);
+                  // Track zoom end
+                  trackViewContent({
+                    id: `image_zoom_end_${product._id}`,
+                    name: `${product.name} - Zoom Ended`,
+                    value: 0,
+                    category: 'User Interaction',
+                    type: 'image_zoom',
+                    action: 'end',
+                  });
+                }}
                 style={{ position: "relative", cursor: "crosshair" }}
               >
                 {selectedImageUrl ? (
@@ -324,9 +669,20 @@ const ProductPage = () => {
                     src={selectedImageUrl}
                     alt={product?.name || "Product"}
                     className="product-image1"
+                    onClick={() => handleImageClick(selectedImageIndex)}
                   />
                 ) : (
-                  <div className="product-image1 no-image" aria-label="No image available">
+                  <div 
+                    className="product-image1 no-image" 
+                    aria-label="No image available"
+                    onClick={() => trackViewContent({
+                      id: `no_image_click_${product._id}`,
+                      name: `${product.name} - No Image Clicked`,
+                      value: 0,
+                      category: 'Media',
+                      type: 'no_image',
+                    })}
+                  >
                     No Image
                   </div>
                 )}
@@ -353,11 +709,31 @@ const ProductPage = () => {
                   />
                 )}
 
-                <div className="product-badge natural-badge">
+                <div 
+                  className="product-badge natural-badge"
+                  onClick={() => trackViewContent({
+                    id: `badge_click_natural_${product._id}`,
+                    name: 'Natural Badge Clicked',
+                    value: 0,
+                    category: 'User Interaction',
+                    type: 'badge_click',
+                    badge: 'natural',
+                  })}
+                >
                   <Leaf className="badge-icon" size={16} />
                   <span>Natural</span>
                 </div>
-                <div className="product-badge bestseller-badge">
+                <div 
+                  className="product-badge bestseller-badge"
+                  onClick={() => trackViewContent({
+                    id: `badge_click_bestseller_${product._id}`,
+                    name: 'Bestseller Badge Clicked',
+                    value: 0,
+                    category: 'User Interaction',
+                    type: 'badge_click',
+                    badge: 'bestseller',
+                  })}
+                >
                   <Bolt className="badge-icon" size={16} />
                   <span>Bestseller</span>
                 </div>
@@ -370,14 +746,35 @@ const ProductPage = () => {
                       type="button"
                       key={index}
                       className={`thumbnail ${selectedImageIndex === index ? "active-thumbnail" : ""}`}
-                      onClick={() => setSelectedImageIndex(index)}
+                      onClick={() => handleImageClick(index)}
                       aria-label={`Select image ${index + 1}`}
                     >
-                      <img src={JoinUrl(API_URL, mediaItem.url)} alt={`Thumbnail ${index + 1}`} />
+                      <img 
+                        src={JoinUrl(API_URL, mediaItem.url)} 
+                        alt={`Thumbnail ${index + 1}`} 
+                        onLoad={() => trackViewContent({
+                          id: `thumbnail_load_${index}_${product._id}`,
+                          name: `${product.name} - Thumbnail ${index + 1} Loaded`,
+                          value: 0,
+                          category: 'Technical',
+                          type: 'image_load',
+                        })}
+                      />
                     </button>
                   ))
                 ) : (
-                  <div className="thumbnail">No thumbnails</div>
+                  <div 
+                    className="thumbnail"
+                    onClick={() => trackViewContent({
+                      id: `no_thumbnail_click_${product._id}`,
+                      name: 'No Thumbnail Available',
+                      value: 0,
+                      category: 'Media',
+                      type: 'no_thumbnail',
+                    })}
+                  >
+                    No thumbnails
+                  </div>
                 )}
               </div>
             </div>
@@ -385,9 +782,24 @@ const ProductPage = () => {
             {/* Product Info Section */}
             <div className="product-info">
               <div className="product-header">
-                <h1 className="product-title">{product?.name || "Product"}</h1>
+                <h1 
+                  className="product-title"
+                  onClick={() => trackViewContent({
+                    id: `product_title_click_${product._id}`,
+                    name: 'Product Title Clicked',
+                    value: 0,
+                    category: 'User Interaction',
+                    type: 'title_click',
+                  })}
+                >
+                  {product?.name || "Product"}
+                </h1>
                 <div className="product-actions">
-                  <button className="share-btn" onClick={handleShare} aria-label="Share this product">
+                  <button 
+                    className="share-btn" 
+                    onClick={handleShare} 
+                    aria-label="Share this product"
+                  >
                     <Share2 size={18} />
                   </button>
                 </div>
@@ -433,7 +845,17 @@ const ProductPage = () => {
               </div>
 
               {/* Stock banner */}
-              <div className={`stock-status ${product.stock ? "bg-green" : "bg-red"}`}>
+              <div 
+                className={`stock-status ${product.stock ? "bg-green" : "bg-red"}`}
+                onClick={() => trackViewContent({
+                  id: `stock_status_click_${product._id}`,
+                  name: `Stock Status - ${product.stock ? 'In Stock' : 'Out of Stock'}`,
+                  value: 0,
+                  category: 'Product Info',
+                  type: 'stock_status_click',
+                  status: product.stock ? 'in_stock' : 'out_of_stock',
+                })}
+              >
                 <div className={`status-indicator ${product.stock ? "bg-green" : "bg-red"}`}></div>
                 <span className="stock-status__text">
                   {product.stock ? "In Stock - Ready to Ship" : "Out of Stock"}
@@ -441,7 +863,17 @@ const ProductPage = () => {
               </div>
 
               {/* Dynamic price block */}
-              <div className="price-section">
+              <div 
+                className="price-section"
+                onClick={() => trackViewContent({
+                  id: `price_section_click_${product._id}`,
+                  name: 'Price Section Clicked',
+                  value: unitPrice,
+                  currency: 'INR',
+                  category: 'Product Info',
+                  type: 'price_view',
+                })}
+              >
                 <div className="price-container">
                   <div className="current-price">{money(unitPrice)}</div>
                   {unitMrp != null && unitMrp > unitPrice && (
@@ -461,7 +893,11 @@ const ProductPage = () => {
                 <div className="quantity-container">
                   <label className="quantity-label">Quantity</label>
                   <div className="quantity-control">
-                    <button onClick={decreaseUnits} className="quantity-btn" aria-label="Decrease quantity">
+                    <button 
+                      onClick={decreaseUnits} 
+                      className="quantity-btn" 
+                      aria-label="Decrease quantity"
+                    >
                       -
                     </button>
                     <input
@@ -470,8 +906,19 @@ const ProductPage = () => {
                       readOnly
                       className="quantity-input"
                       aria-label="Current quantity"
+                      onClick={() => trackViewContent({
+                        id: `quantity_input_click_${product._id}`,
+                        name: 'Quantity Input Clicked',
+                        value: units,
+                        category: 'User Interaction',
+                        type: 'quantity_input_click',
+                      })}
                     />
-                    <button onClick={increaseUnits} className="quantity-btn" aria-label="Increase quantity">
+                    <button 
+                      onClick={increaseUnits} 
+                      className="quantity-btn" 
+                      aria-label="Increase quantity"
+                    >
                       +
                     </button>
                   </div>
@@ -481,7 +928,19 @@ const ProductPage = () => {
               {/* Action buttons */}
               <div className="action-buttons">
                 {addedToCart ? (
-                  <button className="add-to-cart-btn" onClick={() => navigate("/cart")}>
+                  <button 
+                    className="add-to-cart-btn" 
+                    onClick={() => {
+                      trackViewContent({
+                        id: `go_to_cart_click_${product._id}`,
+                        name: 'Go to Cart Clicked',
+                        value: 0,
+                        category: 'User Conversion',
+                        type: 'go_to_cart',
+                      });
+                      navigate("/cart");
+                    }}
+                  >
                     <ShoppingCart className="btn-icon" size={18} />
                     Go to Cart
                   </button>
@@ -510,22 +969,62 @@ const ProductPage = () => {
 
               {/* Badges */}
               <div className="product-highlights">
-                <div className="highlight-item">
+                <div 
+                  className="highlight-item"
+                  onClick={() => trackViewContent({
+                    id: `highlight_doctor_recommended_${product._id}`,
+                    name: 'Doctor Recommended Badge Clicked',
+                    value: 0,
+                    category: 'Product Features',
+                    type: 'highlight_click',
+                    highlight: 'doctor_recommended',
+                  })}
+                >
                   <Pill className="highlight-icon" size={16} />
                   <span>Doctor Recommended</span>
                 </div>
-                <div className="highlight-item">
+                <div 
+                  className="highlight-item"
+                  onClick={() => trackViewContent({
+                    id: `highlight_quality_tested_${product._id}`,
+                    name: 'Quality Tested Badge Clicked',
+                    value: 0,
+                    category: 'Product Features',
+                    type: 'highlight_click',
+                    highlight: 'quality_tested',
+                  })}
+                >
                   <Shield className="highlight-icon" size={16} />
                   <span>Quality Tested</span>
                 </div>
-                <div className="highlight-item">
+                <div 
+                  className="highlight-item"
+                  onClick={() => trackViewContent({
+                    id: `highlight_free_delivery_${product._id}`,
+                    name: 'Free Delivery Badge Clicked',
+                    value: 0,
+                    category: 'Product Features',
+                    type: 'highlight_click',
+                    highlight: 'free_delivery',
+                  })}
+                >
                   <Package className="highlight-icon" size={16} />
                   <span>Free Delivery</span>
                 </div>
               </div>
 
               <div className="product-details">
-                <div className="product-detail">
+                <div 
+                  className="product-detail"
+                  onClick={() => trackViewContent({
+                    id: `expiry_detail_click_${product._id}`,
+                    name: 'Expiry Detail Clicked',
+                    value: 0,
+                    category: 'Product Info',
+                    type: 'detail_click',
+                    detail: 'expiry',
+                  })}
+                >
                   <CalendarDays className="detail-icon" size={16} />
                   <div>
                     <strong>Expires on or after: </strong>
@@ -533,7 +1032,17 @@ const ProductPage = () => {
                   </div>
                 </div>
 
-                <div className="product-detail">
+                <div 
+                  className="product-detail"
+                  onClick={() => trackViewContent({
+                    id: `origin_detail_click_${product._id}`,
+                    name: 'Origin Detail Clicked',
+                    value: 0,
+                    category: 'Product Info',
+                    type: 'detail_click',
+                    detail: 'origin',
+                  })}
+                >
                   <Globe2 className="detail-icon" size={16} />
                   <div>
                     <strong>Country of origin: </strong>
@@ -547,13 +1056,13 @@ const ProductPage = () => {
                 <div className="product-tabs">
                   <button
                     className={`tab-btn ${activeTab === "description" ? "active" : ""}`}
-                    onClick={() => setActiveTab("description")}
+                    onClick={() => handleTabClick("description")}
                   >
                     Description
                   </button>
                   <button
                     className={`tab-btn ${activeTab === "directions" ? "active" : ""}`}
-                    onClick={() => setActiveTab("directions")}
+                    onClick={() => handleTabClick("directions")}
                   >
                     Directions
                   </button>
@@ -561,7 +1070,17 @@ const ProductPage = () => {
 
                 <div className="tab-content">
                   {activeTab === "description" && (
-                    <div className="description-content">
+                    <div 
+                      className="description-content"
+                      onClick={() => trackViewContent({
+                        id: `description_content_click_${product._id}`,
+                        name: 'Description Content Clicked',
+                        value: 0,
+                        category: 'Product Content',
+                        type: 'content_click',
+                        section: 'description',
+                      })}
+                    >
                       <h3>Product Description</h3>
                       <p>{product?.description || "—"}</p>
 
@@ -615,7 +1134,17 @@ const ProductPage = () => {
                   )}
 
                   {activeTab === "directions" && (
-                    <div className="directions-content">
+                    <div 
+                      className="directions-content"
+                      onClick={() => trackViewContent({
+                        id: `directions_content_click_${product._id}`,
+                        name: 'Directions Content Clicked',
+                        value: 0,
+                        category: 'Product Content',
+                        type: 'content_click',
+                        section: 'directions',
+                      })}
+                    >
                       <h3>Recommended Use</h3>
                       <div className="usage-card">
                         <div className="usage-step">
