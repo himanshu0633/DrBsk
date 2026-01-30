@@ -1,11 +1,7 @@
+// actions.js
 export const addData = (data) => ({
     type: 'ADD_DATA',
     payload: data,
-});
-
-export const updateQuantity = (productId, variantLabel, quantity) => ({
-    type: 'UPDATE_QUANTITY',
-    payload: { productId, variantLabel, quantity }
 });
 
 export const deleteProduct = (productId) => ({

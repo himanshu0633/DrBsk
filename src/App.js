@@ -1,13 +1,5 @@
-import { Routes, Route, useLocation } from "react-router-dom";
-import { Layout } from "./components/Layout/Layout";
-import HeroSection from "./components/HeroSection/HeroSection";
-import Features from "./components/Features/Features";
-import Categories from "./components/Categories/Categories";
-import CarouselBanner from "./components/CarouselBanner/CarouselBanner";
-import PromoSection from "./components/PromoSection/PromoSection";
-import Personal from "./components/Personal/Personal";
-import ProductCarousel from "./components/ProductCarousel/ProductCarousel";
-import Footer from "./components/Footer/Footer";
+import { Routes, Route } from "react-router-dom";
+
 import Dashboard from "./Pages/Dashboard";
 import Fever from "./Pages/Fever/Fever";
 import ProductPage from "./Pages/ProductPage/ProductPage";
@@ -22,21 +14,11 @@ import Head from "./Pages/Head/Head";
 import Cart from "./Pages/Cart/Cart";
 import Prescription from "./Pages/Prescription/Prescription";
 import Phone from "./Pages/Phone/Phone";
-import Settings from "./Pages/Settings/Settings";
-import AddProduct from "./Pages/AddProduct/AddProduct";
-import Board from "./Pages/Board/Board";
-import Admin from "./components/Admin/Admin";
-import AdminLayout from "./components/Layouts/AdminLayout";
-import Popup from "./Pages/Popup/Popup";
-import Category from "./Pages/Category/Category";
-import SubCategory from "./Pages/SubCategory/SubCategory";
-import BannerCrud from "./Pages/BannerCrud/BannerCrud";
-import User from "./Pages/User/User";
-import Adminlogin from "./Pages/Admin/login";
+
 import AddToCart from "./components/AddToCart";
 import OrderSuccessModal from "./components/success";
-import { useEffect } from "react";
-import { toast } from "react-toastify";
+import SingleProductCheckout from "./components/Singleproductbuy";
+
 import PharmaAdmin from "./Pages/pharma-admin/page/PharmaAdmin";
 import PharmaDashboard from "./Pages/pharma-admin/component/PharmaDashboard";
 import PharmaCategory from "./Pages/pharma-admin/component/PharmaCategory";
@@ -52,7 +34,7 @@ import PharmaWholeSale from "./Pages/pharma-admin/component/PharmaWholeSale";
 import PharmaAdminLogin from "./Pages/pharma-admin/page/PharmaAdminLogin";
 import ProtectedRoute from "./Pages/pharma-admin/page/ProtectedRoute";
 import PharmaPrescription from "./Pages/pharma-admin/component/PharmaPrescription";
-import ScrollToTop from "./components/ScrollToTop";
+
 import AboutUs from "./Pages/footerLinksPages/AboutUs";
 import ContactusForm from "./Pages/footerLinksPages/ContactusForm";
 import PhotoGallery from "./Pages/footerLinksPages/PhotoGallery";
@@ -64,21 +46,13 @@ import Terms from "./Pages/footerLinksPages/Terms";
 import Privacy from "./Pages/footerLinksPages/Privacy";
 import ShippingPolicy from "./Pages/footerLinksPages/ShippingPolicy";
 import ReturnsPolicy from "./Pages/footerLinksPages/ReturnsPolicy";
+
 import { MobileBottomNav } from "./components/MobileBottomNav";
 
-import FacebookPixel from "../src/Pages/FacebookPixel";
-
 function App() {
-  //   useEffect(() => {
-  //   toast.info('Test toast works!');
-  // }, []);
-
   return (
     <>
-    <FacebookPixel />
-
       <Routes>
-
         <Route path="/" element={<Landing />} />
         <Route path="/homepage" element={<Dashboard />} />
         <Route path="/success" element={<OrderSuccessModal />} />
@@ -94,9 +68,12 @@ function App() {
         <Route path="/Head" element={<Head />} />
         <Route path="/login" element={<Cart />} />
         <Route path="/cart" element={<AddToCart />} />
+        <Route path="/checkout" element={<SingleProductCheckout />} />
         <Route path="/Prescription" element={<Prescription />} />
         <Route path="/Phone" element={<Phone />} />
         <Route path="/subcategory/:subCategoryName" element={<Fever />} />
+
+        {/* footer pages */}
         <Route path="/aboutus" element={<AboutUs />} />
         <Route path="/contactus" element={<ContactusForm />} />
         <Route path="/terms" element={<Terms />} />
@@ -113,7 +90,7 @@ function App() {
         <Route path="/admin-login" element={<PharmaAdminLogin />} />
 
         <Route element={<ProtectedRoute />}>
-           <Route path="/pharma-admin" element={<PharmaAdmin />}>
+          <Route path="/pharma-admin" element={<PharmaAdmin />}>
             <Route path="dashboard" element={<PharmaDashboard />} />
             <Route path="category" element={<PharmaCategory />} />
             <Route path="subCategory" element={<PharmaSubCategory />} />
@@ -129,8 +106,8 @@ function App() {
             <Route path="prescriptions" element={<PharmaPrescription />} />
           </Route>
         </Route>
-
       </Routes>
+
       <div className="pt_h"></div>
       <MobileBottomNav />
     </>

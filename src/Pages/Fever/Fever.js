@@ -1,7 +1,7 @@
-import React, { useState, useEffect, useMemo } from "react";
+import React, { useState, useEffect, useMemo, useRef, useCallback } from "react";
 import Header from "../../components/Header/Header";
 import "./Fever.css";
-import { Link, useParams, useLocation, useNavigate } from "react-router-dom";
+import { useParams, useLocation, useNavigate } from "react-router-dom";
 import Footer from "../../components/Footer/Footer";
 import axiosInstance from "../../components/AxiosInstance";
 import { useDispatch, useSelector } from "react-redux";
@@ -14,15 +14,9 @@ import JoinUrl from "../../JoinUrl";
 const PAGE_SIZE = 20;
 
 const parseQuantityVariants = (raw) => {
-
-
-
-
-  // cdsf
   try {
     let arr = [];
     if (Array.isArray(raw)) {
-      // Some APIs send each quantity as a stringified object!
       if (raw.length > 0 && typeof raw[0] === "string") {
         arr = raw.flatMap((item) => {
           try {
@@ -55,16 +49,42 @@ const parseQuantityVariants = (raw) => {
   }
 };
 
+const EMPTY_ARR = [];
+const selectCartItems = (state) => state.cart?.items ?? EMPTY_ARR;
 
 const Fever = () => {
   const location = useLocation();
   const categoryId = location.state?.categoryId || null;
   const filterByPrescription = location.state?.filterByPrescription || false;
-  const { subCategoryName } = useParams();
   const navigate = useNavigate();
 
+  // HashRouter के लिए URL से subcategory निकालने का function
+  const getSubcategoryFromHashURL = () => {
+    const hash = window.location.hash;
+    if (!hash) return null;
+
+    // "#/fever/" के बाद का हिस्सा निकालें
+    const parts = hash.split("/");
+
+    // parts[2] होना चाहिए subcategory name
+    if (parts.length >= 3) {
+      const subcategoryName = parts[2];
+      if (subcategoryName && subcategoryName.trim() !== "") {
+        return decodeURIComponent(subcategoryName);
+      }
+    }
+
+    return null;
+  };
+
+  const paramsSubcategory = useParams().subcategory;
+  const subcategoryFromHash = getSubcategoryFromHashURL();
+  const decodedSubCategoryName =
+    subcategoryFromHash ||
+    (paramsSubcategory ? decodeURIComponent(paramsSubcategory) : null);
+
   const dispatch = useDispatch();
-  const cartItems = useSelector((state) => state.cart?.items || []);
+  const cartItems = useSelector(selectCartItems);
 
   const [allProducts, setAllProducts] = useState([]);
   const [products, setProducts] = useState([]);
@@ -81,17 +101,86 @@ const Fever = () => {
   const [sortOption, setSortOption] = useState("none");
   const [mobileFiltersOpen, setMobileFiltersOpen] = useState(false);
   const [loading, setLoading] = useState(false);
-
-  // NEW: pagination state
   const [currentPage, setCurrentPage] = useState(1);
 
   const storedUser = localStorage.getItem("userData");
   const userData = storedUser ? JSON.parse(storedUser) : null;
   const isWholesaler = userData?.type === "wholesalePartner";
 
-  // Fetch all products
-  const fetchProducts = async () => {
+  // Fetch products by subcategory
+  const fetchProductsBySubcategory = async (subcategoryName) => {
     setLoading(true);
+    try {
+      if (subcategoryName && subcategoryName.trim() !== "") {
+        const { data } = await axiosInstance.get(
+          `/api/productsBySubcategory?subcategory=${encodeURIComponent(
+            subcategoryName
+          )}`
+        );
+
+        const toNum = (v) => {
+          const n = parseFloat(v);
+          return Number.isFinite(n) ? n : 0;
+        };
+
+        const pickVariation = (q) => {
+          if (!q) return null;
+          let arr = q;
+          if (typeof q === "string") {
+            try {
+              arr = JSON.parse(q);
+            } catch {
+              return null;
+            }
+          }
+          if (!Array.isArray(arr) || arr.length === 0) return null;
+          return (
+            arr.find(
+              (v) => String(v.in_stock || "").toLowerCase() === "yes"
+            ) || arr[0]
+          );
+        };
+
+        const fetched = data.map((p) => {
+          let retail = toNum(p.retail_price);
+          let consumer = toNum(p.consumer_price || p.mrp);
+
+          if (!retail) {
+            const v = pickVariation(p.quantity);
+            if (v) {
+              if (toNum(v.retail_price)) retail = toNum(v.retail_price);
+              const vConsumer = toNum(
+                v.final_price || v.mrp || v.consumer_price
+              );
+              if (vConsumer) consumer = vConsumer;
+            }
+          }
+
+          const discount = retail > 0 ? Math.max(0, retail - consumer) : 0;
+
+          return {
+            ...p,
+            price: consumer,
+            originalPrice: retail,
+            discount,
+            retail_price: retail,
+            consumer_price: consumer,
+          };
+        });
+
+        setAllProducts(fetched);
+      } else {
+        fetchAllProducts();
+      }
+    } catch (error) {
+      toast.error("Failed to load products");
+      fetchAllProducts();
+    }
+    setLoading(false);
+  };
+
+  // Fetch all products
+  const fetchAllProducts = async () => {
     try {
       const { data } = await axiosInstance.get(`/user/allproducts`);
 
@@ -104,11 +193,18 @@ const Fever = () => {
         if (!q) return null;
         let arr = q;
         if (typeof q === "string") {
-          try { arr = JSON.parse(q); } catch { return null; }
+          try {
+            arr = JSON.parse(q);
+          } catch {
+            return null;
+          }
         }
         if (!Array.isArray(arr) || arr.length === 0) return null;
-        // prefer in-stock; else first
-        return arr.find(v => (String(v.in_stock || "")).toLowerCase() === "yes") || arr[0];
+        return (
+          arr.find(
+            (v) => String(v.in_stock || "").toLowerCase() === "yes"
+          ) || arr[0]
+        );
       };
 
       const fetched = data.map((p) => {
@@ -119,7 +215,9 @@ const Fever = () => {
           const v = pickVariation(p.quantity);
           if (v) {
             if (toNum(v.retail_price)) retail = toNum(v.retail_price);
-            const vConsumer = toNum(v.final_price || v.mrp || v.consumer_price);
+            const vConsumer = toNum(
+              v.final_price || v.mrp || v.consumer_price
+            );
             if (vConsumer) consumer = vConsumer;
           }
         }
@@ -138,9 +236,8 @@ const Fever = () => {
 
       setAllProducts(fetched);
     } catch (error) {
-      console.error("Error fetching products:", error);
+      toast.error("Failed to load products");
     }
-    setLoading(false);
   };
 
   // Fetch subcategories and match category
@@ -160,21 +257,22 @@ const Fever = () => {
     }
   };
 
-  // Initial fetch
+  // Fetch products when subcategory changes
   useEffect(() => {
-    fetchProducts();
+    if (decodedSubCategoryName && decodedSubCategoryName.trim() !== "") {
+      fetchProductsBySubcategory(decodedSubCategoryName);
+    } else {
+      fetchAllProducts();
+    }
+
     fetchSubcategories();
-  }, [categoryId]);
+  }, [decodedSubCategoryName, categoryId]);
 
   // Filter + sort products
   useEffect(() => {
     const filtered = allProducts.filter((product) => {
       const price = parseFloat(product.price) || 0;
       const discount = parseFloat(product.discount) || 0;
-
-      const matchesSubCategory = subCategoryName
-        ? (product.sub_category || "").toLowerCase() === subCategoryName.toLowerCase()
-        : true;
 
       const matchesCategory = categoryId
         ? categorySubNames.includes((product.sub_category || "").toLowerCase())
@@ -184,15 +282,11 @@ const Fever = () => {
         ? (product.prescription || "").toLowerCase() === "notrequired"
         : true;
 
-      return (
-        price >= filters.minPrice &&
-        price <= filters.maxPrice &&
-        discount >= filters.minDiscount &&
-        discount <= filters.maxDiscount &&
-        matchesSubCategory &&
-        matchesCategory &&
-        matchesPrescription
-      );
+      const matchesPrice = price >= filters.minPrice && price <= filters.maxPrice;
+      const matchesDiscount =
+        discount >= filters.minDiscount && discount <= filters.maxDiscount;
+
+      return matchesPrice && matchesDiscount && matchesCategory && matchesPrescription;
     });
 
     switch (sortOption) {
@@ -210,39 +304,78 @@ const Fever = () => {
     }
 
     setProducts(filtered);
-    // NEW: whenever the product list changes due to filters/sort/etc, reset to page 1
     setCurrentPage(1);
   }, [
     filters,
     sortOption,
     allProducts,
-    subCategoryName,
+    decodedSubCategoryName,
     categoryId,
     categorySubNames,
     filterByPrescription,
   ]);
 
+  const totalPages = Math.max(1, Math.ceil(products.length / PAGE_SIZE));
+  const paginatedProducts = useMemo(() => {
+    const start = (currentPage - 1) * PAGE_SIZE;
+    return products.slice(start, start + PAGE_SIZE);
+  }, [products, currentPage]);
+
   const pickBestVariant = (quantityArr) => {
     const variants = parseQuantityVariants(quantityArr);
     if (!variants.length) return null;
-    // Prefer in-stock; else first
-    return variants.find(v => v.in_stock) || variants[0];
+    return variants.find((v) => v.in_stock) || variants[0];
   };
 
-
-  // Cart controls
-  const getQuantity = (id) =>
-    cartItems.find((i) => i._id === id)?.quantity || 0;
+  const getQuantity = useCallback(
+    (id) => {
+      return cartItems.find((i) => i._id === id)?.quantity || 0;
+    },
+    [cartItems]
+  );
 
   const handleAddToCart = (product) => {
-    dispatch(addData({ ...product, quantity: 1 }));
+    const quantityVariant = pickBestVariant(product.quantity);
+
+    const finalPrice = Number(
+      quantityVariant?.final_price ?? product.consumer_price ?? product.price ?? 0
+    );
+
+    const mrpPrice = Number(
+      quantityVariant?.mrp ?? product.retail_price ?? finalPrice
+    );
+
+    dispatch(
+      addData({
+        ...product,
+        quantity: 1,
+        price: finalPrice,
+        originalPrice: mrpPrice,
+      })
+    );
+
     toast.success("Item added to cart!");
   };
 
   const increaseQuantity = (id) => {
     const product = products.find((p) => p._id === id);
     const item = cartItems.find((i) => i._id === id);
-    dispatch(addData({ ...product, quantity: (item?.quantity || 0) + 1 }));
+    const currentQty = item?.quantity || 0;
+
+    if (product) {
+      const quantityVariant = pickBestVariant(product.quantity);
+      const finalPrice = Number(
+        quantityVariant?.final_price ?? product.consumer_price ?? product.price ?? 0
+      );
+
+      dispatch(
+        addData({
+          ...product,
+          quantity: currentQty + 1,
+          price: finalPrice,
+        })
+      );
+    }
   };
 
   const decreaseQuantity = (id) => {
@@ -254,13 +387,17 @@ const Fever = () => {
     }
   };
 
-  // UI controls
+  const handleGoToProductPage = (product) => {
+    navigate(`/ProductPage/${product._id}`);
+  };
+
   const handleFilterChange = (e) => {
     const { name, value } = e.target;
     setFilters((prev) => ({ ...prev, [name]: parseInt(value) }));
   };
 
   const handleSortChange = (e) => setSortOption(e.target.value);
+
   const resetFilters = () =>
     setFilters({
       minPrice: 0,
@@ -269,42 +406,23 @@ const Fever = () => {
       maxDiscount: 5000,
     });
 
-  const toggleMobileFilters = () =>
-    setMobileFiltersOpen((prev) => !prev);
-
-  // NEW: pagination calculations
-  const totalPages = Math.max(1, Math.ceil(products.length / PAGE_SIZE));
-  const paginatedProducts = useMemo(() => {
-    const start = (currentPage - 1) * PAGE_SIZE;
-    return products.slice(start, start + PAGE_SIZE);
-  }, [products, currentPage]);
+  const toggleMobileFilters = () => setMobileFiltersOpen((prev) => !prev);
 
   const goToPage = (page) => {
     const p = Math.min(Math.max(1, page), totalPages);
     setCurrentPage(p);
-    // optional: scroll back to top of grid on page change
     window.scrollTo({ top: 0, behavior: "smooth" });
   };
 
-  // Simple pagination UI
   const Pagination = () => {
     if (products.length === 0) return null;
 
-    // compact page numbers (first, prev, current, next, last)
     return (
       <div className="pagination-container">
-        <button
-          className="page-btn"
-          onClick={() => goToPage(1)}
-          disabled={currentPage === 1}
-        >
+        <button className="page-btn" onClick={() => goToPage(1)} disabled={currentPage === 1}>
           « First
         </button>
-        <button
-          className="page-btn"
-          onClick={() => goToPage(currentPage - 1)}
-          disabled={currentPage === 1}
-        >
+        <button className="page-btn" onClick={() => goToPage(currentPage - 1)} disabled={currentPage === 1}>
           ‹ Prev
         </button>
 
@@ -312,23 +430,17 @@ const Fever = () => {
           Page {currentPage} of {totalPages}
         </span>
 
-        <button
-          className="page-btn"
-          onClick={() => goToPage(currentPage + 1)}
-          disabled={currentPage === totalPages}
-        >
+        <button className="page-btn" onClick={() => goToPage(currentPage + 1)} disabled={currentPage === totalPages}>
           Next ›
         </button>
-        <button
-          className="page-btn"
-          onClick={() => goToPage(totalPages)}
-          disabled={currentPage === totalPages}
-        >
+        <button className="page-btn" onClick={() => goToPage(totalPages)} disabled={currentPage === totalPages}>
           Last »
         </button>
       </div>
     );
   };
+
+  const pageTitle = decodedSubCategoryName ? `Products - ${decodedSubCategoryName}` : "All Products";
 
   return (
     <>
@@ -359,24 +471,8 @@ const Fever = () => {
                     <span>₹{filters.maxPrice}</span>
                   </div>
                   <div className="range-inputs">
-                    <input
-                      type="range"
-                      min="0"
-                      max="5000"
-                      step="100"
-                      name="minPrice"
-                      value={filters.minPrice}
-                      onChange={handleFilterChange}
-                    />
-                    <input
-                      type="range"
-                      min="0"
-                      max="5000"
-                      step="100"
-                      name="maxPrice"
-                      value={filters.maxPrice}
-                      onChange={handleFilterChange}
-                    />
+                    <input type="range" min="0" max="5000" step="100" name="minPrice" value={filters.minPrice} onChange={handleFilterChange} />
+                    <input type="range" min="0" max="5000" step="100" name="maxPrice" value={filters.maxPrice} onChange={handleFilterChange} />
                   </div>
                 </div>
 
@@ -387,24 +483,8 @@ const Fever = () => {
                     <span>₹{filters.maxDiscount}</span>
                   </div>
                   <div className="range-inputs">
-                    <input
-                      type="range"
-                      min="0"
-                      max="5000"
-                      step="100"
-                      name="minDiscount"
-                      value={filters.minDiscount}
-                      onChange={handleFilterChange}
-                    />
-                    <input
-                      type="range"
-                      min="0"
-                      max="5000"
-                      step="100"
-                      name="maxDiscount"
-                      value={filters.maxDiscount}
-                      onChange={handleFilterChange}
-                    />
+                    <input type="range" min="0" max="5000" step="100" name="minDiscount" value={filters.minDiscount} onChange={handleFilterChange} />
+                    <input type="range" min="0" max="5000" step="100" name="maxDiscount" value={filters.maxDiscount} onChange={handleFilterChange} />
                   </div>
                 </div>
               </div>
@@ -412,6 +492,9 @@ const Fever = () => {
 
             <div className="product-grid">
               <div className="product-header">
+                <div className="results-count">
+                  Showing {products.length} product{products.length !== 1 ? "s" : ""}
+                </div>
                 <div className="sort-container">
                   <label>Sort By:</label>
                   <select value={sortOption} onChange={handleSortChange}>
@@ -427,7 +510,6 @@ const Fever = () => {
                 {products.length > 0 ? (
                   isWholesaler ? (
                     <>
-                      {/* Table view for wholesalers (paginated) */}
                       <div className="wholesale-table-container">
                         <table className="wholesale-table">
                           <thead>
@@ -435,7 +517,7 @@ const Fever = () => {
                               <th>Image</th>
                               <th>Name</th>
                               <th>Description</th>
-                              <th>Wholesale Price</th>
+                              <th>Price</th>
                               <th>Actions</th>
                             </tr>
                           </thead>
@@ -445,12 +527,11 @@ const Fever = () => {
                               const quantityVariant = pickBestVariant(product.quantity);
                               const finalPrice = quantityVariant?.final_price ?? product.consumer_price ?? 0;
                               const mrpPrice = quantityVariant?.mrp ?? product.retail_price ?? null;
+
                               return (
                                 <tr key={product._id}>
                                   <td>
-                                    {/* {console.log('thumbnail url:', JoinUrl(API_URL, mediaItem.url), mediaItem)} */}
                                     <img
-                                      // src={`${API_URL}${product.media[0]?.url}`}
                                       src={JoinUrl(API_URL, product.media[0]?.url)}
                                       alt={product.name}
                                       className="table-product-image"
@@ -458,40 +539,31 @@ const Fever = () => {
                                     />
                                   </td>
                                   <td>
-                                    <span
-                                      className="cursor-pointer"
-                                      onClick={() => navigate(`/ProductPage/${product._id}`)}
-                                    >
+                                    <span className="cursor-pointer product-name-link" onClick={() => handleGoToProductPage(product)}>
                                       {product.name}
                                     </span>
                                   </td>
                                   <td>{product.description}</td>
-                                  {/* <td>₹{product.consumer_price}</td> */}
-                                  <div className="product-price">
-                                    <span>₹{finalPrice}</span>
-                                    {mrpPrice && mrpPrice > finalPrice && (
-                                      <span className="original-price">₹{mrpPrice}</span>
-                                    )}
-                                  </div>
+                                  <td>
+                                    <div className="product-price">
+                                      <span>₹{finalPrice}</span>
+                                      {mrpPrice && mrpPrice > finalPrice && <span className="original-price">₹{mrpPrice}</span>}
+                                    </div>
+                                  </td>
                                   <td>
                                     {quantity > 0 ? (
                                       <div className="quantity-controller">
-                                        <button onClick={() => decreaseQuantity(product._id)}>
-                                          -
-                                        </button>
+                                        <button onClick={(e) => { e.stopPropagation(); decreaseQuantity(product._id); }}>-</button>
                                         <span>{quantity}</span>
-                                        <button onClick={() => increaseQuantity(product._id)}>
-                                          +
-                                        </button>
+                                        <button onClick={(e) => { e.stopPropagation(); increaseQuantity(product._id); }}>+</button>
                                       </div>
                                     ) : (
                                       <button
-                                        onClick={() => navigate(`/ProductPage/${product._id}`)
-
-                                        }
+                                      onClick={() => handleGoToProductPage(product)}
+                                        // onClick={(e) => { e.stopPropagation(); handleAddToCart(product); }}
                                         className="add-to-cart-btn"
                                       >
-                                        🛒 Add
+                                        🛒 Add to Cart
                                       </button>
                                     )}
                                   </td>
@@ -505,88 +577,7 @@ const Fever = () => {
                     </>
                   ) : (
                     <>
-                      {/* Cards view for consumers (paginated) */}
                       <div className="products-container">
-                        {/* {paginatedProducts.map((product) => {
-                          const quantity = getQuantity(product._id);
-                          return (
-                            <div key={product._id} className="product-card ">
-                              <Link
-                                to={`/ProductPage/${product._id}`}
-                                className="product-card-link"
-                              >
-                                {product.discount > 0 && (
-                                  <div className="product-badge">
-                                    <span className="discount-badge">
-                                      Save ₹{Math.floor(product.discount)}
-                                    </span>
-                                  </div>
-                                )}
-                                <div className="product-image">
-                                  <img
-                                    // src={`${API_URL}${product.media[0]?.url}`}
-                                    src={JoinUrl(API_URL, product.media[0]?.url)}
-                                    alt={product.name}
-                                    loading="lazy"
-                                  />
-                                </div>
-                                <div className="product-details">
-                                  <h3 className="product-title">{product.name}</h3>
-                                  <p
-                                    className="product-quantity"
-                                    style={{
-                                      color: product.stock === "yes" ? "#2ecc40" : "#ff4136",
-                                    }}
-                                  >
-                                    {product.stock === "no" ? "Out of Stock" : null}
-                                  </p>
-                                  <div className="product-price">
-                                    {isWholesaler ? (
-                                      <>
-                                        <span>₹{product.retail_price}</span>
-                                        {product.consumer_price < product.retail_price && (
-                                          <span className="original-price">
-                                            ₹{product.consumer_price}
-                                          </span>
-                                        )}
-                                      </>
-                                    ) : (
-                                      <>
-                                        <span>₹{finalPrice}</span>
-                                        {mrpPrice && mrpPrice > finalPrice && (
-                                          <span className="original-price">₹{mrpPrice}</span>
-                                        )}
-                                      </>
-                                    )}
-                                  </div>
-                                </div>
-                              </Link>
-                              <div className="product-actions">
-                                {quantity > 0 ? (
-                                  <div className="quantity-controller">
-                                    <button onClick={() => decreaseQuantity(product._id)}>
-                                      -
-                                    </button>
-                                    <span>{quantity}</span>
-                                    <button onClick={() => increaseQuantity(product._id)}>
-                                      +
-                                    </button>
-                                  </div>
-                                ) : (
-                                  <button
-                                    onClick={() => navigate(`/ProductPage/${product._id}`)}
-                                    className="add-to-cart-btn"
-                                    disabled={product.stock === "no"}
-                                  >
-                                    Go to product
-                                  </button>
-                                )}
-                              </div>
-                            </div>
-                          );
-                        })} */}
-
-                        {/* 2: */}
                         {paginatedProducts.map((product) => {
                           const quantityVariant = pickBestVariant(product.quantity);
                           const finalPrice = quantityVariant?.final_price ?? product.consumer_price ?? 0;
@@ -594,85 +585,62 @@ const Fever = () => {
                           const quantity = getQuantity(product._id);
 
                           return (
-                            <div key={product._id} className="product-card ">
-                              <Link
-                                to={`/ProductPage/${product._id}`}
-                                className="product-card-link"
-                              >
+                            <div key={product._id} className="product-card">
+                              <div className="product-card-link" onClick={() => handleGoToProductPage(product)}>
                                 {product.discount > 0 && (
                                   <div className="product-badge">
-                                    <span className="discount-badge">
-                                      Save ₹{Math.floor(product.discount)}
-                                    </span>
+                                    <span className="discount-badge">Save ₹{Math.floor(product.discount)}</span>
                                   </div>
                                 )}
                                 <div className="product-image">
-                                  <img
-                                    // src={`${API_URL}${product.media[0]?.url}`}
-                                    src={JoinUrl(API_URL, product.media[0]?.url)}
-                                    alt={product.name}
-                                    loading="lazy"
-                                  />
+                                  <img src={JoinUrl(API_URL, product.media[0]?.url)} alt={product.name} loading="lazy" />
                                 </div>
                                 <div className="product-details">
                                   <h3 className="product-title">{product.name}</h3>
                                   <p
                                     className="product-quantity"
-                                    style={{
-                                      color: product.stock === "yes" ? "#2ecc40" : "#ff4136",
-                                    }}
+                                    style={{ color: product.stock === "yes" ? "#2ecc40" : "#ff4136" }}
                                   >
                                     {product.stock === "no" ? "Out of Stock" : null}
                                   </p>
                                 </div>
                                 <div className="product-price ms-2">
-                                  {isWholesaler ? (
-                                    <>
-                                      <span>₹{product.retail_price}</span>
-                                      {product.consumer_price < product.retail_price && (
-                                        <span className="original-price">₹{product.consumer_price}</span>
-                                      )}
-                                    </>
-                                  ) : (
-                                    <>
-                                      <span>₹{finalPrice}</span>
-                                      {mrpPrice && mrpPrice > finalPrice && (
-                                        <span className="original-price">₹{mrpPrice}</span>
-                                      )}
-                                    </>
+                                  <span>₹{finalPrice}</span>
+                                  {mrpPrice && mrpPrice > finalPrice && (
+                                    <span className="original-price">₹{mrpPrice}</span>
                                   )}
                                 </div>
-                              </Link>
+                              </div>
 
                               <div className="product-actions">
                                 {quantity > 0 ? (
                                   <div className="quantity-controller">
-                                    <button onClick={() => decreaseQuantity(product._id)}>-</button>
+                                    <button onClick={(e) => { e.stopPropagation(); decreaseQuantity(product._id); }}>-</button>
                                     <span>{quantity}</span>
-                                    <button onClick={() => increaseQuantity(product._id)}>+</button>
+                                    <button onClick={(e) => { e.stopPropagation(); increaseQuantity(product._id); }}>+</button>
                                   </div>
                                 ) : (
                                   <button
-                                    onClick={() => navigate(`/ProductPage/${product._id}`)}
+                                    // onClick={(e) => { e.stopPropagation(); handleAddToCart(product); }}
+                                    onClick={() => handleGoToProductPage(product)}
                                     className="add-to-cart-btn"
                                     disabled={product.stock === "no"}
                                   >
-                                    Go to product
+                                    🛒 Add to Cart
                                   </button>
                                 )}
                               </div>
                             </div>
                           );
                         })}
-
-
                       </div>
                       <Pagination />
                     </>
                   )
                 ) : (
                   <div className="no-products">
-                    <h3>No products match your filters</h3>
+                    <h3>No products found for "{decodedSubCategoryName || "this category"}"</h3>
+                    <p>Try adjusting your filters or browse other categories</p>
                     <button onClick={resetFilters} className="reset-filters-btn">
                       Reset Filters
                     </button>
@@ -682,7 +650,7 @@ const Fever = () => {
             </div>
           </div>
         )}
-      </div >
+      </div>
       <Footer />
     </>
   );

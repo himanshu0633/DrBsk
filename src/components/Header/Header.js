@@ -159,6 +159,34 @@ const Header = () => {
     setPincode('');
   };
 
+  // Function to handle subcategory click
+  const handleSubcategoryClick = (subcategory, categoryId) => {
+    // Encode subcategory name for URL
+    const encodedSubcategory = encodeURIComponent(subcategory);
+    
+    // Navigate to fever page with state containing categoryId
+    navigate(`/fever/${encodedSubcategory}`, {
+      state: { 
+        categoryId: categoryId 
+      }
+    });
+    
+    // Close dropdowns
+    setShowDropdown(false);
+    if (menuOpen) setMenuOpen(false);
+  };
+
+  // Function to handle mobile subcategory click
+  const handleMobileSubcategoryClick = (subcategory, categoryId) => {
+    const encodedSubcategory = encodeURIComponent(subcategory);
+    navigate(`/fever/${encodedSubcategory}`, {
+      state: { 
+        categoryId: categoryId 
+      }
+    });
+    setMenuOpen(false);
+  };
+
   return (
     <div className="header-main-container">
       {/* --- DESKTOP HEADER --- */}
@@ -312,13 +340,13 @@ const Header = () => {
                     {subcategoryName
                       .filter(sub => sub.category_id?._id === category._id)
                       .map(sub => (
-                        <Link 
+                        <button
                           key={sub._id} 
-                          to={`/subcategory/${sub.name}`}
+                          onClick={() => handleSubcategoryClick(sub.name, category._id)}
                           className="subcategory-link"
                         >
                           {sub.name}
-                        </Link>
+                        </button>
                       ))}
                   </div>
                 </div>
@@ -466,14 +494,13 @@ const Header = () => {
                         {subcategoryName
                           .filter(sub => sub.category_id?._id === category._id)
                           .map(sub => (
-                            <Link
+                            <button
                               key={sub._id}
-                              to={`/subcategory/${sub.name}`}
+                              onClick={() => handleMobileSubcategoryClick(sub.name, category._id)}
                               className="mobile-subcategory"
-                              onClick={() => setMenuOpen(false)}
                             >
                               {sub.name}
-                            </Link>
+                            </button>
                           ))}
                       </div>
                     </div>

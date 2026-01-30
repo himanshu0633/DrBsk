@@ -1,7 +1,6 @@
 import { useEffect, useState } from 'react';
 import {
-  IndianRupee, Shield, Store, Headphones,
-  ClipboardList, ShoppingCart, MapPin
+  IndianRupee, Shield, Store, Headphones
 } from 'lucide-react';
 import 'animate.css/animate.min.css';
 import './Landing.css';
@@ -10,36 +9,12 @@ import whoLogo from '../../logo/who.png';
 import fdaLogo from '../../logo/fda.png';
 import Footer from '../../components/Footer/Footer';
 import Head from '../Head/Head';
-import { Link, NavLink, useNavigate } from 'react-router-dom';
+import { Link } from 'react-router-dom';
 
 const Landing = () => {
   const [mobileMenuActive, setMobileMenuActive] = useState(false);
-  const [scrolled, setScrolled] = useState(false);
-  const [currentSlide, setCurrentSlide] = useState(0);
   const [currentTimelineIndex, setCurrentTimelineIndex] = useState(0);
-  const navigate = useNavigate();
 
-
-  const toggleMobileMenu = () => {
-    setMobileMenuActive(!mobileMenuActive);
-  };
-
-  useEffect(() => {
-    const handleScroll = () => {
-      setScrolled(window.scrollY > 50);
-    };
-    window.addEventListener('scroll', handleScroll);
-    return () => window.removeEventListener('scroll', handleScroll);
-  }, []);
-useEffect(() => {
-
-  if (window.fbq) {
-
-    window.fbq("track", "PageView");
-
-  }
-
-}, []);
   useEffect(() => {
     const animateOnScroll = () => {
       const elements = document.querySelectorAll(
@@ -58,18 +33,9 @@ useEffect(() => {
       });
     };
 
-    animateOnScroll(); // Run once on mount
+    animateOnScroll();
     window.addEventListener('scroll', animateOnScroll);
     return () => window.removeEventListener('scroll', animateOnScroll);
-  }, []);
-
-
-
-  useEffect(() => {
-    const testimonialInterval = setInterval(() => {
-      setCurrentSlide(prev => (prev + 1) % 3);
-    }, 5000);
-    return () => clearInterval(testimonialInterval);
   }, []);
 
   useEffect(() => {
@@ -110,33 +76,6 @@ useEffect(() => {
     { year: "2022", description: "2000+ products in portfolio" }
   ];
 
-  const testimonials = [
-    {
-      text: "BSK Pharma has helped me save over 60% on my monthly medicine bills. The quality is just as good as branded medicines but at a fraction of the cost.",
-      author: "Rajesh Kumar",
-      role: "Regular Customer"
-    },
-    {
-      text: "As a doctor, I recommend BSK Pharma to all my patients who need affordable yet effective medication. Their range covers almost all essential medicines.",
-      author: "Dr. Priya Sharma",
-      role: "General Physician"
-    },
-    {
-      text: "The staff at my local BSK Pharma store is very knowledgeable and helpful. They guide me to the right generic alternatives for my prescriptions.",
-      author: "Meena Patel",
-      role: "Senior Citizen"
-    }
-  ];
-
-  const teamMembers = [
-    { name: "Mr. Arjun Mehta", title: "Visionary Founder", color: "orange" },
-    { name: "Dr. Neha Kapoor", title: "Group CEO – Leader in Action", color: "green" },
-    { name: "Mr. Rakesh Sinha", title: "Director", color: "purple" },
-    { name: "Ms. Tanya Bhatt", title: "Director", color: "pink" },
-    { name: "Mr. Rajeev Nair", title: "Director", color: "red" },
-    { name: "Ms. Isha Malhotra", title: "Director", color: "blue" }
-  ];
-
   return (
     <div className="landing-page">
       <Head />
@@ -152,13 +91,11 @@ useEffect(() => {
           <p className="description animate__animated animate__fadeInUp">
             <strong>India's largest</strong> private generic pharmacy retail chain offering high-quality medicines at affordable prices.
           </p>
-          {/* <a href="/homepage" className="cta-button animate__animated animate__fadeInUp">Shop Now</a> */}
           <Link to='/homePage' className="cta-button animate__animated animate__fadeInUp">
             Shop Now
           </Link>
           <p className="tc animate__animated animate__fadeInUp">* Terms and conditions apply</p>
           <div className="social-icons">
-            {/* Social Icons here */}
             <div className="social-icons">
               <a href="https://www.facebook.com/people/Dr-BSKs/61576600531948/" target='blank' aria-label="Facebook">
                 <img src="https://cdn-icons-png.flaticon.com/512/2111/2111392.png" alt="Facebook" />
@@ -169,9 +106,6 @@ useEffect(() => {
               <a href="https://www.youtube.com/@Dr.BSKsURUMEED-w4o" target='blank' aria-label="YouTube">
                 <img src="https://cdn-icons-png.flaticon.com/512/1384/1384060.png" alt="YouTube" />
               </a>
-              {/* <a href="#" aria-label="Twitter">
-                <img src="https://cdn-icons-png.flaticon.com/512/3670/3670151.png" alt="Twitter" />
-              </a> */}
               <a href="https://www.linkedin.com/company/dr-bsk-s/" target='blank' aria-label="LinkedIn">
                 <img src="https://cdn-icons-png.flaticon.com/512/3536/3536505.png" alt="LinkedIn" />
               </a>
@@ -226,8 +160,7 @@ useEffect(() => {
           <div className="about-image animated"><img className='objectfitImg' src='https://www.ukgermanpharmaceuticals.com/uploaded-files/banner-image/Result-Oriented-Diabetic-Medicines-Brand-In-India09.jpg' alt="BSK Pharma Store" /></div>
           <div className="about-content animated">
             <h2>About Us</h2>
-            <p>UK German Pharmaceuticals – Established in 1991, we are one of India’s most trusted animal healthcare companies...</p>
-            {/* <a href="#" className="about-btn">Learn More</a> */}
+            <p>UK German Pharmaceuticals – Established in 1991, we are one of India's most trusted animal healthcare companies...</p>
             <Link to='/aboutus' className='about-btn'>Learn More</Link>
           </div>
         </div>
@@ -245,17 +178,12 @@ useEffect(() => {
             <div className="stat-number" data-target="3">0</div>
             <div className="stat-text">Stores</div>
           </div>
-          {/* <div className="stat-item animate__animated animate__fadeInUp">
-            <div className="stat-number" data-target="9">0</div>
-            <div className="stat-text">Lakh Sq.Ft Warehouse</div>
-          </div> */}
           <div className="stat-item animate__animated animate__fadeInUp">
             <div className="stat-number" data-target="45">0</div>
             <div className="stat-text">Years of Experience</div>
           </div>
         </div>
       </section>
-
 
       {/* Timeline Section */}
       <div className="timeline-container">
@@ -273,9 +201,6 @@ useEffect(() => {
           {timelineData[currentTimelineIndex].description}
         </div>
       </div>
-
-      {/* Team Section, Store Section, Testimonials, CTA */}
-      {/* You already have them correct - no change needed here */}
 
       <Footer />
     </div>

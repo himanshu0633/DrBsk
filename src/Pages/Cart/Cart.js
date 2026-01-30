@@ -257,8 +257,7 @@ const Cart = () => {
                 )}
 
                 {/* Login method toggle */}
-       
-
+              
                 <form onSubmit={handleSubmit} noValidate>
                   {!isMobileLogin ? (
                     <>

@@ -1,80 +1,66 @@
+/* Veterinary Categories - Same as Categories.css but with specific styling */
+
+.veterinary-wrapper {
+  background: linear-gradient(180deg, #F0FFF4 0%, #ffffff 100%);
+}
+
+.veterinary-wrapper .section-title::after {
+  background: linear-gradient(90deg, #38B2AC, #319795);
+}
+
+.veterinary-wrapper .category-item {
+  border: 2px solid #C6F6D5;
+  background: #ffffff;
+}
+
+.veterinary-wrapper .category-item:hover {
+  border-color: #38B2AC;
+  box-shadow: 0 15px 35px rgba(56, 178, 172, 0.15);
+}
+
+.veterinary-wrapper .category-item::before {
+  background: linear-gradient(90deg, #38B2AC, #319795);
+}
+
+.veterinary-wrapper .category-image-wrapper {
+  background: linear-gradient(135deg, #E6FFFA 0%, #D1F7F4 100%);
+  border: 3px solid #38B2AC;
+}
+
+.veterinary-wrapper .category-item:hover .category-image-wrapper {
+  box-shadow: 0 10px 25px rgba(56, 178, 172, 0.25);
+}
+
+.veterinary-wrapper .category-item:hover .category-name {
+  color: #319795;
+}
+
+/* For mobile responsive */
+@media (max-width: 599px) {
+  .veterinary-wrapper .category-item {
+    border: 1.5px solid #B2F5EA;
+  }
+}
+
+/* For veterinary specific placeholder */
+.veterinary-wrapper .category-img[src*="placeholder"] {
+  filter: hue-rotate(180deg);
+}
+
+/* If you want to use the same Personal.css with slight modifications */
 .personal-title {
   text-align: center;
   margin-bottom: 1.5rem;
   font-size: 2rem;
   color: #333;
   padding: 0 1rem;
+  /* Now using section-title from Categories.css instead */
 }
 
-.personal-card {
-  flex: 0 0 auto;
-  min-width: 9rem;
-  text-align: center;
-  transition: transform 0.3s ease;
-  cursor: pointer;
-}
-
-.personal-card:hover {
-  transform: translateY(-0.5rem);
-}
-
-.personal-image-wrapper {
-  padding: 1.25rem;
-  border-radius: 0.75rem;
-  box-shadow: 0 0.25rem 0.5rem rgba(0, 0, 0, 0.08);
-  margin: 0 auto;
-  width: fit-content;
-  transition: transform 0.3s;
-}
-
-.personal-card:hover .personal-image-wrapper {
-  transform: scale(1.05);
-}
-
-.personal-image {
-  height: 5rem;
-  width: auto;
-  object-fit: contain;
-  aspect-ratio: 1/1;
-}
-
-.personal-item-title {
-  margin-top: 0.75rem;
-  font-size: 0.95rem;
-  font-weight: 600;
-  color: #444;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  padding: 0 0.5rem;
-}
-
-/* Responsive */
-@media (max-width: 1200px) {
-  .personal-card {
-    min-width: 8.5rem;
-  }
-
-  .personal-image {
-    height: 4.5rem;
-  }
-}
-
+/* Keep existing responsive styles but update to match Categories.css */
 @media (max-width: 992px) {
   .personal-title {
     font-size: 1.5rem;
-  }
-
-  .personal-card {
-    min-width: 8rem;
-  }
-
-  .personal-image {
-    height: 4rem;
-  }
-
-  .personal-item-title {
-    font-size: 0.9rem;
   }
 }
 
@@ -83,59 +69,11 @@
     font-size: 1.3rem;
     margin-bottom: 1.25rem;
   }
-
-  .personal-card {
-    min-width: 7rem;
-  }
-
-  .personal-image-wrapper {
-    padding: 1rem;
-  }
-
-  .personal-image {
-    height: 3.5rem;
-  }
-
-  .personal-item-title {
-    font-size: 0.85rem;
-  }
 }
 
 @media (max-width: 576px) {
   .personal-title {
     font-size: 1.2rem;
     margin-bottom: 1rem;
-  }
-
-  .personal-card {
-    min-width: 6rem;
-  }
-
-  .personal-image-wrapper {
-    padding: 0.75rem;
-    border-radius: 0.5rem;
-  }
-
-  .personal-image {
-    height: 3rem;
-  }
-
-  .personal-item-title {
-    font-size: 0.8rem;
-    margin-top: 0.5rem;
-  }
-}
-
-@media (max-width: 400px) {
-  .personal-card {
-    min-width: 5.5rem;
-  }
-
-  .personal-image {
-    height: 80px;
-  }
-
-  .personal-item-title {
-    font-size: 0.75rem;
   }
 }

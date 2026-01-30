@@ -7,7 +7,7 @@ import { toast } from 'react-toastify';
 import { deleteProduct, updateData, clearProducts } from '../store/Action';
 import API_URL from '../config';
 import axiosInstance from './AxiosInstance';
-import { Dialog, DialogTitle, DialogContent, DialogActions, TextField, InputAdornment } from '@mui/material';
+import { Dialog, DialogTitle, DialogContent, DialogActions, TextField, Button, Grid, InputAdornment } from '@mui/material';
 import JoinUrl from '../JoinUrl';
 
 const AddToCart = () => {
@@ -35,15 +35,25 @@ const AddToCart = () => {
   const dispatch = useDispatch();
   const navigate = useNavigate();
   
+  // Loader states
   const [isProcessing, setIsProcessing] = useState(false);
   const [processingMessage, setProcessingMessage] = useState('');
 
+  // Calculate totalPrice BEFORE any effects that use it
+  const totalPrice = cartItems.reduce((acc, item) => {
+    const price = parseFloat(item.final_price || 0);
+    return acc + price * (item.quantity || 1);
+  }, 0);
+
+  // Email validation function
   const isValidEmail = useCallback((email) => {
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     return emailRegex.test(email);
   }, []);
 
+  // Initialize form data from localStorage on component mount
   useEffect(() => {
+    // Authentication check logic
     const storedUserData = localStorage.getItem('userData');
     if (storedUserData) {
       setIsAuthenticated(true);
@@ -51,18 +61,21 @@ const AddToCart = () => {
       setIsAuthenticated(false);
     }
 
+    // Load saved data from localStorage
     const savedEmail = localStorage.getItem('guestEmail') || '';
     const savedPhone = localStorage.getItem('guestPhone') || '';
     const savedAddresses = JSON.parse(localStorage.getItem('guestAddresses') || '[]');
     
+    // Set initial form data
     setFormData(prev => ({
       ...prev,
       email: savedEmail || prev.email,
       phone: savedPhone || prev.phone
     }));
-    
+
     setAddresses(savedAddresses);
     
+    // Auto-select first address if available
     if (savedAddresses.length > 0 && !formData.selectedAddress) {
       const firstAddress = savedAddresses[0];
       const addressValue = typeof firstAddress === 'object' ? firstAddress.fullAddress : firstAddress;
@@ -76,12 +89,9 @@ const AddToCart = () => {
         phone: addressPhone || savedPhone || prev.phone
       }));
     }
-  }, []);
+  }, []);  // This effect runs once on mount
 
-  const totalPrice = cartItems.reduce((acc, item) => {
-    const price = parseFloat(item.final_price || 0);
-    return acc + price * (item.quantity || 1);
-  }, 0);
+
 
   const handleQuantityChange = (itemId, newQuantity) => {
     if (newQuantity < 1) return;
@@ -98,21 +108,25 @@ const AddToCart = () => {
     toast.info('Item removed from cart.', { position: 'top-right', autoClose: 2000 });
   };
 
+  // Handle email change - save to localStorage immediately
   const handleEmailChange = (e) => {
     const email = e.target.value;
     setFormData(prev => ({ ...prev, email }));
     
+    // Save to localStorage immediately (not just on checkout)
     if (email && isValidEmail(email)) {
       localStorage.setItem('guestEmail', email);
       toast.success('Email saved for checkout!', { position: 'top-right', autoClose: 1500 });
     }
   };
 
+  // Handle phone change - save to localStorage immediately
   const handlePhoneChange = (e) => {
     const value = e.target.value.replace(/\D/g, '');
     if (value.length <= 10) {
       setFormData(prev => ({ ...prev, phone: value }));
       
+      // Save to localStorage immediately
       if (value.length === 10) {
         localStorage.setItem('guestPhone', value);
       }
@@ -122,18 +136,21 @@ const AddToCart = () => {
   const handleAddAddress = async () => {
     setLoading(true);
     
+    // Validate email
     if (formData.email && !isValidEmail(formData.email)) {
       toast.error("Please enter a valid email address");
       setLoading(false);
       return;
     }
 
+    // Validate phone
     if (!formData.phone || formData.phone.length !== 10) {
       toast.error("Please enter a valid 10-digit phone number");
       setLoading(false);
       return;
     }
 
+    // Address object बनाएं
     const addressObject = {
       flat: formData.flat,
       landmark: formData.landmark,
@@ -145,13 +162,18 @@ const AddToCart = () => {
       fullAddress: `${formData.flat}, ${formData.landmark}, ${formData.city}, ${formData.state}, ${formData.country}`
     };
     
+    // localStorage से existing addresses निकालें
     const existingAddresses = JSON.parse(localStorage.getItem('guestAddresses') || '[]');
     const updatedAddresses = [...existingAddresses, addressObject];
     
+    // Save to localStorage
     localStorage.setItem('guestAddresses', JSON.stringify(updatedAddresses));
+    
+    // Also save email and phone separately for easy access
     localStorage.setItem('guestEmail', formData.email);
     localStorage.setItem('guestPhone', formData.phone);
     
+    // State update करें
     setAddresses(updatedAddresses);
     setFormData(prev => ({
       ...prev,
@@ -166,6 +188,7 @@ const AddToCart = () => {
     toast.success("Address saved successfully!");
   };
 
+  // Fetch states
   useEffect(() => {
     const fetchStates = async () => {
       try {
@@ -180,6 +203,7 @@ const AddToCart = () => {
     fetchStates();
   }, []);
 
+  // Fetch cities when state changes
   useEffect(() => {
     if (!formData.state) return;
 
@@ -199,21 +223,14 @@ const AddToCart = () => {
 
   const loadRazorpayScript = () => {
     return new Promise((resolve) => {
-      if (window.Razorpay) {
-        console.log("✅ Razorpay SDK already loaded");
-        resolve(true);
-        return;
-      }
-
       const script = document.createElement('script');
       script.src = 'https://checkout.razorpay.com/v1/checkout.js';
-      script.async = true;
       script.onload = () => {
-        console.log("✅ Razorpay SDK loaded successfully");
+        console.log("✅ Razorpay SDK loaded");
         resolve(true);
       };
-      script.onerror = (error) => {
-        console.error("❌ Failed to load Razorpay SDK:", error);
+      script.onerror = () => {
+        console.error("❌ Failed to load Razorpay SDK");
         resolve(false);
       };
       document.body.appendChild(script);
@@ -221,12 +238,14 @@ const AddToCart = () => {
   };
 
   const fetchData = useCallback(async () => {
+    // Guest user के लिए localStorage से data fetch करें
     const guestAddresses = JSON.parse(localStorage.getItem('guestAddresses') || '[]');
     const guestEmail = localStorage.getItem('guestEmail') || '';
     const guestPhone = localStorage.getItem('guestPhone') || '';
     
     setAddresses(guestAddresses);
     
+    // Auto-select first address if available
     if (guestAddresses.length > 0 && !formData.selectedAddress) {
       const firstAddress = guestAddresses[0];
       const addressValue = typeof firstAddress === 'object' ? firstAddress.fullAddress : firstAddress;
@@ -241,50 +260,37 @@ const AddToCart = () => {
       }));
     }
     
+    // If user is authenticated, fetch their data too
     if (isAuthenticated && userData?._id) {
       try {
-        const response = await axiosInstance.get(`/api/user/${userData._id}`);
-        
-        if (response.data.success) {
-          const userInfo = response.data.data;
-          console.log("Fetched user info:", userInfo);
+        const response = await axiosInstance.get(`/admin/readAdmin/${userData._id}`);
+        const userInfo = response?.data?.data;
 
-          if (userInfo?.email) {
-            setFormData(prev => ({ ...prev, email: userInfo.email }));
-          }
+        console.log("Fetched user info:", userInfo);
 
-          if (userInfo?.address && Array.isArray(userInfo.address)) {
-            const mergedAddresses = [...guestAddresses];
+        // Set email in form data
+        if (userInfo?.email) {
+          setFormData(prev => ({ ...prev, email: userInfo.email }));
+        }
+
+        if (Array.isArray(userInfo?.address)) {
+          // Merge guest addresses with user addresses
+          const mergedAddresses = [...guestAddresses, ...userInfo.address];
+          setAddresses(mergedAddresses);
+          if (mergedAddresses.length > 0 && !formData.selectedAddress) {
+            const firstAddr = mergedAddresses[0];
+            const addrValue = typeof firstAddr === 'object' ? firstAddr.fullAddress : firstAddr;
+            const addrEmail = typeof firstAddr === 'object' ? firstAddr.email : userInfo.email;
             
-            userInfo.address.forEach(addr => {
-              if (addr) {
-                mergedAddresses.push(addr);
-              }
-            });
-            
-            setAddresses(mergedAddresses);
-            
-            if (mergedAddresses.length > 0 && !formData.selectedAddress) {
-              const firstAddr = mergedAddresses[0];
-              const addrValue = typeof firstAddr === 'object' ? firstAddr.fullAddress || firstAddr : firstAddr;
-              const addrEmail = typeof firstAddr === 'object' ? firstAddr.email : userInfo.email;
-              
-              setFormData(prev => ({ 
-                ...prev, 
-                selectedAddress: addrValue,
-                email: addrEmail || userInfo.email || prev.email
-              }));
-            }
+            setFormData(prev => ({ 
+              ...prev, 
+              selectedAddress: addrValue,
+              email: addrEmail || userInfo.email || prev.email
+            }));
           }
-        } else {
-          console.warn("User fetch returned unsuccessful:", response.data.message);
         }
       } catch (error) {
-        console.error("Error fetching user data:", error);
-        
-        if (userData?.email) {
-          setFormData(prev => ({ ...prev, email: userData.email }));
-        }
+        console.error("Error fetching user address:", error);
       }
     }
   }, [isAuthenticated, userData?._id, formData.selectedAddress]);
@@ -304,6 +310,7 @@ const AddToCart = () => {
     setCheckoutLoading(true);
 
     try {
+      // Form validation
       if (!formData.selectedAddress) {
         toast.warn('Please select an address before checkout.');
         setCheckoutLoading(false);
@@ -316,6 +323,7 @@ const AddToCart = () => {
         return;
       }
 
+      // Get email from form or localStorage
       const checkoutEmail = formData.email || localStorage.getItem('guestEmail') || '';
       
       if (!checkoutEmail || !isValidEmail(checkoutEmail)) {
@@ -324,9 +332,11 @@ const AddToCart = () => {
         return;
       }
 
+      // Get phone number
       let phoneNumber = formData.phone?.toString().trim();
 
       if (!phoneNumber) {
+        // Try to get from saved addresses
         const selectedAddressObj = addresses.find(addr => 
           typeof addr === 'object' ? addr.fullAddress === formData.selectedAddress : addr === formData.selectedAddress
         );
@@ -346,6 +356,7 @@ const AddToCart = () => {
         return;
       }
 
+      // Prepare order items
       const orderItems = cartItems.map((item) => {
         const qty = parseInt(item.quantity) || 1;
         const price = parseFloat(item.final_price) || 0;
@@ -362,8 +373,10 @@ const AddToCart = () => {
         };
       });
 
+      // Create guest user ID if not logged in
       const userId = isAuthenticated ? userData._id : `guest_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
 
+      // Prepare order payload for Step 1
       const orderPayload = {
         userId: userId,
         items: orderItems,
@@ -377,6 +390,7 @@ const AddToCart = () => {
       console.log("Step 1: Creating Razorpay order...");
       console.log("Order payload:", JSON.stringify(orderPayload, null, 2));
       
+      // Step 1: Create Razorpay Order
       const orderResponse = await axiosInstance.post('/api/createPaymentOrder', orderPayload);
 
       if (!orderResponse.data.success) {
@@ -387,16 +401,10 @@ const AddToCart = () => {
         return;
       }
 
-      const { order: razorpayOrder, key: razorpayKey } = orderResponse.data;
+      const { order: razorpayOrder } = orderResponse.data;
       console.log("✅ Razorpay order created:", razorpayOrder.id);
-      console.log("Razorpay Key:", razorpayKey ? `${razorpayKey.substring(0, 10)}...` : 'missing');
 
-      if (!razorpayKey) {
-        toast.error('Payment configuration error. Please try again.');
-        setCheckoutLoading(false);
-        return;
-      }
-
+      // Load Razorpay SDK
       const razorpayLoaded = await loadRazorpayScript();
       if (!razorpayLoaded) {
         toast.error('Payment system failed to load. Please refresh the page.');
@@ -404,31 +412,34 @@ const AddToCart = () => {
         return;
       }
 
-      // ✅ FIXED: Use the key from backend response instead of hardcoding it
+      // Configure Razorpay options
       const options = {
-        key: razorpayKey, // Use key from backend response
+        key: "rzp_live_RsAhVxy2ldrBIl", 
         amount: razorpayOrder.amount,
         currency: razorpayOrder.currency,
-        name: "Dr BSK Healthcare",
-        description: `Order #${razorpayOrder.receipt}`,
+        name: "Dr BSK",
+        description: "Order Payment",
         order_id: razorpayOrder.id,
         handler: async function (response) {
           console.log("✅ Payment successful, response:", response);
           
+          // Show processing loader
           setIsProcessing(true);
           setProcessingMessage("Verifying your payment...");
           setPaymentProcessing(true);
           
           try {
+            // Step 2: Verify payment and create order
             console.log("Step 2: Verifying payment and creating order...");
             
             const verifyPayload = {
               razorpay_order_id: response.razorpay_order_id,
               razorpay_payment_id: response.razorpay_payment_id,
               razorpay_signature: response.razorpay_signature,
-              ...orderPayload
+              ...orderPayload // Include all order details
             };
 
+            // Update loader message
             setProcessingMessage("Creating your order...");
             
             const verifyResponse = await axiosInstance.post('/api/verifyPayment', verifyPayload);
@@ -436,17 +447,21 @@ const AddToCart = () => {
             if (verifyResponse.data.success) {
               console.log("✅ Order created successfully:", verifyResponse.data.orderId);
               
+              // Update loader for final step
               setProcessingMessage("Finalizing your order...");
               
+              // Clear cart
               dispatch(clearProducts());
               localStorage.removeItem('cartItems');
               
+              // Clear guest addresses if guest user
               if (!isAuthenticated) {
                 localStorage.removeItem('guestAddresses');
                 localStorage.removeItem('guestEmail');
                 localStorage.removeItem('guestPhone');
               }
               
+              // Show success for 2 seconds before redirecting
               toast.success(
                 <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                   <CheckCircle size={20} />
@@ -462,12 +477,14 @@ const AddToCart = () => {
                 }
               );
               
+              // Wait 2 seconds before navigating (for better UX)
               setTimeout(() => {
+                // Hide loader and navigate
                 setIsProcessing(false);
                 navigate(`/success`, {
                   state: {
                     orderId: verifyResponse.data.orderId,
-                    orderDetails: verifyResponse.data.order
+                    orderDetails: verifyResponse.data.orderDetails
                   }
                 });
               }, 2000);
@@ -476,14 +493,13 @@ const AddToCart = () => {
               console.error("❌ Order creation failed:", verifyResponse.data.message);
               setIsProcessing(false);
               toast.error(verifyResponse.data.message || 'Failed to create order');
-              setPaymentProcessing(false);
             }
           } catch (error) {
             console.error("❌ Payment verification error:", error);
             setIsProcessing(false);
-            setPaymentProcessing(false);
             toast.error('Payment verification failed. Please contact support.');
           } finally {
+            setPaymentProcessing(false);
             setCheckoutLoading(false);
           }
         },
@@ -501,44 +517,36 @@ const AddToCart = () => {
             if (!paymentProcessing) {
               setCheckoutLoading(false);
             }
-          },
-          escape: false,
-          backdropclose: false
-        },
-        notes: {
-          orderId: razorpayOrder.receipt,
-          userId: userId
+          }
         }
       };
 
-      console.log("Opening Razorpay checkout with options:", {
-        key: `${options.key.substring(0, 10)}...`,
-        amount: options.amount,
-        order_id: options.order_id
-      });
-      
+      // Open Razorpay checkout
+      console.log("Opening Razorpay checkout...");
       const rzp = new window.Razorpay(options);
       
-      rzp.on('payment.failed', function (response) {
-        console.error("❌ Payment failed:", response.error);
-        setIsProcessing(false);
-        setPaymentProcessing(false);
-        setCheckoutLoading(false);
-        
-        let errorMsg = 'Payment failed';
-        if (response.error && response.error.description) {
-          errorMsg = `Payment failed: ${response.error.description}`;
-        } else if (response.error && response.error.reason) {
-          errorMsg = `Payment failed: ${response.error.reason}`;
+      // Razorpay modal के close होने पर
+      rzp.on('modal.closed', function() {
+        console.log("Razorpay modal closed");
+        if (!paymentProcessing) {
+          setCheckoutLoading(false);
         }
-        
-        toast.error(errorMsg, {
-          position: 'top-right',
-          autoClose: 5000
-        });
       });
       
       rzp.open();
+
+      // Handle payment errors
+      rzp.on('payment.failed', function (response) {
+        console.error("❌ Payment failed:", response.error);
+        setIsProcessing(false);
+        toast.error(`Payment failed: ${response.error.description || 'Unknown error'}`);
+        setCheckoutLoading(false);
+        setPaymentProcessing(false);
+      });
+      
+      console.log("Razorpay Order ID received:", razorpayOrder.id);
+      console.log("Razorpay Order Amount:", razorpayOrder.amount);
+      console.log("Razorpay Key being used:", options.key);
 
     } catch (error) {
       console.error('=== CHECKOUT ERROR ===');
@@ -554,8 +562,6 @@ const AddToCart = () => {
         }
       } else if (error.response?.data?.message) {
         errorMessage = error.response.data.message;
-      } else if (error.request) {
-        errorMessage = 'Network error. Please check your connection.';
       }
 
       toast.error(errorMessage);
@@ -565,6 +571,7 @@ const AddToCart = () => {
     }
   };
 
+  // Loader component function
   const renderProcessingLoader = () => {
     if (!isProcessing) return null;
     
@@ -594,6 +601,7 @@ const AddToCart = () => {
     );
   };
 
+  // Login prompt message
   const renderLoginPrompt = () => {
     if (!isAuthenticated) {
       return (
@@ -608,6 +616,7 @@ const AddToCart = () => {
     return null;
   };
 
+  // Render address in list
   const renderAddressItem = (addr, index) => {
     if (typeof addr === 'string') {
       return (
@@ -627,6 +636,7 @@ const AddToCart = () => {
         </li>
       );
     } else {
+      // For object type addresses (guest users)
       return (
         <li key={index} className={`address-card ${formData.selectedAddress === addr.fullAddress ? 'selected' : ''}`}>
           <label>
@@ -643,6 +653,7 @@ const AddToCart = () => {
                   phone: addr.phone || prev.phone
                 }));
                 
+                // Save email and phone to localStorage immediately
                 if (addr.email) {
                   localStorage.setItem('guestEmail', addr.email);
                 }
@@ -664,6 +675,7 @@ const AddToCart = () => {
 
   return (
     <>
+      {/* Processing Loader */}
       {renderProcessingLoader()}
       
       <div className="cart-container">
@@ -863,10 +875,7 @@ const AddToCart = () => {
                     </div>
                   )}
 
-                  <div className="security-badges">
-                    <div className="badge">🔒 Secure Payment</div>
-                    <div className="badge">💳 Razorpay Verified</div>
-                  </div>
+              
                 </div>
               </div>
             )}
@@ -934,7 +943,8 @@ const AddToCart = () => {
           }
         }}>
           <div className="form-grid">
-            <div className="form-field" style={{ gridColumn: 'span 12', paddingTop: '10px' }}>
+            {/* Email Field */}
+            <div className="form-field" style={{ gridColumn: 'span 12' ,paddingTop: '10px'}}>
               <TextField
                 label="Email Address"
                 fullWidth
@@ -969,6 +979,7 @@ const AddToCart = () => {
               />
             </div>
 
+            {/* Address Fields */}
             <div className="form-field" style={{ gridColumn: 'span 6' }}>
               <TextField
                 label="Flat / House No."
@@ -1017,6 +1028,7 @@ const AddToCart = () => {
               />
             </div>
 
+            {/* State Dropdown */}
             <div className="form-field" style={{ gridColumn: 'span 6' }}>
               <div className="custom-select-container">
                 <label className="custom-label">
@@ -1052,6 +1064,7 @@ const AddToCart = () => {
               </div>
             </div>
 
+            {/* City Dropdown */}
             <div className="form-field" style={{ gridColumn: 'span 6' }}>
               <div className="custom-select-container">
                 <label className="custom-label">
@@ -1099,6 +1112,7 @@ const AddToCart = () => {
               </div>
             </div>
 
+            {/* Country Field */}
             <div className="form-field" style={{ gridColumn: 'span 6' }}>
               <TextField
                 label="Country"
@@ -1120,6 +1134,7 @@ const AddToCart = () => {
               />
             </div>
 
+            {/* Phone Field */}
             <div className="form-field" style={{ gridColumn: 'span 6' }}>
               <TextField
                 label="Phone Number"
@@ -1170,6 +1185,7 @@ const AddToCart = () => {
             </div>
           </div>
 
+          {/* Required Note */}
           <div style={{ 
             display: 'flex', 
             alignItems: 'center', 
@@ -1193,6 +1209,7 @@ const AddToCart = () => {
             </span>
           </div>
 
+          {/* Guest Info Note */}
           {!isAuthenticated && (
             <div style={{ 
               fontSize: '0.875rem', 

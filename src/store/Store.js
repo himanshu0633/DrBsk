@@ -1,116 +1,143 @@
 // store.js
 import { configureStore } from "@reduxjs/toolkit";
-import storage from 'redux-persist/lib/storage';
-import { persistReducer, persistStore } from 'redux-persist';
-import { combineReducers } from 'redux';
+import storage from "redux-persist/lib/storage";
+import { persistReducer, persistStore } from "redux-persist";
+import { combineReducers } from "redux";
+
+// ✅ Add these constants to silence non-serializable warnings from redux-persist
+import {
+  FLUSH,
+  REHYDRATE,
+  PAUSE,
+  PERSIST,
+  PURGE,
+  REGISTER,
+} from "redux-persist";
 
 const initialState = {
   data: [],
 };
 
-const saveState = (data) => {
-  localStorage.setItem("reduxState", JSON.stringify(data.data));
+// ✅ Safe localStorage write
+const saveState = (state) => {
+  try {
+    if (typeof window === "undefined") return;
+    localStorage.setItem("reduxState", JSON.stringify(state.data));
+  } catch (e) {
+    // ignore storage errors (quota, private mode, etc.)
+  }
 };
 
 const rootReducer = (state = initialState, action) => {
   switch (action.type) {
-    case "ADD_DATA":
+    case "ADD_DATA": {
       const existingProductIndex = state.data.findIndex(
-        item => 
-          item._id === action.payload._id && 
+        (item) =>
+          item._id === action.payload._id &&
           item.selectedVariant?.label === action.payload.selectedVariant?.label
       );
-      
+
       let newState;
+
       if (existingProductIndex !== -1) {
-        // Product already exists with same variant, update quantity
         const updatedData = [...state.data];
+        const oldItem = updatedData[existingProductIndex];
+
+        const newQty = (oldItem.quantity || 0) + (action.payload.quantity || 1);
+
         updatedData[existingProductIndex] = {
-          ...updatedData[existingProductIndex],
-          quantity: updatedData[existingProductIndex].quantity + action.payload.quantity,
-          totalPrice: (updatedData[existingProductIndex].unitPrice || 0) * 
-                     (updatedData[existingProductIndex].quantity + action.payload.quantity)
+          ...oldItem,
+          ...action.payload,
+          quantity: newQty,
+          totalPrice: (oldItem.unitPrice || action.payload.unitPrice || 0) * newQty,
         };
-        newState = {
-          ...state,
-          data: updatedData,
-        };
+
+        newState = { ...state, data: updatedData };
       } else {
-        // New product or different variant
+        const qty = action.payload.quantity || 1;
+        const unitPrice = action.payload.unitPrice || 0;
+
         newState = {
           ...state,
-          data: [...state.data, action.payload],
+          data: [
+            ...state.data,
+            {
+              ...action.payload,
+              quantity: qty,
+              totalPrice: action.payload.totalPrice ?? unitPrice * qty,
+            },
+          ],
         };
       }
+
       saveState(newState);
       return newState;
-      
-    case "UPDATE_QUANTITY":
+    }
+
+    case "UPDATE_QUANTITY": {
       const { productId, variantLabel, quantity } = action.payload;
+
       const updatedData = state.data.map((product) => {
-        if (product._id === productId && product.selectedVariant?.label === variantLabel) {
+        if (
+          product._id === productId &&
+          product.selectedVariant?.label === variantLabel
+        ) {
           return {
             ...product,
-            quantity: quantity,
-            totalPrice: (product.unitPrice || 0) * quantity
+            quantity,
+            totalPrice: (product.unitPrice || 0) * quantity,
           };
         }
         return product;
       });
-      const newState3 = {
-        ...state,
-        data: updatedData,
-      };
-      saveState(newState3);
-      return newState3;
-      
-    case "DELETE_PRODUCT":
-      const newState1 = {
+
+      const newState = { ...state, data: updatedData };
+      saveState(newState);
+      return newState;
+    }
+
+    case "DELETE_PRODUCT": {
+      const newState = {
         ...state,
         data: state.data.filter((product) => product._id !== action.payload),
       };
-      saveState(newState1);
-      return newState1;
-      
-    case "CLEAR_PRODUCT":
-      const newState2 = {
-        ...state,
-        data: action.payload,
-      };
-      saveState(newState2);
-      return newState2;
-      
-    case "CLEAR_ALLPRODUCT":
-      const updatedState = {
-        ...state,
-        data: [],
-      };
-      saveState(updatedState);
-      return updatedState;
-      
-    case "UPDATE_DATA":
-      const updatedData2 = state.data.map((product) =>
+      saveState(newState);
+      return newState;
+    }
+
+    case "CLEAR_PRODUCT": {
+      const newState = { ...state, data: action.payload };
+      saveState(newState);
+      return newState;
+    }
+
+    case "CLEAR_ALLPRODUCT": {
+      const newState = { ...state, data: [] };
+      saveState(newState);
+      return newState;
+    }
+
+    case "UPDATE_DATA": {
+      const updatedData = state.data.map((product) =>
         product._id === action.payload._id ? action.payload : product
       );
-      const newState4 = {
-        ...state,
-        data: updatedData2,
-      };
-      saveState(newState4);
-      return newState4;
-      
+      const newState = { ...state, data: updatedData };
+      saveState(newState);
+      return newState;
+    }
+
     default:
       return state;
   }
 };
 
-// Combine reducers (only one here, but necessary for persistReducer)
+// Combine reducers
 const root = combineReducers({
   app: rootReducer,
 });
 
 const persistConfig = {
-  key: 'root',
+  key: "root",
   storage,
 };
 
@@ -118,6 +145,14 @@ const persistedReducer = persistReducer(persistConfig, root);
 
 const store = configureStore({
   reducer: persistedReducer,
+
+  // ✅ THIS fixes: "A non-serializable value was detected in an action..."
+  middleware: (getDefaultMiddleware) =>
+    getDefaultMiddleware({
+      serializableCheck: {
+        ignoredActions: [FLUSH, REHYDRATE, PAUSE, PERSIST, PURGE, REGISTER],
+      },
+    }),
 });
 
 const persistor = persistStore(store);

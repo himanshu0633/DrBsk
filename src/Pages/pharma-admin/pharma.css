@@ -272,7 +272,7 @@ input:focus {
 .modal-content {
     background: #fff;
     padding: 20px;
-    width: 764px !important;
+    width: 500px !important;
     max-height: 70vh;
     overflow-y: auto;
     border-radius: 8px;
@@ -478,15 +478,4 @@ input:focus {
 
 .admin-sidebar::-webkit-scrollbar {
     display: none;
-}
-
-.modal-header {
-    padding: 12px !important;
-}
-button.view-details-btn {
-    border-radius: 9px;
-}
-button.view-details-btn {
-    width: 121px;
-    padding: 10px 20px 13px;
 }
