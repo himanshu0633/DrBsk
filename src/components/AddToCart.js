@@ -10,6 +10,45 @@ import axiosInstance from './AxiosInstance';
 import { Dialog, DialogTitle, DialogContent, DialogActions, TextField, Button, Grid, InputAdornment } from '@mui/material';
 import JoinUrl from '../JoinUrl';
 
+/** ---------- Facebook Pixel Functions ---------- */
+// Server-side event function
+const sendServerEvent = async (eventName, data) => {
+  try {
+    const eventData = {
+      eventName,
+      data: {
+        ...data,
+        eventSourceUrl: window.location.href,
+        actionSource: 'website',
+        eventTime: Math.floor(Date.now() / 1000),
+      },
+      fbp: getCookie('_fbp'),
+      fbc: getCookie('_fbc'),
+      clientUserAgent: navigator.userAgent,
+    };
+
+    // Send to your backend API
+    await fetch('/api/facebook-events', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(eventData),
+    });
+  } catch (error) {
+    console.error('Error sending server event:', error);
+  }
+};
+
+// Helper function to get cookies
+const getCookie = (name) => {
+  if (typeof document === 'undefined') return null;
+  const value = `; ${document.cookie}`;
+  const parts = value.split(`; ${name}=`);
+  if (parts.length === 2) return parts.pop().split(';').shift();
+  return null;
+};
+
 const AddToCart = () => {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [showModal, setShowModal] = useState(false);
@@ -19,6 +58,7 @@ const AddToCart = () => {
   const [cities, setCities] = useState([]);
   const [checkoutLoading, setCheckoutLoading] = useState(false);
   const [paymentProcessing, setPaymentProcessing] = useState(false);
+  const [hasTrackedPageView, setHasTrackedPageView] = useState(false);
   const [formData, setFormData] = useState({
     flat: '',
     landmark: '',
@@ -49,6 +89,149 @@ const AddToCart = () => {
   const isValidEmail = useCallback((email) => {
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     return emailRegex.test(email);
+  }, []);
+
+  // Facebook Pixel Tracking Functions
+  const trackViewContent = (contentData) => {
+    if (typeof window !== 'undefined' && window.fbq) {
+      window.fbq('track', 'ViewContent', {
+        content_name: contentData.name,
+        content_ids: contentData.content_ids || [contentData.id],
+        content_type: contentData.type || 'product',
+        value: contentData.value || 0,
+        currency: contentData.currency || 'INR',
+        content_category: contentData.category,
+      });
+    }
+
+    // Server-side event send
+    sendServerEvent('ViewContent', contentData);
+  };
+
+  const trackPageView = () => {
+    if (typeof window !== 'undefined' && window.fbq) {
+      window.fbq('track', 'PageView');
+    }
+    
+    // Server-side event send
+    sendServerEvent('PageView', {
+      id: 'cart_page_view',
+      name: 'Shopping Cart Page',
+      value: totalPrice,
+      currency: 'INR',
+      category: 'Cart',
+      type: 'page',
+      item_count: cartItems.length,
+      total_value: totalPrice,
+    });
+  };
+
+  const trackAddToCart = (productData) => {
+    if (typeof window !== 'undefined' && window.fbq) {
+      window.fbq('track', 'AddToCart', {
+        content_ids: productData.content_ids || [productData.id],
+        content_name: productData.name,
+        content_type: productData.type || 'product',
+        value: productData.value || productData.price || 0,
+        currency: productData.currency || 'INR',
+        num_items: productData.quantity || 1,
+      });
+    }
+    sendServerEvent('AddToCart', productData);
+  };
+
+  const trackInitiateCheckout = (checkoutData) => {
+    if (typeof window !== 'undefined' && window.fbq) {
+      window.fbq('track', 'InitiateCheckout', {
+        value: checkoutData.value || totalPrice,
+        currency: checkoutData.currency || 'INR',
+        num_items: cartItems.length,
+        content_ids: cartItems.map(item => item._id),
+        content_type: 'product',
+      });
+    }
+    
+    sendServerEvent('InitiateCheckout', checkoutData);
+  };
+
+  const trackPurchase = (purchaseData) => {
+    if (typeof window !== 'undefined' && window.fbq) {
+      window.fbq('track', 'Purchase', {
+        value: purchaseData.value || totalPrice,
+        currency: purchaseData.currency || 'INR',
+        content_ids: purchaseData.contentIds || cartItems.map(item => item._id),
+        content_type: 'product',
+        num_items: purchaseData.numItems || cartItems.length,
+        order_id: purchaseData.orderId,
+      });
+    }
+    sendServerEvent('Purchase', purchaseData);
+  };
+
+  const trackRemoveFromCart = (productData) => {
+    trackViewContent({
+      id: `remove_from_cart_${productData.id}`,
+      name: `${productData.name} - Removed from Cart`,
+      value: productData.value || productData.price || 0,
+      currency: 'INR',
+      category: 'Cart Action',
+      type: 'remove_from_cart',
+      action: 'remove',
+    });
+  };
+
+  const trackClearCart = () => {
+    trackViewContent({
+      id: 'clear_cart_action',
+      name: 'Cart Cleared',
+      value: totalPrice,
+      currency: 'INR',
+      category: 'Cart Action',
+      type: 'clear_cart',
+      item_count: cartItems.length,
+      total_value: totalPrice,
+    });
+  };
+
+  // Initialize Facebook Pixel
+  useEffect(() => {
+    // Track PageView
+    if (!hasTrackedPageView) {
+      trackPageView();
+      setHasTrackedPageView(true);
+    }
+
+    // Track cart view
+    trackViewContent({
+      id: 'cart_view',
+      name: 'Cart Contents View',
+      value: totalPrice,
+      currency: 'INR',
+      category: 'Cart',
+      type: 'cart_view',
+      item_count: cartItems.length,
+      items: cartItems.map(item => ({
+        id: item._id,
+        name: item.name,
+        price: item.final_price,
+        quantity: item.quantity
+      })),
+    });
+
+    // Track individual product views in cart
+    cartItems.forEach((item, index) => {
+      setTimeout(() => {
+        trackViewContent({
+          id: `cart_item_view_${item._id}`,
+          name: `${item.name} - In Cart`,
+          value: item.final_price,
+          currency: 'INR',
+          category: 'Cart Item',
+          type: 'cart_product_view',
+          quantity: item.quantity,
+        });
+      }, index * 300);
+    });
   }, []);
 
   // Initialize form data from localStorage on component mount
@@ -91,8 +274,6 @@ const AddToCart = () => {
     }
   }, []);  // This effect runs once on mount
 
-
-
   const handleQuantityChange = (itemId, newQuantity) => {
     if (newQuantity < 1) return;
     const updatedItem = cartItems.find((item) => item._id === itemId);
@@ -100,10 +281,35 @@ const AddToCart = () => {
       const updatedProduct = { ...updatedItem, quantity: newQuantity };
       dispatch(updateData(updatedProduct));
       toast.success('Item quantity updated!', { position: 'top-right', autoClose: 2000 });
+      
+      // Track quantity change
+      trackAddToCart({
+        id: updatedItem._id,
+        name: updatedItem.name,
+        price: updatedItem.final_price,
+        value: updatedItem.final_price * newQuantity,
+        currency: 'INR',
+        category: 'Cart Update',
+        type: 'quantity_update',
+        quantity: newQuantity,
+        old_quantity: updatedItem.quantity,
+        action: newQuantity > updatedItem.quantity ? 'increase' : 'decrease',
+      });
     }
   };
 
   const handleRemoveItem = (itemId) => {
+    const removedItem = cartItems.find((item) => item._id === itemId);
+    if (removedItem) {
+      trackRemoveFromCart({
+        id: removedItem._id,
+        name: removedItem.name,
+        price: removedItem.final_price,
+        value: removedItem.final_price * (removedItem.quantity || 1),
+        currency: 'INR',
+      });
+    }
+    
     dispatch(deleteProduct(itemId));
     toast.info('Item removed from cart.', { position: 'top-right', autoClose: 2000 });
   };
@@ -117,6 +323,15 @@ const AddToCart = () => {
     if (email && isValidEmail(email)) {
       localStorage.setItem('guestEmail', email);
       toast.success('Email saved for checkout!', { position: 'top-right', autoClose: 1500 });
+      
+      // Track email update
+      trackViewContent({
+        id: 'email_updated_cart',
+        name: 'Email Updated in Cart',
+        value: 0,
+        category: 'User Information',
+        type: 'email_update',
+      });
     }
   };
 
@@ -129,6 +344,15 @@ const AddToCart = () => {
       // Save to localStorage immediately
       if (value.length === 10) {
         localStorage.setItem('guestPhone', value);
+        
+        // Track phone update
+        trackViewContent({
+          id: 'phone_updated_cart',
+          name: 'Phone Updated in Cart',
+          value: 0,
+          category: 'User Information',
+          type: 'phone_update',
+        });
       }
     }
   };
@@ -186,6 +410,16 @@ const AddToCart = () => {
     setShowModal(false);
     setLoading(false);
     toast.success("Address saved successfully!");
+    
+    // Track address addition
+    trackViewContent({
+      id: 'address_added_cart',
+      name: 'Address Added in Cart',
+      value: 0,
+      category: 'User Information',
+      type: 'address_add',
+      address_type: isAuthenticated ? 'registered_user' : 'guest_user',
+    });
   };
 
   // Fetch states
@@ -308,6 +542,17 @@ const AddToCart = () => {
     }
 
     setCheckoutLoading(true);
+
+    // Track Initiate Checkout event
+    trackInitiateCheckout({
+      id: 'cart_checkout_initiated',
+      name: 'Checkout Initiated from Cart',
+      value: totalPrice,
+      currency: 'INR',
+      content_ids: cartItems.map(item => item._id),
+      item_count: cartItems.length,
+      user_type: isAuthenticated ? 'registered' : 'guest',
+    });
 
     try {
       // Form validation
@@ -447,12 +692,27 @@ const AddToCart = () => {
             if (verifyResponse.data.success) {
               console.log("✅ Order created successfully:", verifyResponse.data.orderId);
               
+              // Track Purchase event
+              trackPurchase({
+                id: `order_${verifyResponse.data.orderId}`,
+                name: `Order #${verifyResponse.data.orderId}`,
+                value: totalPrice,
+                currency: 'INR',
+                contentIds: cartItems.map(item => item._id),
+                numItems: cartItems.length,
+                orderId: verifyResponse.data.orderId,
+                user_type: isAuthenticated ? 'registered' : 'guest',
+              });
+              
               // Update loader for final step
               setProcessingMessage("Finalizing your order...");
               
               // Clear cart
               dispatch(clearProducts());
               localStorage.removeItem('cartItems');
+              
+              // Track cart clear after purchase
+              trackClearCart();
               
               // Clear guest addresses if guest user
               if (!isAuthenticated) {
@@ -516,6 +776,17 @@ const AddToCart = () => {
             console.log("Payment modal closed by user");
             if (!paymentProcessing) {
               setCheckoutLoading(false);
+              // Track checkout abandonment
+              trackViewContent({
+                id: 'checkout_abandoned',
+                name: 'Checkout Abandoned',
+                value: totalPrice,
+                currency: 'INR',
+                category: 'Cart Abandonment',
+                type: 'checkout_abandonment',
+                item_count: cartItems.length,
+                total_value: totalPrice,
+              });
             }
           }
         }
@@ -542,6 +813,18 @@ const AddToCart = () => {
         toast.error(`Payment failed: ${response.error.description || 'Unknown error'}`);
         setCheckoutLoading(false);
         setPaymentProcessing(false);
+        
+        // Track payment failure
+        trackViewContent({
+          id: 'payment_failed',
+          name: 'Payment Failed',
+          value: totalPrice,
+          currency: 'INR',
+          category: 'Payment Error',
+          type: 'payment_failure',
+          error_code: response.error.code,
+          error_description: response.error.description,
+        });
       });
       
       console.log("Razorpay Order ID received:", razorpayOrder.id);
@@ -568,6 +851,17 @@ const AddToCart = () => {
       setIsProcessing(false);
       setCheckoutLoading(false);
       setPaymentProcessing(false);
+      
+      // Track checkout error
+      trackViewContent({
+        id: 'checkout_error',
+        name: 'Checkout Error',
+        value: totalPrice,
+        currency: 'INR',
+        category: 'Checkout Error',
+        type: 'checkout_error',
+        error_message: errorMessage,
+      });
     }
   };
 
@@ -605,9 +899,28 @@ const AddToCart = () => {
   const renderLoginPrompt = () => {
     if (!isAuthenticated) {
       return (
-        <div className="login-prompt">
+        <div 
+          className="login-prompt"
+          onClick={() => trackViewContent({
+            id: 'guest_cart_view',
+            name: 'Guest User in Cart',
+            value: totalPrice,
+            currency: 'INR',
+            category: 'User Type',
+            type: 'guest_user',
+          })}
+        >
           <p>You are browsing as a guest. 
-            <button onClick={() => navigate('/login')} className="login-link">Login</button> 
+            <button onClick={() => {
+              trackViewContent({
+                id: 'login_prompt_click_cart',
+                name: 'Login Prompt Clicked in Cart',
+                value: 0,
+                category: 'User Action',
+                type: 'login_prompt_click',
+              });
+              navigate('/login');
+            }} className="login-link">Login</button> 
             for order tracking and faster checkout.
           </p>
         </div>
@@ -620,16 +933,34 @@ const AddToCart = () => {
   const renderAddressItem = (addr, index) => {
     if (typeof addr === 'string') {
       return (
-        <li key={index} className={`address-card ${formData.selectedAddress === addr ? 'selected' : ''}`}>
+        <li 
+          key={index} 
+          className={`address-card ${formData.selectedAddress === addr ? 'selected' : ''}`}
+          onClick={() => trackViewContent({
+            id: `address_selected_${index}`,
+            name: 'Address Selected',
+            value: 0,
+            category: 'Checkout Process',
+            type: 'address_selection',
+            address_type: 'text',
+          })}
+        >
           <label>
             <input
               type="radio"
               name="selectedAddress"
               value={addr}
               checked={formData.selectedAddress === addr}
-              onChange={() =>
-                setFormData(prev => ({ ...prev, selectedAddress: addr }))
-              }
+              onChange={() => {
+                setFormData(prev => ({ ...prev, selectedAddress: addr }));
+                trackViewContent({
+                  id: `address_radio_${index}`,
+                  name: 'Address Radio Selected',
+                  value: 0,
+                  category: 'Checkout Process',
+                  type: 'address_selection',
+                });
+              }}
             />
             <span className='text_20'>{addr}</span>
           </label>
@@ -638,7 +969,18 @@ const AddToCart = () => {
     } else {
       // For object type addresses (guest users)
       return (
-        <li key={index} className={`address-card ${formData.selectedAddress === addr.fullAddress ? 'selected' : ''}`}>
+        <li 
+          key={index} 
+          className={`address-card ${formData.selectedAddress === addr.fullAddress ? 'selected' : ''}`}
+          onClick={() => trackViewContent({
+            id: `address_selected_object_${index}`,
+            name: 'Address Object Selected',
+            value: 0,
+            category: 'Checkout Process',
+            type: 'address_selection',
+            address_type: 'object',
+          })}
+        >
           <label>
             <input
               type="radio"
@@ -660,6 +1002,14 @@ const AddToCart = () => {
                 if (addr.phone) {
                   localStorage.setItem('guestPhone', addr.phone);
                 }
+                
+                trackViewContent({
+                  id: `address_radio_object_${index}`,
+                  name: 'Address Radio Object Selected',
+                  value: 0,
+                  category: 'Checkout Process',
+                  type: 'address_selection',
+                });
               }}
             />
             <div className="address-details">
@@ -673,6 +1023,34 @@ const AddToCart = () => {
     }
   };
 
+  const handleBackButtonClick = () => {
+    // Track back to shopping button click
+    trackViewContent({
+      id: 'back_to_shopping_cart',
+      name: 'Back to Shopping from Cart',
+      value: totalPrice,
+      currency: 'INR',
+      category: 'Navigation',
+      type: 'cart_exit',
+      item_count: cartItems.length,
+    });
+    navigate(-1);
+  };
+
+  const handleContinueShoppingClick = () => {
+    // Track continue shopping button click
+    trackViewContent({
+      id: 'continue_shopping_cart',
+      name: 'Continue Shopping from Cart',
+      value: totalPrice,
+      currency: 'INR',
+      category: 'Navigation',
+      type: 'continue_shopping',
+      item_count: cartItems.length,
+    });
+    navigate("/fever");
+  };
+
   return (
     <>
       {/* Processing Loader */}
@@ -683,7 +1061,7 @@ const AddToCart = () => {
         
         <div className="cart-header">
           <div className="container">
-            <button className="back-button" onClick={() => navigate(-1)}>
+            <button className="back-button" onClick={handleBackButtonClick}>
               <ArrowLeft size={20} /> Continue Shopping
             </button>
             <h1 className="cart-title">
@@ -696,16 +1074,38 @@ const AddToCart = () => {
           <div className="cart-content">
             <div className="cart-items-section">
               <div className="section-header">
-                <h2>Your Items ({cartItems.length})</h2>
+                <h2
+                  onClick={() => trackViewContent({
+                    id: 'cart_section_header',
+                    name: 'Cart Section Header Clicked',
+                    value: 0,
+                    category: 'User Interaction',
+                    type: 'section_header_click',
+                  })}
+                >
+                  Your Items ({cartItems.length})
+                </h2>
                 {cartItems.length > 0 && (
                   <button
                     className="clear-cart-btn"
                     onClick={() => {
+                      // Track clear cart click
+                      trackViewContent({
+                        id: 'clear_cart_click',
+                        name: 'Clear Cart Button Clicked',
+                        value: totalPrice,
+                        currency: 'INR',
+                        category: 'Cart Action',
+                        type: 'clear_cart_click',
+                        item_count: cartItems.length,
+                      });
+                      
                       dispatch(clearProducts());
                       toast.info('Cart cleared.', {
                         position: 'top-right',
                         autoClose: 2000,
                       });
+                      trackClearCart();
                     }}
                   >
                     Clear Cart
@@ -714,18 +1114,38 @@ const AddToCart = () => {
               </div>
 
               {cartItems.length === 0 ? (
-                <div className="empty-cart">
+                <div 
+                  className="empty-cart"
+                  onClick={() => trackViewContent({
+                    id: 'empty_cart_view',
+                    name: 'Empty Cart View',
+                    value: 0,
+                    category: 'Cart State',
+                    type: 'empty_cart',
+                  })}
+                >
                   <div className="empty-cart-icon">
                     <ShoppingBag size={64} />
                   </div>
                   <h3>Your cart is empty</h3>
                   <p>Add some items to get started</p>
-                  <button onClick={() => navigate("/fever")} className="continue-shopping-btn">Start Shopping</button>
+                  <button onClick={handleContinueShoppingClick} className="continue-shopping-btn">Start Shopping</button>
                 </div>
               ) : (
                 <div className="cart-items">
                   {cartItems.map((item) => (
-                    <div key={item._id} className="cart-item">
+                    <div 
+                      key={item._id} 
+                      className="cart-item"
+                      onClick={() => trackViewContent({
+                        id: `cart_item_click_${item._id}`,
+                        name: `${item.name} - Cart Item Clicked`,
+                        value: item.final_price,
+                        currency: 'INR',
+                        category: 'Cart Item',
+                        type: 'cart_item_interaction',
+                      })}
+                    >
                       <Link to={`/ProductPage/${item._id}`} className="item-image">
                         <img src={JoinUrl(API_URL, item.media[0]?.url)} alt={item.name} />
                       </Link>
@@ -748,7 +1168,10 @@ const AddToCart = () => {
                         <div className="quantity-controls">
                           <button
                             className="quantity-btn"
-                            onClick={() => handleQuantityChange(item._id, (item.quantity || 1) - 1)}
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              handleQuantityChange(item._id, (item.quantity || 1) - 1);
+                            }}
                             disabled={(item.quantity || 1) <= 1}
                           >
                             <span>-</span>
@@ -756,12 +1179,18 @@ const AddToCart = () => {
                           <span className="quantity">{item.quantity || 1}</span>
                           <button
                             className="quantity-btn"
-                            onClick={() => handleQuantityChange(item._id, (item.quantity || 1) + 1)}
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              handleQuantityChange(item._id, (item.quantity || 1) + 1);
+                            }}
                           >
                             <span>+</span>
                           </button>
                         </div>
-                        <button className="remove-btn" onClick={() => handleRemoveItem(item._id)}>
+                        <button className="remove-btn" onClick={(e) => {
+                          e.stopPropagation();
+                          handleRemoveItem(item._id);
+                        }}>
                           <Trash2 size={18} />
                         </button>
                       </div>
@@ -774,17 +1203,48 @@ const AddToCart = () => {
             {cartItems.length > 0 && (
               <div className="order-summary">
                 <div className="summary-card">
-                  <h3 className="summary-title">Order Summary</h3>
+                  <h3 
+                    className="summary-title"
+                    onClick={() => trackViewContent({
+                      id: 'order_summary_click',
+                      name: 'Order Summary Clicked',
+                      value: totalPrice,
+                      currency: 'INR',
+                      category: 'Order Summary',
+                      type: 'order_summary_interaction',
+                    })}
+                  >
+                    Order Summary
+                  </h3>
 
                   {!isAuthenticated && (
-                    <div className="guest-notice">
+                    <div 
+                      className="guest-notice"
+                      onClick={() => trackViewContent({
+                        id: 'guest_notice_cart',
+                        name: 'Guest Notice Viewed',
+                        value: 0,
+                        category: 'User Type',
+                        type: 'guest_notice',
+                      })}
+                    >
                       <p>🎯 <strong>Guest Checkout Available!</strong> Enter your details below to proceed without login.</p>
                     </div>
                   )}
 
                   <button
                     className="enhanced-add-address-btn"
-                    onClick={() => setShowModal(true)}
+                    onClick={() => {
+                      setShowModal(true);
+                      // Track add address button click
+                      trackViewContent({
+                        id: 'add_address_button_click',
+                        name: 'Add Address Button Clicked',
+                        value: 0,
+                        category: 'Checkout Process',
+                        type: 'add_address_click',
+                      });
+                    }}
                   >
                     ➕ {addresses.length > 0 ? 'Add Another Address' : 'Add Address'}
                   </button>
@@ -868,14 +1328,22 @@ const AddToCart = () => {
                   {!isAuthenticated && (
                     <div className="guest-benefits">
                       <p className="login-suggestion">
-                        <button onClick={() => navigate('/login')} className="login-suggestion-btn">
+                        <button onClick={() => {
+                          trackViewContent({
+                            id: 'login_suggestion_click_cart',
+                            name: 'Login Suggestion Clicked in Cart',
+                            value: 0,
+                            category: 'User Action',
+                            type: 'login_suggestion_click',
+                          });
+                          navigate('/login');
+                        }} className="login-suggestion-btn">
                           Login
                         </button> for order tracking and faster checkout next time.
                       </p>
                     </div>
                   )}
 
-              
                 </div>
               </div>
             )}
@@ -885,7 +1353,18 @@ const AddToCart = () => {
 
       <Dialog
         open={showModal}
-        onClose={() => setShowModal(false)}
+        onClose={() => {
+          setShowModal(false);
+          // Track address modal close
+          trackViewContent({
+            id: 'address_modal_closed',
+            name: 'Address Modal Closed',
+            value: 0,
+            category: 'User Interaction',
+            type: 'modal_close',
+            action: 'address_modal',
+          });
+        }}
         fullWidth
         maxWidth="sm"
         sx={{
@@ -1037,7 +1516,18 @@ const AddToCart = () => {
                 <select
                   name="state"
                   value={formData.state}
-                  onChange={(e) => setFormData({ ...formData, state: e.target.value, city: '' })}
+                  onChange={(e) => {
+                    setFormData({ ...formData, state: e.target.value, city: '' });
+                    // Track state selection
+                    trackViewContent({
+                      id: 'state_selected_address',
+                      name: 'State Selected in Address',
+                      value: 0,
+                      category: 'Address Form',
+                      type: 'state_selection',
+                      state: e.target.value,
+                    });
+                  }}
                   className="custom-select"
                   style={{
                     width: '100%',
@@ -1073,7 +1563,18 @@ const AddToCart = () => {
                 <select
                   name="city"
                   value={formData.city}
-                  onChange={(e) => setFormData({ ...formData, city: e.target.value })}
+                  onChange={(e) => {
+                    setFormData({ ...formData, city: e.target.value });
+                    // Track city selection
+                    trackViewContent({
+                      id: 'city_selected_address',
+                      name: 'City Selected in Address',
+                      value: 0,
+                      category: 'Address Form',
+                      type: 'city_selection',
+                      city: e.target.value,
+                    });
+                  }}
                   className="custom-select"
                   style={{
                     width: '100%',
@@ -1246,7 +1747,17 @@ const AddToCart = () => {
           borderTop: '1px solid #e0e0e0'
         }}>
           <button
-            onClick={() => setShowModal(false)}
+            onClick={() => {
+              setShowModal(false);
+              // Track cancel button click
+              trackViewContent({
+                id: 'address_modal_cancel',
+                name: 'Address Modal Cancel Button',
+                value: 0,
+                category: 'User Action',
+                type: 'modal_cancel',
+              });
+            }}
             style={{
               padding: '10px 24px',
               borderRadius: '8px',
