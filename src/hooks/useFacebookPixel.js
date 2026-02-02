@@ -1,5 +1,5 @@
 import { useEffect } from 'react';
-
+import API_URL from '../config';
 export const useFacebookPixel = () => {
   useEffect(() => {
     // Initialize Facebook Pixel
@@ -57,7 +57,7 @@ export const trackPurchase = (orderData) => {
 // Server-side event भेजने के लिए function
 const sendServerEvent = async (eventName, data, quantity = 1) => {
   try {
-    const response = await fetch('/api/facebook-events', {
+    const response = await fetch(`${API_URL}/api/facebook-events`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',

@@ -1000,16 +1000,30 @@ const AddNewProduct = () => {
                             </div>
 
                             <div style={formGroupStyle}>
-                                <label style={requiredLabelStyle}>Expiry Date *</label>
-                                <input 
-                                    type="date" 
-                                    name="expires_on" 
-                                    value={formData.expires_on} 
-                                    onChange={handleChange} 
+                                <label style={requiredLabelStyle}>Expiry Year *</label>
+
+                                <input
+                                    type="number"
+                                    name="expires_on"
+                                    value={formData.expires_on}
+                                    onChange={(e) => {
+                                    const value = e.target.value;
+
+                                    // ❌ 4 digit se zyada allow nahi
+                                    if (value.length > 4) return;
+
+                                    handleChange(e);
+                                    }}
+                                    placeholder="YYYY"
+                                    min={new Date().getFullYear()}
+                                    max={new Date().getFullYear() + 20}
                                     style={inputStyle}
                                     required
                                 />
-                                {errors.expires_on && <span style={errorStyle}>{errors.expires_on}</span>}
+
+                                {errors.expires_on && (
+                                    <span style={errorStyle}>{errors.expires_on}</span>
+                                )}
                             </div>
                         </div>
                     </div>

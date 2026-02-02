@@ -12,6 +12,8 @@ import JoinUrl from '../JoinUrl';
 
 /** ---------- Facebook Pixel Functions ---------- */
 // Server-side event function
+/** ---------- Facebook Pixel Functions ---------- */
+// Server-side event function
 const sendServerEvent = async (eventName, data) => {
   try {
     const eventData = {
@@ -27,8 +29,8 @@ const sendServerEvent = async (eventName, data) => {
       clientUserAgent: navigator.userAgent,
     };
 
-    // Send to your backend API
-    await fetch('/api/facebook-events', {
+    // ✅ Use API_URL from config.js here
+    await fetch(`${API_URL}/api/facebook-events`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
