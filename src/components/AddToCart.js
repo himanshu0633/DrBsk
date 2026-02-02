@@ -30,7 +30,7 @@ const sendServerEvent = async (eventName, data) => {
     };
 
     // ✅ Use API_URL from config.js here
-    await fetch(`${API_URL}/api/facebook-events`, {
+    await fetch(`${API_URL}api/facebook-events`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
