@@ -26,7 +26,7 @@
 
 .phone-background {
   position: absolute;
-  width: 100%;
+  width: 80%;
   height: 100%;
   top: 0;
   left: 0;
@@ -41,8 +41,8 @@
 }
 
 .shape-1 {
-  width: 600px;
-  height: 600px;
+  width: 80%;
+  height: 80%;
   top: -300px;
   left: -300px;
 }
@@ -104,7 +104,7 @@
 
 .phone-illustration-container {
   position: relative;
-  width: 100%;
+  width: 52%;
   height: 100%;
   display: flex;
   justify-content: center;
@@ -113,7 +113,7 @@
 
 .phone-image {
   width: 500px;
-  height: auto;
+  height: 500px;
   position: relative;
   z-index: 2;
   filter: drop-shadow(0 20px 30px rgba(0, 0, 0, 0.2));
@@ -150,6 +150,9 @@ h2 {
   color: var(--text-color);
   font-weight: 700;
   line-height: 1.2;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .subtitle {
@@ -180,8 +183,8 @@ h2 {
 }
 
 .qr-code {
-  width: 120px;
-  height: 120px;
+  width: 150px;
+  height: 150px;
   border: 10px solid var(--white);
   border-radius: 12px;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
@@ -347,6 +350,16 @@ h2 {
   width: 100%;
 }
 
+.direct-link{
+  display: flex;
+  gap: 1rem;
+  width: 80%;
+  height: 100px;
+  justify-content: center;
+  align-items: center;
+ 
+}
+
 .store-links {
   display: flex;
   gap: 1rem;
@@ -485,6 +498,7 @@ h2 {
   
   .phone-image {
     width: 300px;
+    height: 600px;
   }
   
   .input-row {

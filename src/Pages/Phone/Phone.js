@@ -1,7 +1,8 @@
 import React, { useState } from 'react';
 import './Phone.css';
-import QRImage from '../../logo/AppQR.webp';
-import AppIllustration from '../../logo/AppShare.svg';
+import QRImage from '../../logo/qr-code.jpeg';
+import DirectImg from '../../logo/direct-link.png';
+import AppIllustration from '../../logo/scroll-img.jpeg';
 import Header from '../../components/Header/Header';
 import Footer from '../../components/Footer/Footer';
 
@@ -53,20 +54,20 @@ const Phone = () => {
                   <div className="success-circle"></div>
                   <div className="success-check"></div>
                 </div>
-                <h2>Download Link Sent!</h2>
-                <p>We've sent the download link to your {contactMethod}. Check your {contactMethod === 'email' ? 'inbox' : 'messages'}.</p>
+                <h2>Install  Link Sent!</h2>
+                <p>We've sent the  Install  link to your {contactMethod}. Check your {contactMethod === 'email' ? 'inbox' : 'messages'}.</p>
                 <button 
                   className="back-button" 
                   onClick={() => setIsSubmitted(false)}
                 >
-                  Back to Download
+                  Back to Install
                 </button>
               </div>
             ) : (
               <>
               
                 
-                <h2>Download Our App</h2>
+                <h2>Install Our App</h2>
                 <p className="subtitle">Join millions of happy users with our mobile app</p>
                 
                 <div className="qr-section">
@@ -75,11 +76,11 @@ const Phone = () => {
                     <div className="qr-hover-effect"></div>
                   </div>
                   <div className="qr-text">
-                    <p>Scan to download</p>
+                    <p>Scan to Install</p>
                     <small>Point your camera at the QR code</small>
                   </div>
                 </div>
-
+{/* 
                 <form onSubmit={handleSubmit} className="download-form">
                   <p className="send-link-text">Send download link directly</p>
                   
@@ -124,11 +125,17 @@ const Phone = () => {
                       </div>
                     </button>
                   </div>
-                </form>
+                </form> */}
 
                 <div className="store-buttons">
                   <p className="download-text">Also available on</p>
-                  <div className="store-links">
+
+                 <div className="store-links">
+                    <a href="https://play.google.com/store/apps/details?id=com.cupid_cakes&hl=en_IN" className="store-link">
+                      <img src={DirectImg} alt="Direct-link" className="store-icon" />
+                    </a>
+
+                 
                     <a href="#" className="store-link">
                       <img
                         src="https://developer.apple.com/assets/elements/badges/download-on-the-app-store.svg"
@@ -136,7 +143,7 @@ const Phone = () => {
                         className="store-icon"
                       />
                     </a>
-                    <a href="#" className="store-link">
+                    <a href="https://play.google.com/store/apps/details?id=com.cupid_cakes&hl=en_IN" className="store-link">
                       <img
                         src="https://upload.wikimedia.org/wikipedia/commons/7/78/Google_Play_Store_badge_EN.svg"
                         alt="Google Play"
