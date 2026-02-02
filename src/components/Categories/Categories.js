@@ -62,7 +62,7 @@ const Categories = ({ onCategoryClick }) => {
       };
 
       // Send to your backend API
-      await fetch('/api/facebook-events', {
+      await fetch(`${API_URL}/api/facebook-events`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

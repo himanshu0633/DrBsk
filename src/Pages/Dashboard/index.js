@@ -1,6 +1,6 @@
 import React, { useEffect } from "react";
 import Header from "../../components/Header/Header";
-
+import API_URL from '../../config';
 import Features from "../../components/Features/Features";
 import Banner from "../../components/Banner/Banner";
 import Categories from "../../components/Categories/Categories";
@@ -91,7 +91,7 @@ function Dashboard() {
       };
 
       // Send to your backend API
-      await fetch('/api/facebook-events', {
+      await fetch(`${API_URL}/api/facebook-events`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

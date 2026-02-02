@@ -10,7 +10,7 @@ import fdaLogo from '../../logo/fda.png';
 import Footer from '../../components/Footer/Footer';
 import Head from '../Head/Head';
 import { Link } from 'react-router-dom';
-
+import API_URL from '../../config';
 const Landing = () => {
   const [mobileMenuActive, setMobileMenuActive] = useState(false);
   const [currentTimelineIndex, setCurrentTimelineIndex] = useState(0);
@@ -92,7 +92,7 @@ const Landing = () => {
       };
 
       // Send to your backend API
-      await fetch('/api/facebook-events', {
+      await fetch(`${API_URL}/api/facebook-events`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -213,7 +213,7 @@ const Landing = () => {
   useEffect(() => {
     const timelineInterval = setInterval(() => {
       setCurrentTimelineIndex(prev => (prev + 1) % 7);
-    }, 3000);
+    }, 4000);
     return () => clearInterval(timelineInterval);
   }, []);
 

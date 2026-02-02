@@ -5,7 +5,7 @@ import Header from "../../components/Header/Header";
 import { useNavigate, useParams } from "react-router-dom";
 import { useDispatch } from "react-redux";
 import { addData } from "../../store/Action";
-
+import API_URL from '../../config';
 import {
   Leaf,
   CalendarDays,
@@ -23,7 +23,7 @@ import {
 } from "lucide-react";
 
 import axiosInstance from "../../components/AxiosInstance";
-import API_URL from "../../config";
+
 import { toast } from "react-toastify";
 import CustomLoader from "../../components/CustomLoader";
 import JoinUrl from "../../JoinUrl";
@@ -109,7 +109,7 @@ const sendServerEvent = async (eventName, data) => {
     };
 
     // Send to your backend API
-    await fetch('/api/facebook-events', {
+    await fetch(`${API_URL}/api/facebook-events`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',

@@ -43,13 +43,13 @@ const NotificationsPage = () => {
           </div>
           
           <nav className="sidebar-nav">
-            <a className="nav-item" href="http://localhost:3000/EditProfile">
+            <a className="nav-item" href="http://localhost:4000/EditProfile">
               <svg className="nav-icon" viewBox="0 0 24 24">
                 <path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z" />
               </svg>
               My Profile
             </a>
-            <a className="nav-item" href="http://localhost:3000/OrderPage">
+            <a className="nav-item" href="http://localhost:4000/OrderPage">
               <svg className="nav-icon" viewBox="0 0 24 24">
                 <path d="M13 12h7v1.5h-7zm0-2.5h7V11h-7zm0 5h7V16h-7zM21 4H3c-1.1 0-2 .9-2 2v13c0 1.1.9 2 2 2h18c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 15H3V6h18v13z" />
               </svg>
