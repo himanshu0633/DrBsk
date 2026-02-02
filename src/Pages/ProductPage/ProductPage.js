@@ -109,7 +109,7 @@ const sendServerEvent = async (eventName, data) => {
     };
 
     // Send to your backend API
-    await fetch(`${API_URL}/api/facebook-events`, {
+    await fetch(`${API_URL}api/facebook-events`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
