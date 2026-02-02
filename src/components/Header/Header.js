@@ -3,7 +3,7 @@ import './Header.css';
 import logo from '../../logo/logo1.jpg';
 import { useSelector } from 'react-redux';
 import { Link, useNavigate } from 'react-router-dom';
-import { ShoppingCart, Phone, Mail, Smartphone, ChevronDown, Menu, Search, MapPin, Upload, User, X } from 'lucide-react';
+import { ShoppingCart, Phone, Mail, Smartphone, ChevronDown, Menu, Search, MapPin, Upload, User, X, ChevronRight } from 'lucide-react';
 import axiosInstance from '../AxiosInstance';
 
 const Header = () => {
@@ -23,19 +23,24 @@ const Header = () => {
   const [subcategoryName, setSubCategoryName] = useState([]);
   const [menuOpen, setMenuOpen] = useState(false);
   const [showMobileSearch, setShowMobileSearch] = useState(false);
+  const [openCategoryId, setOpenCategoryId] = useState(null);
   
-  // Search functionality states
   const [searchQuery, setSearchQuery] = useState('');
   const [searchResults, setSearchResults] = useState([]);
 
   const toggleMenu = () => {
     setMenuOpen(!menuOpen);
     if (showMobileSearch) setShowMobileSearch(false);
+    // Reset open category when menu closes
+    if (menuOpen) setOpenCategoryId(null);
   };
 
   const toggleMobileSearch = () => {
     setShowMobileSearch(!showMobileSearch);
-    if (menuOpen) setMenuOpen(false);
+    if (menuOpen) {
+      setMenuOpen(false);
+      setOpenCategoryId(null);
+    }
   };
 
   useEffect(() => {
@@ -76,7 +81,6 @@ const Header = () => {
     return () => window.removeEventListener('resize', handleResize);
   }, []);
 
-  // Search functionality useEffect
   useEffect(() => {
     const delayDebounce = setTimeout(() => {
       if (searchQuery.trim() !== '') {
@@ -97,7 +101,6 @@ const Header = () => {
     return () => clearTimeout(delayDebounce);
   }, [searchQuery]);
 
-  // Handle click outside
   useEffect(() => {
     const handleClickOutside = (event) => {
       if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
@@ -159,24 +162,17 @@ const Header = () => {
     setPincode('');
   };
 
-  // Function to handle subcategory click
   const handleSubcategoryClick = (subcategory, categoryId) => {
-    // Encode subcategory name for URL
     const encodedSubcategory = encodeURIComponent(subcategory);
-    
-    // Navigate to fever page with state containing categoryId
     navigate(`/fever/${encodedSubcategory}`, {
       state: { 
         categoryId: categoryId 
       }
     });
-    
-    // Close dropdowns
     setShowDropdown(false);
     if (menuOpen) setMenuOpen(false);
   };
 
-  // Function to handle mobile subcategory click
   const handleMobileSubcategoryClick = (subcategory, categoryId) => {
     const encodedSubcategory = encodeURIComponent(subcategory);
     navigate(`/fever/${encodedSubcategory}`, {
@@ -185,21 +181,23 @@ const Header = () => {
       }
     });
     setMenuOpen(false);
+    setOpenCategoryId(null);
+  };
+
+  const toggleMobileCategory = (categoryId) => {
+    setOpenCategoryId(openCategoryId === categoryId ? null : categoryId);
   };
 
   return (
     <div className="header-main-container">
-      {/* --- DESKTOP HEADER --- */}
       {!isMobile ? (
         <div className="desktop-header">
-          {/* Top Section */}
           <div className="desktop-top-section">
             <div className="desktop-left">
               <a href="/" className="desktop-logo">
                 <img src={logo} alt="Logo" />
               </a>
               
-              {/* Location Box */}
               <div className="location-container">
                 <div className="location-box" onClick={() => setShowInput(true)}>
                   <MapPin size={16} />
@@ -230,7 +228,6 @@ const Header = () => {
               </div>
             </div>
             
-            {/* Search Box */}
             <div className="search-container">
               <div className="search-box">
                 <Search size={20} className="search-icon" />
@@ -258,7 +255,6 @@ const Header = () => {
               </div>
             </div>
             
-            {/* Right Section */}
             <div className="desktop-right">
               {userData?.type !== "wholesalePartner" && (
                 <button 
@@ -278,7 +274,6 @@ const Header = () => {
                 {cartCount > 0 && <span className="cart-badge">{cartCount}</span>}
               </button>
               
-              {/* Profile Button */}
               <div className="profile-container" ref={dropdownRef}>
                 <button 
                   className="profile-btn"
@@ -328,7 +323,6 @@ const Header = () => {
             </div>
           </div>
           
-          {/* Navigation Section */}
           <div className="desktop-navigation">
             <div className="nav-categories">
               {categoryName?.slice(0, 4).map((category) => (
@@ -366,9 +360,7 @@ const Header = () => {
           </div>
         </div>
       ) : (
-        /* --- MOBILE HEADER --- */
         <div className="mobile-header">
-          {/* Mobile Top Bar */}
           <div className="mobile-top-bar">
             <div className="mobile-left-section">
               <button onClick={toggleMenu} className="mobile-menu-btn">
@@ -403,7 +395,6 @@ const Header = () => {
             </div>
           </div>
           
-          {/* Mobile Search Bar */}
           {showMobileSearch && (
             <div className="mobile-search-container">
               <div className="mobile-search-box">
@@ -437,18 +428,16 @@ const Header = () => {
             </div>
           )}
           
-          {/* Mobile Menu */}
           {menuOpen && (
             <div className="mobile-menu-overlay">
               <div className="mobile-menu-content">
                 <div className="mobile-menu-header">
                   <h3>Menu</h3>
                   <button onClick={toggleMenu} className="close-menu-btn">
-                    <X size={24} />
+                    <X size={24}  />
                   </button>
                 </div>
                 
-                {/* Profile Section in Menu */}
                 <div className="mobile-profile-section">
                   {userData ? (
                     <div className="mobile-user-info">
@@ -471,7 +460,6 @@ const Header = () => {
                   )}
                 </div>
                 
-                {/* Upload Prescription in Menu */}
                 {userData?.type !== "wholesalePartner" && (
                   <button 
                     className="mobile-upload-prescription-btn"
@@ -482,32 +470,45 @@ const Header = () => {
                   </button>
                 )}
                 
-                {/* Categories in Menu */}
-                <div className="mobile-categories">
-                  {categoryName?.slice(0, 4).map((category) => (
-                    <div className="mobile-category" key={category._id}>
-                      <div className="mobile-category-header">
-                        <span>{category.name}</span>
-                        <ChevronDown size={16} />
+                {/* FIXED MOBILE CATEGORIES SECTION */}
+                <div className="mobile-categories-section">
+                  <h4 className="mobile-categories-title">Categories</h4>
+                  <div className="mobile-categories-list">
+                    {categoryName?.slice(0, 4).map((category) => (
+                      <div className="mobile-category-item" key={category._id}>
+                        <div 
+                          className="mobile-category-header"
+                          onClick={() => toggleMobileCategory(category._id)}
+                        >
+                          <span className="mobile-category-name">{category.name}</span>
+                          <ChevronRight 
+                            size={18} 
+                            className={`mobile-category-arrow ${
+                              openCategoryId === category._id ? 'open' : ''
+                            }`}
+                          />
+                        </div>
+                        
+                        {openCategoryId === category._id && (
+                          <div className="mobile-subcategories-list">
+                            {subcategoryName
+                              .filter(sub => sub.category_id?._id === category._id)
+                              .map(sub => (
+                                <button
+                                  key={sub._id}
+                                  onClick={() => handleMobileSubcategoryClick(sub.name, category._id)}
+                                  className="mobile-subcategory-item"
+                                >
+                                  {sub.name}
+                                </button>
+                              ))}
+                          </div>
+                        )}
                       </div>
-                      <div className="mobile-subcategories">
-                        {subcategoryName
-                          .filter(sub => sub.category_id?._id === category._id)
-                          .map(sub => (
-                            <button
-                              key={sub._id}
-                              onClick={() => handleMobileSubcategoryClick(sub.name, category._id)}
-                              className="mobile-subcategory"
-                            >
-                              {sub.name}
-                            </button>
-                          ))}
-                      </div>
-                    </div>
-                  ))}
+                    ))}
+                  </div>
                 </div>
                 
-                {/* User Links for Logged In Users */}
                 {userData && (
                   <div className="mobile-user-links">
                     <button onClick={() => { navigate('/EditProfile'); setMenuOpen(false); }}>
@@ -525,7 +526,6 @@ const Header = () => {
                   </div>
                 )}
                 
-                {/* Contact Info */}
                 <div className="mobile-contact-info">
                   <a href="tel:+919115513759" className="mobile-contact-link">
                     <Phone size={18} />
@@ -547,7 +547,6 @@ const Header = () => {
             </div>
           )}
           
-          {/* Mobile Bottom Bar (Location & Quick Actions) */}
           <div className="mobile-bottom-bar">
             <div 
               className="mobile-location-box"
@@ -573,7 +572,6 @@ const Header = () => {
             </div>
           </div>
           
-          {/* Mobile Location Modal */}
           {showInput && (
             <div className="mobile-location-modal">
               <div className="mobile-location-content">

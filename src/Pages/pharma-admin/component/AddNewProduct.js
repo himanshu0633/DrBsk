@@ -1,773 +1,3 @@
-// import React, { useEffect, useState, useRef } from 'react'
-// import axiosInstance from '../../../components/AxiosInstance';
-// import { toast } from 'react-toastify';
-// import { useParams, useNavigate } from 'react-router-dom';
-
-
-// const AddNewProduct = () => {
-//     const { id } = useParams();
-//     const isEditMode = !!id;
-//     const navigate = useNavigate();
-
-//     const [categoryList, setCategoryList] = useState([]);
-//     const [subCategoryList, setSubCategoryList] = useState([]);
-//     const [formData, setFormData] = useState({
-//         name: "",
-//         description: "",
-//         media: [],
-//         retail_price: "",
-//         consumer_price: "",
-//         discount: "",
-//         mrp: "",
-//         gst: "",
-//         stock: "yes",
-//         quantity: [],
-//         category: "",
-//         productvariety: "",
-//         sub_category: "",
-//         expires_on: "",
-//         suitable_for: "",
-//         benefits: "",
-//         dosage: "",
-//         side_effects: "",
-//         prescription: "required",
-//         created_at: new Date().toISOString(),
-//         deleted_at: null
-//     });
-
-//     const [errors, setErrors] = useState({});
-//     const [isSubmitted, setIsSubmitted] = useState(false);
-//     const fileInputRef = useRef(null);
-
-//     useEffect(() => {
-//         const init = async () => {
-//             try {
-//                 const categoriesResponse = await axiosInstance.get('/user/allcategories');
-//                 setCategoryList(categoriesResponse.data);
-
-//                 if (isEditMode) {
-//                     const productResponse = await axiosInstance.get(`/user/product/${id}`);
-//                     const product = productResponse.data;
-//                     // console.log('lksdjf;sdkjfl;skjfl;sjdf;', productResponse.data)
-
-//                     // Fetch subcategories for selected category
-//                     if (product.category) {
-//                         const subCategoryResponse = await axiosInstance.get(
-//                             `/user/allSubcategories?category=${encodeURIComponent(product.category)}`
-//                         );
-//                         setSubCategoryList(subCategoryResponse.data);
-//                     }
-
-//                     setFormData({
-//                         ...product,
-//                         expires_on: product.expires_on?.split('T')[0],
-//                         media: product.media.map(m => ({
-//                             ...m,
-//                             url: m.url.startsWith('http') ? m.url : `${m.url}`,
-//                             type: m.type.includes('video') ? 'video' : 'image',
-//                             file: null
-//                         })),
-//                         quantity: Array.isArray(product.quantity)
-//                             ? product.quantity
-//                             : (typeof product.quantity === 'string' && product.quantity.length > 0
-//                                 ? [product.quantity]
-//                                 : []),
-//                         stock: (() => {
-//                             const s = (product.stock ?? '').toLowerCase().trim();
-//                             console.log("Stock value:", s);
-//                             return s === 'yes' ? 'yes'
-//                                 : s === 'no' ? 'no'
-//                                     : 'yes';
-//                         })(),
-
-//                     });
-
-
-//                 }
-//             } catch (error) {
-//                 console.error("Error during initialization:", error);
-//             }
-//         };
-
-//         init();
-//     }, [id]);
-
-//     const handleChange = (e) => {
-//         const { name, value } = e.target;
-//         setFormData(prev => {
-//             const updatedData = { ...prev, [name]: value };
-
-//             // Parse numeric values safely
-//             const mrp = parseFloat(updatedData.mrp);
-//             const discount = parseFloat(updatedData.discount);
-//             const gst = parseFloat(updatedData.gst);
-
-//             // Calculate base discounted price
-//             let discountedPrice = 0;
-//             if (!isNaN(mrp) && !isNaN(discount)) {
-//                 discountedPrice = mrp - (mrp * (discount / 100));
-//             }
-
-//             // Calculate consumer_price based on GST presence
-//             if (!isNaN(gst) && gst > 0) {
-//                 // Add GST on top of discounted price
-//                 const finalPrice = discountedPrice + (discountedPrice * (gst / 100));
-//                 updatedData.consumer_price = finalPrice.toFixed(2);
-//             } else {
-//                 // No GST, consumer_price is just discounted price
-//                 if (discountedPrice > 0) {
-//                     updatedData.consumer_price = discountedPrice.toFixed(2);
-//                 } else {
-//                     updatedData.consumer_price = "";
-//                 }
-//             }
-
-//             // Reset sub_category if category changes
-//             if (name === "category") {
-//                 updatedData.sub_category = "";
-//                 fetchSubCategories(value);
-//             }
-
-//             return updatedData;
-//         });
-//     };
-
-
-
-//     const handleMediaChange = (e) => {
-//         const files = Array.from(e.target.files);
-//         if (files.length === 0) return;
-
-//         const mediaPromises = files.map(file => {
-//             return new Promise((resolve) => {
-//                 const reader = new FileReader();
-//                 reader.onloadend = () => {
-//                     resolve({
-//                         url: reader.result,
-//                         type: file.type.startsWith('video') ? 'video' : 'image',
-//                         name: file.name,
-//                         size: file.size,
-//                         file: file
-//                     });
-//                 };
-//                 reader.readAsDataURL(file);
-//             });
-//         });
-
-//         Promise.all(mediaPromises).then(newMedia => {
-//             setFormData(prev => ({
-//                 ...prev,
-//                 media: [...prev.media, ...newMedia]
-//             }));
-//         });
-//     };
-
-//     const removeMedia = (index) => {
-//         setFormData(prev => {
-//             const updatedMedia = [...prev.media];
-//             updatedMedia.splice(index, 1);
-//             return {
-//                 ...prev,
-//                 media: updatedMedia
-//             };
-//         });
-//     };
-
-//     const triggerFileInput = () => {
-//         fileInputRef.current.value = null;
-//         fileInputRef.current.click();
-//     };
-
-//     const validateForm = () => {
-//         const newErrors = {};
-//         const requiredFields = [
-//             'name', 'description', 'retail_price', 'consumer_price',
-//             'quantity', 'category', 'expires_on', 'dosage', 'productvariety'
-//         ];
-
-
-//         requiredFields.forEach(field => {
-//             if (!formData[field]) {
-//                 newErrors[field] = `${field.replace('_', ' ')} is required`;
-//             }
-//         });
-
-//         // if (formData.expires_on && new Date(formData.expires_on) < new Date()) {
-//         //     newErrors.expires_on = "Expiry date must be in the future";
-//         // }
-
-//         setErrors(newErrors);
-//         return Object.keys(newErrors).length === 0;
-//     };
-
-//     const handleSubmit = async (e) => {
-//         e.preventDefault();
-//         if (!validateForm()) return;
-
-//         try {
-//             const formPayload = new FormData();
-
-//             // Append all fields (excluding media for now)
-//             Object.entries(formData).forEach(([key, value]) => {
-//                 if (key === 'media') return;
-//                 if (value !== null && value !== undefined) {
-//                     formPayload.append(key, value);
-//                 }
-//             });
-
-//             // Append media files (only new uploads with .file property)
-//             formData.media.forEach((item) => {
-//                 if (item?.file) {
-//                     formPayload.append('media', item.file);
-//                 } else {
-//                     // Optionally append existing media URLs if needed
-//                     formPayload.append('existingMedia', item.url);
-//                 }
-//             });
-
-//             let res;
-//             if (isEditMode) {
-//                 res = await axiosInstance.put(
-//                     `/user/updateProduct/${id}`,
-//                     formPayload,
-//                     {
-//                         headers: {
-//                             'Content-Type': 'multipart/form-data',
-//                         },
-//                     }
-//                 );
-//                 toast.success('Product updated successfully!');
-//             } else {
-//                 res = await axiosInstance.post(
-//                     '/user/createProduct',
-//                     formPayload,
-//                     {
-//                         headers: {
-//                             'Content-Type': 'multipart/form-data',
-//                         },
-//                     }
-//                 );
-//                 toast.success('Product added successfully!');
-//             }
-
-//             navigate('/pharma-admin/products');
-//         } catch (error) {
-//             console.error('Submit Error:', error);
-//             toast.error('Something went wrong. Please try again.', error);
-//         }
-//     };
-
-
-//     const handleReset = () => {
-//         setFormData({
-//             name: "",
-//             description: "",
-//             media: [],
-//             retail_price: "",
-//             consumer_price: "",
-//             discount: "",
-//             mrp: "",
-//             stock: "",
-//             gst: "",
-//             quantity: [],
-//             category: "",
-//             sub_category: "",
-//             productvariety: "",
-//             expires_on: "",
-//             suitable_for: "",
-//             benefits: "",
-//             dosage: "",
-//             side_effects: "",
-//             prescription: "",
-//             created_at: new Date().toISOString(),
-//             deleted_at: null
-//         });
-//         setErrors({});
-//         setIsSubmitted(false);
-//     };
-
-//     const formatFileSize = (bytes) => {
-//         if (bytes < 1024) return bytes + ' bytes';
-//         else if (bytes < 1048576) return (bytes / 1024).toFixed(2) + ' KB';
-//         else return (bytes / 1048576).toFixed(2) + ' MB';
-//     };
-
-//     const fetchSubCategories = async (category) => {
-//         try {
-//             const response = await axiosInstance.get(`/user/allSubcategories?category=${encodeURIComponent(category)}`);
-//             console.log("Fetched subCategories:", response.data);
-//             setSubCategoryList(response.data);
-//         } catch (error) {
-//             console.error("Error fetching subcategories:", error);
-//         }
-//     };
-
-
-//     const fetchData = async () => {
-//         try {
-//             const response = await axiosInstance.get('/user/allcategories');
-//             console.log("Fetched categories:", response.data);
-//             setCategoryList(response.data);
-//         } catch (error) {
-//             console.error("Error fetching categories:", error);
-//         }
-//     };
-
-//     // Handle change for a particular quantity input
-//     const handleQuantityChange = (index, value) => {
-//         setFormData(prev => {
-//             const newQuantities = [...prev.quantity];
-//             newQuantities[index] = value;
-//             return { ...prev, quantity: newQuantities };
-//         });
-//     };
-
-//     // Add another empty quantity input field
-//     const addQuantityField = () => {
-//         setFormData(prev => ({
-//             ...prev,
-//             quantity: [...prev.quantity, ""]
-//         }));
-//     };
-
-//     // Remove quantity input at given index
-//     const removeQuantityField = (index) => {
-//         setFormData(prev => {
-//             const newQuantities = [...prev.quantity];
-//             newQuantities.splice(index, 1);
-//             return { ...prev, quantity: newQuantities };
-//         });
-//     };
-
-
-//     return (
-//         <div>
-//             <div className="herbal-form-container">
-//                 <div className="herbal-form-header">
-//                     <h2>{isEditMode ? "Edit Product" : "Add New Product"}</h2>
-//                     <button type="button" className="herbal-cancel-btn" onClick={() => navigate("/pharma-admin/products")}>
-//                         Cancel
-//                     </button>
-//                 </div>
-
-//                 {isSubmitted ? (
-//                     <div className="herbal-success-message">
-//                         <p>Product submitted successfully!</p>
-//                         <button onClick={handleReset}>Add Another Product</button>
-//                     </div>
-//                 ) : (
-//                     <form onSubmit={handleSubmit} className="herbal-product-form">
-//                         {/* Basic Information */}
-//                         <div className="herbal-form-section">
-//                             <h3>Basic Information</h3>
-//                             <div className="herbal-form-row">
-//                                 <div className="herbal-form-group">
-//                                     <label>Product Name*</label>
-//                                     <input
-//                                         type="text"
-//                                         name="name"
-//                                         value={formData.name}
-//                                         onChange={handleChange}
-//                                         placeholder="Enter product name"
-//                                     />
-//                                     {errors.name && <span className="herbal-error">{errors.name}</span>}
-//                                 </div>
-
-//                                 <div className="herbal-form-group">
-//                                     <label>Product Media (Images/Videos)*</label>
-//                                     <div className="media-upload-container">
-//                                         <input
-//                                             type="file"
-//                                             ref={fileInputRef}
-//                                             onChange={handleMediaChange}
-//                                             accept="image/*,video/*"
-//                                             multiple
-//                                             style={{ display: 'none' }}
-//                                         />
-//                                         <button
-//                                             type="button"
-//                                             className="media-upload-btn"
-//                                             onClick={triggerFileInput}
-//                                         >
-//                                             Add Media
-//                                         </button>
-//                                         <p className="media-upload-hint">Supports JPG, PNG, GIF, MP4 (Max 10MB each)</p>
-//                                         <div className="media-preview-container">
-//                                             {formData.media.length === 0 ? (
-//                                                 <div className="no-media-placeholder">
-//                                                     No media selected
-//                                                 </div>
-//                                             ) : (
-//                                                 formData.media.map((media, index) => (
-//                                                     <div key={index} className="media-preview-item">
-//                                                         {media.type === 'video' ? (
-//                                                             <video controls>
-//                                                                 <source src={media.url} type={`video/${media.file.name.split('.').pop()}`} />
-//                                                                 Your browser does not support the video tag.
-//                                                             </video>
-//                                                         ) : (
-//                                                             <img src={media.url} alt={`Preview ${index}`} />
-//                                                         )}
-//                                                         <button
-//                                                             type="button"
-//                                                             className="remove-media-btn"
-//                                                             onClick={() => removeMedia(index)}
-//                                                             aria-label="Remove media"
-//                                                         >
-//                                                             ×
-//                                                         </button>
-//                                                         <div className="media-info">
-//                                                             <span className="media-name">{media.name}</span>
-//                                                             <span className="media-size">{formatFileSize(media.size)}</span>
-//                                                         </div>
-//                                                     </div>
-//                                                 ))
-//                                             )}
-//                                         </div>
-//                                     </div>
-//                                 </div>
-
-//                                 <div className="herbal-form-group">
-//                                     <label >Prescription</label>
-//                                     <select name="prescription" value={formData.prescription} onChange={handleChange} >
-//                                         {/* <option value="">Select Prescription</option> */}
-//                                         <option value="required">Required</option>
-//                                         <option value="Notrequired">Not Required</option>
-//                                     </select>
-//                                 </div>
-//                             </div>
-
-//                             <div className="herbal-form-group">
-//                                 <label>Description*</label>
-//                                 <textarea
-//                                     name="description"
-//                                     value={formData.description}
-//                                     onChange={handleChange}
-//                                     placeholder="Enter product description"
-//                                     rows="3"
-//                                 />
-//                                 {errors.description && <span className="herbal-error">{errors.description}</span>}
-//                             </div>
-//                         </div>
-
-
-//                         {/* Pricing Information */}
-//                         <div className="herbal-form-section">
-//                             <h3>Pricing Information</h3>
-//                             <div className="herbal-form-row">
-
-//                                 <div className="herbal-form-group">
-//                                     <label>MRP</label>
-//                                     <input
-//                                         type="number"
-//                                         name="mrp"
-//                                         value={formData.mrp}
-//                                         onChange={handleChange}
-//                                         placeholder="Enter maximum retail price"
-//                                         min="0"
-//                                         step="0.01"
-//                                     />
-//                                 </div>
-
-//                                 <div className="herbal-form-group">
-//                                     <label>Discount (%)</label>
-//                                     <input
-//                                         type="number"
-//                                         name="discount"
-//                                         value={formData.discount}
-//                                         onChange={handleChange}
-//                                         placeholder="Enter discount percentage"
-//                                         min="0"
-//                                         max="100"
-//                                     />
-//                                 </div>
-
-//                                 <div className="herbal-form-group">
-//                                     <label>Discounted Price</label>
-//                                     <input
-//                                         type="number"
-//                                         name="consumer_price"
-//                                         value={formData.consumer_price}
-//                                         readOnly
-//                                         placeholder="Calculated consumer price"
-//                                         min="0"
-//                                         step="0.01"
-//                                     />
-//                                 </div>
-
-
-//                                 <div className="herbal-form-group">
-//                                     <label>GST</label>
-//                                     <input
-//                                         type="number"
-//                                         name="gst"
-//                                         value={formData.gst}
-//                                         onChange={handleChange}
-//                                         placeholder="Enter GST %"
-//                                         min="0"
-//                                         step="0.01"
-//                                     />
-
-//                                 </div>
-
-//                                 <div className="herbal-form-group">
-//                                     <label>Final Consumer Price</label>
-//                                     <input
-//                                         type="number"
-//                                         name="consumer_price"
-//                                         value={formData.consumer_price}
-//                                         readOnly
-//                                         placeholder="Calculated consumer price"
-//                                         min="0"
-//                                         step="0.01"
-//                                     />
-//                                 </div>
-
-//                             </div>
-
-
-//                             <div className="herbal-form-row">
-//                                 <div className="herbal-form-group">
-//                                     <label>WholesalePartner Price (MRP)*</label>
-//                                     <input
-//                                         type="number"
-//                                         name="retail_price"
-//                                         value={formData.retail_price}
-//                                         onChange={handleChange}
-//                                         placeholder="Enter retail price"
-//                                         min="0"
-//                                         step="0.01"
-//                                     />
-//                                     {errors.retail_price && <span className="herbal-error">{errors.retail_price}</span>}
-//                                 </div>
-
-//                                 {/* <div className="herbal-form-group">
-//                                     <label>Quantity*</label>
-//                                     <input
-//                                         type="text"
-//                                         name="quantity"
-//                                         value={formData.quantity}
-//                                         onChange={handleChange}
-//                                         placeholder="e.g., 100ml, 50g"
-//                                     />
-//                                     {errors.quantity && <span className="herbal-error">{errors.quantity}</span>}
-//                                 </div> */}
-
-//                                 <div className="herbal-form-group">
-//                                     <label>Quantities*</label>
-//                                     {formData.quantity?.length === 0 && (
-//                                         <p>No quantities added yet. Click 'Add Quantity' to start.</p>
-//                                     )}
-//                                     {formData.quantity?.map((qty, index) => (
-//                                         <div key={index} style={{ display: 'flex', alignItems: 'center', marginBottom: '8px' }}>
-//                                             <input
-//                                                 type="text"
-//                                                 value={qty}
-//                                                 onChange={(e) => handleQuantityChange(index, e.target.value)}
-//                                                 placeholder="Enter quantity"
-//                                                 style={{ flexGrow: 1 }}
-//                                             />
-//                                             <button
-//                                                 type="button"
-//                                                 onClick={() => removeQuantityField(index)}
-//                                                 aria-label="Remove quantity"
-//                                                 style={{
-//                                                     marginLeft: '8px',
-//                                                     backgroundColor: '#f44336',
-//                                                     color: '#fff',
-//                                                     border: 'none',
-//                                                     padding: '0 8px',
-//                                                     cursor: 'pointer',
-//                                                     borderRadius: '4px',
-//                                                     height: '32px'
-//                                                 }}
-//                                             >
-//                                                 ×
-//                                             </button>
-//                                         </div>
-//                                     ))}
-
-//                                     <button
-//                                         type="button"
-//                                         onClick={addQuantityField}
-//                                         style={{
-//                                             marginTop: '8px',
-//                                             backgroundColor: '#4CAF50',
-//                                             color: 'white',
-//                                             border: 'none',
-//                                             padding: '8px 12px',
-//                                             cursor: 'pointer',
-//                                             borderRadius: '4px'
-//                                         }}
-//                                     >
-//                                         Add Quantity
-//                                     </button>
-
-//                                     {errors.quantity && <span className="herbal-error">{errors.quantity}</span>}
-//                                 </div>
-
-//                                 <div className="herbal-form-group">
-//                                     <label>Use By* (Expiry Date)</label>
-//                                     <input
-//                                         // type="date"
-//                                         type="text"
-//                                         name="expires_on"
-//                                         value={formData.expires_on}
-//                                         onChange={handleChange}
-//                                     // min={new Date().toISOString().split('T')[0]}
-//                                     />
-//                                     {errors.expires_on && <span className="herbal-error">{errors.expires_on}</span>}
-//                                 </div>
-
-//                                 <div className="herbal-form-group">
-//                                     <label >Stock *</label>
-//                                     <select name="stock" required value={formData.stock} onChange={handleChange} >
-//                                         <option value="yes">Yes</option>
-//                                         <option value="no">No</option>
-//                                     </select>
-//                                 </div>
-//                             </div>
-//                         </div>
-
-
-//                         {/* Category Information */}
-//                         <div className="herbal-form-section">
-//                             <h3>Category Information</h3>
-//                             <div className="herbal-form-row">
-//                                 <div className="herbal-form-group">
-//                                     <label>Variety*</label>
-//                                     <select
-//                                         name="productvariety"
-//                                         value={formData.productvariety}
-//                                         onChange={(e) => {
-//                                             const selectedVariety = e.target.value;
-//                                             setFormData(prev => ({
-//                                                 ...prev,
-//                                                 productvariety: selectedVariety,
-//                                                 category: "",
-//                                                 sub_category: ""
-//                                             }));
-//                                         }}
-//                                         className='selectCss'
-//                                     >
-//                                         <option value="">Select Variety</option>
-//                                         <option value="Human">Human</option>
-//                                         <option value="Veterinary">Veterinary</option>
-//                                     </select>
-//                                     {errors.variety && <span className="herbal-error">{errors.variety}</span>}
-//                                 </div>
-
-
-//                                 <div className="herbal-form-group">
-//                                     <label>Category*</label>
-//                                     <select
-//                                         name="category"
-//                                         value={formData.category}
-//                                         onChange={handleChange}
-//                                         required
-//                                     >
-//                                         <option value="">Select Category</option>
-//                                         {categoryList
-//                                             .filter(cat => cat.variety === formData.productvariety
-//                                             )
-//                                             .map((sub, index) => (
-//                                                 <option key={index} value={sub.name}>{sub.name}</option>
-//                                             ))}
-//                                     </select>
-//                                     {errors.category && <span className="herbal-error">{errors.category}</span>}
-//                                 </div>
-
-
-//                                 <div className="herbal-form-group">
-//                                     <label>Sub Category</label>
-//                                     <select
-//                                         name="sub_category"
-//                                         value={formData.sub_category}
-//                                         onChange={handleChange}
-//                                         required
-//                                     >
-//                                         <option value="">Select subcategory</option>
-//                                         {subCategoryList.map((sub, index) => (
-//                                             <option key={index} value={sub.name}>{sub.name}</option>
-//                                         ))}
-//                                     </select>
-
-//                                 </div>
-
-//                                 <div className="herbal-form-group">
-//                                     <label>Suitable For</label>
-//                                     <input
-//                                         type="text"
-//                                         name="suitable_for"
-//                                         value={formData.suitable_for}
-//                                         onChange={handleChange}
-//                                         placeholder="e.g., Adults, Children, All ages"
-//                                     />
-//                                 </div>
-//                             </div>
-//                         </div>
-
-//                         {/* Product Details */}
-//                         <div className="herbal-form-section">
-//                             <h3>Product Details</h3>
-//                             <div className="herbal-form-row">
-//                                 <div className="herbal-form-group">
-//                                     <label>Benefits (comma separated)</label>
-//                                     <textarea
-//                                         name="benefits"
-//                                         value={formData.benefits}
-//                                         onChange={handleChange}
-//                                         placeholder="Enter benefits separated by commas"
-//                                         rows="3"
-//                                     />
-//                                 </div>
-
-//                                 <div className="herbal-form-group">
-//                                     <label>Dosage/Usage Instructions*</label>
-//                                     <textarea
-//                                         name="dosage"
-//                                         value={formData.dosage}
-//                                         onChange={handleChange}
-//                                         placeholder="Enter dosage instructions"
-//                                         rows="3"
-//                                     />
-//                                     {errors.dosage && <span className="herbal-error">{errors.dosage}</span>}
-//                                 </div>
-//                             </div>
-
-//                             <div className="herbal-form-group">
-//                                 <label>Side Effects</label>
-//                                 <textarea
-//                                     name="side_effects"
-//                                     value={formData.side_effects}
-//                                     onChange={handleChange}
-//                                     placeholder="Enter any known side effects"
-//                                     rows="2"
-//                                 />
-//                             </div>
-//                         </div>
-
-//                         <div className="herbal-form-actions">
-//                             <button type="button" onClick={handleReset} className="herbal-reset-btn">
-//                                 Reset
-//                             </button>
-//                             {/* <p>{isEditMode ? "Edit Product" : "Add New Product"}</p> */}
-
-//                             <button type="submit" className="herbal-submit-btn">
-//                                 {isEditMode ? "Update Product" : "Submit Product"}
-//                             </button>
-
-//                         </div>
-//                     </form>
-//                 )}
-//             </div>
-//         </div>
-//     )
-// }
-
-// export default AddNewProduct
-
-
 import React, { useEffect, useState, useRef } from 'react'
 import axiosInstance from '../../../components/AxiosInstance';
 import { toast } from 'react-toastify';
@@ -781,18 +11,19 @@ const AddNewProduct = () => {
 
     const [categoryList, setCategoryList] = useState([]);
     const [subCategoryList, setSubCategoryList] = useState([]);
+    const [isLoading, setIsLoading] = useState(false);
 
     const [formData, setFormData] = useState({
         name: "",
         description: "",
         media: [],
         retail_price: "",
-        consumer_price: "", // kept for legacy — not used for variants
+        consumer_price: "",
         discount: "",
         mrp: "",
         gst: "",
         stock: "yes",
-        quantity: [], // legacy list of labels
+        quantity: [],
         category: "",
         productvariety: "",
         sub_category: "",
@@ -813,6 +44,7 @@ const AddNewProduct = () => {
     useEffect(() => {
         const init = async () => {
             try {
+                setIsLoading(true);
                 const categoriesResponse = await axiosInstance.get('/user/allcategories');
                 setCategoryList(categoriesResponse.data);
 
@@ -820,7 +52,6 @@ const AddNewProduct = () => {
                     const productResponse = await axiosInstance.get(`/user/product/${id}`);
                     const product = productResponse.data;
 
-                    // fetch subcategories
                     if (product.category) {
                         const subCategoryResponse = await axiosInstance.get(
                             `/user/allSubcategories?category=${encodeURIComponent(product.category)}`
@@ -828,7 +59,6 @@ const AddNewProduct = () => {
                         setSubCategoryList(subCategoryResponse.data);
                     }
 
-                    // normalize quantity rows
                     const normalizeRow = (r) => ({
                         label: r?.label ?? (typeof r === 'string' ? r : ''),
                         mrp: r?.mrp ?? "",
@@ -865,6 +95,9 @@ const AddNewProduct = () => {
                 }
             } catch (error) {
                 console.error("Error during initialization:", error);
+                toast.error("Failed to load data");
+            } finally {
+                setIsLoading(false);
             }
         };
 
@@ -876,7 +109,6 @@ const AddNewProduct = () => {
         setFormData(prev => {
             const updated = { ...prev, [name]: value };
 
-            // legacy single-price auto-calc
             const mrp = parseFloat(updated.mrp);
             const discount = parseFloat(updated.discount);
             const gst = parseFloat(updated.gst);
@@ -920,7 +152,6 @@ const AddNewProduct = () => {
             const q = [...prev.quantity];
             q[index] = { ...q[index], [field]: value };
 
-            // auto compute final_price when mrp/discount/gst changes
             const mrp = parseFloat(q[index].mrp);
             const discount = parseFloat(q[index].discount);
             const gst = parseFloat(q[index].gst);
@@ -987,18 +218,15 @@ const AddNewProduct = () => {
             if (!formData[field]) newErrors[field] = `${field.replace('_', ' ')} is required`;
         });
 
-        // Validate at least one quantity row exists
         if (formData.quantity.length === 0) {
             newErrors.quantity = "At least one quantity/variant is required";
         } else {
-            // Validate each quantity row
             formData.quantity.forEach((q, i) => {
                 if (!q.label) newErrors[`quantity.${i}.label`] = "Quantity label is required";
                 if (!q.mrp || isNaN(parseFloat(q.mrp))) newErrors[`quantity.${i}.mrp`] = "Valid MRP is required";
             });
         }
 
-        // Validate media
         if (formData.media.length === 0) {
             newErrors.media = "At least one media file is required";
         }
@@ -1017,9 +245,9 @@ const AddNewProduct = () => {
         }
 
         try {
+            setIsLoading(true);
             const formPayload = new FormData();
 
-            // Append all form data except media and quantity
             Object.entries(formData).forEach(([key, value]) => {
                 if (key === 'media' || key === 'quantity') return;
                 if (value !== null && value !== undefined) {
@@ -1027,10 +255,8 @@ const AddNewProduct = () => {
                 }
             });
 
-            // Append quantity as JSON string
             formPayload.append('quantity', JSON.stringify(formData.quantity));
 
-            // Handle media files
             formData.media.forEach((mediaItem) => {
                 if (mediaItem.file) {
                     formPayload.append('media', mediaItem.file);
@@ -1056,6 +282,8 @@ const AddNewProduct = () => {
         } catch (error) {
             console.error('Error submitting form:', error);
             toast.error(error.response?.data?.message || 'Failed to submit product');
+        } finally {
+            setIsLoading(false);
         }
     };
 
@@ -1102,127 +330,514 @@ const AddNewProduct = () => {
         }
     };
 
+    const containerStyle = {
+        minHeight: '100vh',
+        backgroundColor: '#f8fafc',
+        padding: '20px',
+        fontFamily: "'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif"
+    };
+
+    const formContainerStyle = {
+        maxWidth: '1400px',
+        margin: '0 auto',
+        backgroundColor: '#ffffff',
+        borderRadius: '16px',
+        boxShadow: '0 4px 24px rgba(0, 0, 0, 0.08)',
+        overflow: 'hidden',
+        border: '1px solid #e2e8f0'
+    };
+
+    const headerStyle = {
+        padding: '24px 32px',
+        borderBottom: '1px solid #e2e8f0',
+        display: 'flex',
+        justifyContent: 'space-between',
+        alignItems: 'center',
+        background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)'
+    };
+
+    const headerTitleStyle = {
+        color: '#ffffff',
+        fontSize: '24px',
+        fontWeight: '600',
+        margin: '0'
+    };
+
+    const cancelButtonStyle = {
+        padding: '10px 20px',
+        backgroundColor: 'rgba(255, 255, 255, 0.2)',
+        color: '#ffffff',
+        border: '1px solid rgba(255, 255, 255, 0.3)',
+        borderRadius: '8px',
+        cursor: 'pointer',
+        fontWeight: '500',
+        fontSize: '14px',
+        transition: 'all 0.2s ease',
+        backdropFilter: 'blur(10px)'
+    };
+
+    const formStyle = {
+        padding: '32px'
+    };
+
+    const sectionStyle = {
+        marginBottom: '32px',
+        padding: '24px',
+        backgroundColor: '#ffffff',
+        borderRadius: '12px',
+        border: '1px solid #e2e8f0',
+        boxShadow: '0 2px 8px rgba(0, 0, 0, 0.04)'
+    };
+
+    const sectionTitleStyle = {
+        color: '#2d3748',
+        fontSize: '18px',
+        fontWeight: '600',
+        marginBottom: '20px',
+        paddingBottom: '12px',
+        borderBottom: '2px solid #667eea',
+        display: 'flex',
+        alignItems: 'center',
+        gap: '8px'
+    };
+
+    const formRowStyle = {
+        display: 'grid',
+        gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))',
+        gap: '24px',
+        marginBottom: '24px'
+    };
+
+    const formGroupStyle = {
+        marginBottom: '20px'
+    };
+
+    const labelStyle = {
+        display: 'block',
+        marginBottom: '8px',
+        color: '#4a5568',
+        fontSize: '14px',
+        fontWeight: '500'
+    };
+
+    const requiredLabelStyle = {
+        ...labelStyle,
+        color: '#e53e3e'
+    };
+
+    const inputStyle = {
+        width: '100%',
+        padding: '12px 16px',
+        border: '2px solid #e2e8f0',
+        borderRadius: '8px',
+        fontSize: '14px',
+        color: '#2d3748',
+        backgroundColor: '#ffffff',
+        transition: 'all 0.2s ease',
+        boxSizing: 'border-box'
+    };
+
+    const selectStyle = {
+        ...inputStyle,
+        cursor: 'pointer',
+        appearance: 'none',
+        backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' fill='%234a5568' viewBox='0 0 16 16'%3E%3Cpath d='M7.247 11.14L2.451 5.658C1.885 5.013 2.345 4 3.204 4h9.592a1 1 0 0 1 .753 1.659l-4.796 5.48a1 1 0 0 1-1.506 0z'/%3E%3C/svg%3E")`,
+        backgroundRepeat: 'no-repeat',
+        backgroundPosition: 'right 12px center',
+        backgroundSize: '16px',
+        paddingRight: '40px'
+    };
+
+    const textareaStyle = {
+        ...inputStyle,
+        minHeight: '80px',
+        resize: 'vertical',
+        lineHeight: '1.5'
+    };
+
+    const errorStyle = {
+        color: '#e53e3e',
+        fontSize: '12px',
+        marginTop: '6px',
+        display: 'block'
+    };
+
+    const mediaUploadContainerStyle = {
+        marginTop: '12px'
+    };
+
+    const mediaUploadButtonStyle = {
+        padding: '12px 24px',
+        backgroundColor: '#667eea',
+        color: '#ffffff',
+        border: 'none',
+        borderRadius: '8px',
+        cursor: 'pointer',
+        fontWeight: '500',
+        fontSize: '14px',
+        transition: 'all 0.2s ease',
+        marginBottom: '12px'
+    };
+
+    const mediaHintStyle = {
+        color: '#718096',
+        fontSize: '12px',
+        marginTop: '4px'
+    };
+
+    const mediaPreviewContainerStyle = {
+        display: 'flex',
+        flexWrap: 'wrap',
+        gap: '16px',
+        marginTop: '20px'
+    };
+
+    const mediaPreviewItemStyle = {
+        position: 'relative',
+        width: '150px',
+        height: '150px',
+        borderRadius: '8px',
+        overflow: 'hidden',
+        border: '1px solid #e2e8f0'
+    };
+
+    const mediaImageStyle = {
+        width: '100%',
+        height: '100%',
+        objectFit: 'cover'
+    };
+
+    const removeMediaButtonStyle = {
+        position: 'absolute',
+        top: '8px',
+        right: '8px',
+        width: '24px',
+        height: '24px',
+        backgroundColor: '#e53e3e',
+        color: '#ffffff',
+        border: 'none',
+        borderRadius: '50%',
+        cursor: 'pointer',
+        fontSize: '16px',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        padding: '0'
+    };
+
+    const mediaInfoStyle = {
+        position: 'absolute',
+        bottom: '0',
+        left: '0',
+        right: '0',
+        backgroundColor: 'rgba(0, 0, 0, 0.7)',
+        color: '#ffffff',
+        padding: '8px',
+        fontSize: '11px'
+    };
+
+    const quantityRowStyle = {
+        backgroundColor: '#f8fafc',
+        border: '1px solid #e2e8f0',
+        borderRadius: '8px',
+        padding: '20px',
+        marginBottom: '16px',
+        display: 'grid',
+        gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))',
+        gap: '16px',
+        alignItems: 'end'
+    };
+
+    const removeQuantityButtonStyle = {
+        padding: '8px 16px',
+        backgroundColor: '#e53e3e',
+        color: '#ffffff',
+        border: 'none',
+        borderRadius: '6px',
+        cursor: 'pointer',
+        fontSize: '13px',
+        fontWeight: '500',
+        height: '42px',
+        alignSelf: 'center'
+    };
+
+    const addQuantityButtonStyle = {
+        padding: '12px 24px',
+        backgroundColor: '#48bb78',
+        color: '#ffffff',
+        border: 'none',
+        borderRadius: '8px',
+        cursor: 'pointer',
+        fontWeight: '500',
+        fontSize: '14px',
+        transition: 'all 0.2s ease',
+        marginTop: '16px'
+    };
+
+    const actionsStyle = {
+        display: 'flex',
+        justifyContent: 'flex-end',
+        gap: '16px',
+        paddingTop: '24px',
+        borderTop: '1px solid #e2e8f0',
+        marginTop: '32px'
+    };
+
+    const resetButtonStyle = {
+        padding: '14px 28px',
+        backgroundColor: '#a0aec0',
+        color: '#ffffff',
+        border: 'none',
+        borderRadius: '8px',
+        cursor: 'pointer',
+        fontWeight: '500',
+        fontSize: '15px',
+        transition: 'all 0.2s ease'
+    };
+
+    const submitButtonStyle = {
+        padding: '14px 32px',
+        backgroundColor: '#667eea',
+        color: '#ffffff',
+        border: 'none',
+        borderRadius: '8px',
+        cursor: 'pointer',
+        fontWeight: '600',
+        fontSize: '15px',
+        transition: 'all 0.2s ease',
+        minWidth: '180px'
+    };
+
+    const loadingOverlayStyle = {
+        position: 'absolute',
+        top: '0',
+        left: '0',
+        right: '0',
+        bottom: '0',
+        backgroundColor: 'rgba(255, 255, 255, 0.9)',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        zIndex: '10',
+        borderRadius: '16px'
+    };
+
+    const loadingSpinnerStyle = {
+        width: '40px',
+        height: '40px',
+        border: '4px solid #e2e8f0',
+        borderTop: '4px solid #667eea',
+        borderRadius: '50%',
+        animation: 'spin 1s linear infinite'
+    };
+
+    const emptyMediaPlaceholderStyle = {
+        width: '100%',
+        padding: '40px',
+        textAlign: 'center',
+        color: '#a0aec0',
+        fontSize: '14px',
+        border: '2px dashed #e2e8f0',
+        borderRadius: '8px',
+        backgroundColor: '#f8fafc'
+    };
+
+    const infoTextStyle = {
+        color: '#718096',
+        fontSize: '13px',
+        marginTop: '-8px',
+        marginBottom: '16px',
+        fontStyle: 'italic'
+    };
+
     return (
-        <div>
-            <div className="herbal-form-container">
-                <div className="herbal-form-header">
-                    <h2>{isEditMode ? "Edit Product" : "Add New Product"}</h2>
-                    <button type="button" className="herbal-cancel-btn" onClick={() => navigate("/pharma-admin/products")}>
-                        Cancel
+        <div style={containerStyle}>
+            <style>
+                {`
+                @keyframes spin {
+                    0% { transform: rotate(0deg); }
+                    100% { transform: rotate(360deg); }
+                }
+                input:focus, select:focus, textarea:focus {
+                    outline: none;
+                    border-color: #667eea !important;
+                    box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1) !important;
+                }
+                button:hover {
+                    opacity: 0.9;
+                    transform: translateY(-1px);
+                }
+                .hover-lift:hover {
+                    transform: translateY(-2px);
+                }
+                `}
+            </style>
+
+            <div style={formContainerStyle}>
+                {isLoading && (
+                    <div style={loadingOverlayStyle}>
+                        <div style={loadingSpinnerStyle}></div>
+                    </div>
+                )}
+                
+                <div style={headerStyle}>
+                    <h1 style={headerTitleStyle}>
+                        {isEditMode ? "✏️ Edit Product" : "➕ Add New Product"}
+                    </h1>
+                    <button 
+                        type="button" 
+                        style={cancelButtonStyle}
+                        onClick={() => navigate("/pharma-admin/products")}
+                        onMouseEnter={(e) => e.target.style.backgroundColor = 'rgba(255, 255, 255, 0.3)'}
+                        onMouseLeave={(e) => e.target.style.backgroundColor = 'rgba(255, 255, 255, 0.2)'}
+                    >
+                        ⏪ Back to Products
                     </button>
                 </div>
 
-                <form onSubmit={handleSubmit} className="herbal-product-form">
+                <form onSubmit={handleSubmit} style={formStyle}>
                     {/* Basic Information */}
-                    <div className="herbal-form-section">
-                        <h3>Basic Information</h3>
-                        <div className="herbal-form-row">
-                            <div className="herbal-form-group">
-                                <label>Product Name*</label>
+                    <div style={sectionStyle}>
+                        <h3 style={sectionTitleStyle}>
+                            <span>📋</span> Basic Information
+                        </h3>
+                        <div style={formRowStyle}>
+                            <div style={formGroupStyle}>
+                                <label style={requiredLabelStyle}>Product Name *</label>
                                 <input 
                                     type="text" 
                                     name="name" 
                                     value={formData.name} 
                                     onChange={handleChange} 
                                     placeholder="Enter product name" 
+                                    style={inputStyle}
+                                    required
                                 />
-                                {errors.name && <span className="herbal-error">{errors.name}</span>}
+                                {errors.name && <span style={errorStyle}>{errors.name}</span>}
                             </div>
 
-                            <div className="herbal-form-group">
-                                <label>Product Media (Images/Videos)*</label>
-                                <div className="media-upload-container">
-                                    <input 
-                                        type="file" 
-                                        ref={fileInputRef} 
-                                        onChange={handleMediaChange} 
-                                        accept="image/*,video/*" 
-                                        multiple 
-                                        style={{ display: 'none' }} 
-                                    />
-                                    <button type="button" className="media-upload-btn" onClick={triggerFileInput}>
-                                        Add Media
-                                    </button>
-                                    <p className="media-upload-hint">Supports JPG, PNG, GIF, MP4 (Max 10MB each)</p>
-                                    <div className="media-preview-container">
-                                        {formData.media.length === 0 ? (
-                                            <div className="no-media-placeholder">No media selected</div>
-                                        ) : (
-                                            formData.media.map((media, index) => (
-                                                <div key={index} className="media-preview-item">
-                                                    {media.type === 'video' ? (
-                                                        <video controls>
-                                                            <source src={media.url} type={`video/${media.file?.name?.split('.').pop() || 'mp4'}`} />
-                                                            Your browser does not support the video tag.
-                                                        </video>
-                                                    ) : (
-                                                        <img src={JoinUrl(media.url)} alt={`Preview ${index}`} />
-                                                    )}
-                                                    <button 
-                                                        type="button" 
-                                                        className="remove-media-btn" 
-                                                        onClick={() => removeMedia(index)} 
-                                                        aria-label="Remove media"
-                                                    >
-                                                        ×
-                                                    </button>
-                                                    <div className="media-info">
-                                                        <span className="media-name">{media.name}</span>
-                                                        <span className="media-size">{formatFileSize(media.size || 0)}</span>
-                                                    </div>
-                                                </div>
-                                            ))
-                                        )}
-                                    </div>
-                                </div>
-                                {errors.media && <span className="herbal-error">{errors.media}</span>}
-                            </div>
-
-                            <div className="herbal-form-group">
-                                <label>Prescription</label>
-                                <select name="prescription" value={formData.prescription} onChange={handleChange}>
-                                    <option value="required">Required</option>
-                                    <option value="Notrequired">Not Required</option>
+                            <div style={formGroupStyle}>
+                                <label style={requiredLabelStyle}>Prescription</label>
+                                <select 
+                                    name="prescription" 
+                                    value={formData.prescription} 
+                                    onChange={handleChange} 
+                                    style={selectStyle}
+                                >
+                                    <option value="required">📋 Required</option>
+                                    <option value="Notrequired">✅ Not Required</option>
                                 </select>
                             </div>
                         </div>
 
-                        <div className="herbal-form-group">
-                            <label>Description*</label>
+                        <div style={formGroupStyle}>
+                            <label style={requiredLabelStyle}>Description *</label>
                             <textarea 
                                 name="description" 
                                 value={formData.description} 
                                 onChange={handleChange} 
                                 placeholder="Enter product description" 
                                 rows="3" 
+                                style={textareaStyle}
+                                required
                             />
-                            {errors.description && <span className="herbal-error">{errors.description}</span>}
+                            {errors.description && <span style={errorStyle}>{errors.description}</span>}
+                        </div>
+
+                        <div style={formGroupStyle}>
+                            <label style={requiredLabelStyle}>Product Media (Images/Videos) *</label>
+                            <div style={mediaUploadContainerStyle}>
+                                <input 
+                                    type="file" 
+                                    ref={fileInputRef} 
+                                    onChange={handleMediaChange} 
+                                    accept="image/*,video/*" 
+                                    multiple 
+                                    style={{ display: 'none' }} 
+                                />
+                                <button 
+                                    type="button" 
+                                    style={mediaUploadButtonStyle}
+                                    onClick={triggerFileInput}
+                                    onMouseEnter={(e) => e.target.style.backgroundColor = '#5a67d8'}
+                                    onMouseLeave={(e) => e.target.style.backgroundColor = '#667eea'}
+                                >
+                                    📁 Add Media
+                                </button>
+                                <p style={mediaHintStyle}>Supports JPG, PNG, GIF, MP4 (Max 10MB each)</p>
+                                <div style={mediaPreviewContainerStyle}>
+                                    {formData.media.length === 0 ? (
+                                        <div style={emptyMediaPlaceholderStyle}>
+                                            No media selected
+                                        </div>
+                                    ) : (
+                                        formData.media.map((media, index) => (
+                                            <div key={index} style={mediaPreviewItemStyle}>
+                                                {media.type === 'video' ? (
+                                                    <video 
+                                                        controls 
+                                                        style={mediaImageStyle}
+                                                    >
+                                                        <source src={media.url} type={`video/${media.file?.name?.split('.').pop() || 'mp4'}`} />
+                                                    </video>
+                                                ) : (
+                                                    <img 
+                                                        src={JoinUrl(media.url)} 
+                                                        alt={`Preview ${index}`} 
+                                                        style={mediaImageStyle}
+                                                        onError={(e) => e.target.src = 'https://via.placeholder.com/150?text=Image+Error'}
+                                                    />
+                                                )}
+                                                <button 
+                                                    type="button" 
+                                                    style={removeMediaButtonStyle}
+                                                    onClick={() => removeMedia(index)} 
+                                                    aria-label="Remove media"
+                                                >
+                                                    ×
+                                                </button>
+                                                <div style={mediaInfoStyle}>
+                                                    <div style={{ whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                                                        {media.name}
+                                                    </div>
+                                                    <div>{formatFileSize(media.size || 0)}</div>
+                                                </div>
+                                            </div>
+                                        ))
+                                    )}
+                                </div>
+                                {errors.media && <span style={errorStyle}>{errors.media}</span>}
+                            </div>
                         </div>
                     </div>
 
                     {/* Pricing Information */}
-                    <div className="herbal-form-section">
-                        <h3>Quantity & Pricing</h3>
-                        <p style={{ marginTop: -8, opacity: 0.8 }}>
-                            Add each pack size (e.g., <i>8 fl oz, 16 fl oz, 1 L</i>) with its own price. Final price auto-calculates.
+                    <div style={sectionStyle}>
+                        <h3 style={sectionTitleStyle}>
+                            <span>💰</span> Quantity & Pricing
+                        </h3>
+                        <p style={infoTextStyle}>
+                            Add each pack size (e.g., <strong>8 fl oz, 16 fl oz, 1 L</strong>) with its own price. Final price auto-calculates.
                         </p>
 
-                        {errors.quantity && <div className="herbal-error" style={{ marginBottom: 10 }}>{errors.quantity}</div>}
+                        {errors.quantity && <div style={{...errorStyle, marginBottom: 16, fontSize: '14px'}}>{errors.quantity}</div>}
 
                         {formData.quantity.map((q, i) => (
-                            <div key={i} className="herbal-form-row" style={{ border: '1px solid #eee', padding: 12, borderRadius: 8, marginBottom: 10 }}>
-                                <div className="herbal-form-group">
-                                    <label>Quantity Label*</label>
+                            <div key={i} style={quantityRowStyle} className="hover-lift">
+                                <div style={formGroupStyle}>
+                                    <label style={requiredLabelStyle}>Quantity Label *</label>
                                     <input
                                         type="text"
                                         value={q.label}
                                         onChange={(e) => handleQuantityRowChange(i, 'label', e.target.value)}
                                         placeholder="e.g., 8 fl oz (Bottle)"
+                                        style={inputStyle}
+                                        required
                                     />
-                                    {errors[`quantity.${i}.label`] && <span className="herbal-error">{errors[`quantity.${i}.label`]}</span>}
+                                    {errors[`quantity.${i}.label`] && <span style={errorStyle}>{errors[`quantity.${i}.label`]}</span>}
                                 </div>
-                                <div className="herbal-form-group">
-                                    <label>MRP*</label>
+                                <div style={formGroupStyle}>
+                                    <label style={requiredLabelStyle}>MRP *</label>
                                     <input
                                         type="number"
                                         value={q.mrp}
@@ -1230,11 +845,13 @@ const AddNewProduct = () => {
                                         placeholder="0.00"
                                         min="0" 
                                         step="0.01"
+                                        style={inputStyle}
+                                        required
                                     />
-                                    {errors[`quantity.${i}.mrp`] && <span className="herbal-error">{errors[`quantity.${i}.mrp`]}</span>}
+                                    {errors[`quantity.${i}.mrp`] && <span style={errorStyle}>{errors[`quantity.${i}.mrp`]}</span>}
                                 </div>
-                                <div className="herbal-form-group">
-                                    <label>Discount (%)</label>
+                                <div style={formGroupStyle}>
+                                    <label style={labelStyle}>Discount (%)</label>
                                     <input
                                         type="number"
                                         value={q.discount}
@@ -1242,10 +859,11 @@ const AddNewProduct = () => {
                                         placeholder="0"
                                         min="0" 
                                         max="100"
+                                        style={inputStyle}
                                     />
                                 </div>
-                                <div className="herbal-form-group">
-                                    <label>GST (%)</label>
+                                <div style={formGroupStyle}>
+                                    <label style={labelStyle}>GST (%)</label>
                                     <input
                                         type="number"
                                         value={q.gst}
@@ -1253,19 +871,21 @@ const AddNewProduct = () => {
                                         placeholder="0"
                                         min="0" 
                                         step="0.01"
+                                        style={inputStyle}
                                     />
                                 </div>
-                                <div className="herbal-form-group">
-                                    <label>Final Consumer Price</label>
+                                <div style={formGroupStyle}>
+                                    <label style={labelStyle}>Final Price</label>
                                     <input 
                                         type="number" 
                                         value={q.final_price} 
                                         readOnly 
-                                        placeholder="Auto" 
+                                        placeholder="Auto-calculated" 
+                                        style={{...inputStyle, backgroundColor: '#f0f4ff', color: '#4a5568'}}
                                     />
                                 </div>
-                                <div className="herbal-form-group">
-                                    <label>WholesalePartner Price</label>
+                                <div style={formGroupStyle}>
+                                    <label style={labelStyle}>Wholesale Price</label>
                                     <input
                                         type="number"
                                         value={q.retail_price}
@@ -1273,27 +893,30 @@ const AddNewProduct = () => {
                                         placeholder="Optional"
                                         min="0" 
                                         step="0.01"
+                                        style={inputStyle}
                                     />
                                 </div>
-                                <div className="herbal-form-group">
-                                    <label>In Stock</label>
+                                <div style={formGroupStyle}>
+                                    <label style={labelStyle}>In Stock</label>
                                     <select 
                                         value={q.in_stock} 
                                         onChange={(e) => handleQuantityRowChange(i, 'in_stock', e.target.value)}
+                                        style={selectStyle}
                                     >
-                                        <option value="yes">Yes</option>
-                                        <option value="no">No</option>
+                                        <option value="yes">✅ Yes</option>
+                                        <option value="no">❌ No</option>
                                     </select>
                                 </div>
 
-                                <div className="herbal-form-group" style={{ alignSelf: 'flex-end' }}>
+                                <div style={formGroupStyle}>
                                     <button
                                         type="button"
                                         onClick={() => removeQuantityRow(i)}
-                                        className="herbal-reset-btn"
-                                        style={{ background: '#f44336', color: '#fff' }}
+                                        style={removeQuantityButtonStyle}
+                                        onMouseEnter={(e) => e.target.style.backgroundColor = '#c53030'}
+                                        onMouseLeave={(e) => e.target.style.backgroundColor = '#e53e3e'}
                                     >
-                                        Remove
+                                        🗑️ Remove
                                     </button>
                                 </div>
                             </div>
@@ -1302,19 +925,22 @@ const AddNewProduct = () => {
                         <button 
                             type="button" 
                             onClick={addQuantityRow} 
-                            className="herbal-submit-btn" 
-                            style={{ width: 'fit-content' }}
+                            style={addQuantityButtonStyle}
+                            onMouseEnter={(e) => e.target.style.backgroundColor = '#38a169'}
+                            onMouseLeave={(e) => e.target.style.backgroundColor = '#48bb78'}
                         >
-                            + Add Quantity
+                            ➕ Add Quantity Variant
                         </button>
                     </div>
 
                     {/* Category Information */}
-                    <div className="herbal-form-section">
-                        <h3>Category Information</h3>
-                        <div className="herbal-form-row">
-                            <div className="herbal-form-group">
-                                <label>Variety*</label>
+                    <div style={sectionStyle}>
+                        <h3 style={sectionTitleStyle}>
+                            <span>📁</span> Category Information
+                        </h3>
+                        <div style={formRowStyle}>
+                            <div style={formGroupStyle}>
+                                <label style={requiredLabelStyle}>Variety *</label>
                                 <select
                                     name="productvariety"
                                     value={formData.productvariety}
@@ -1327,114 +953,141 @@ const AddNewProduct = () => {
                                             sub_category: ""
                                         }));
                                     }}
-                                    className='selectCss'
+                                    style={selectStyle}
+                                    required
                                 >
                                     <option value="">Select Variety</option>
-                                    <option value="Human">Human</option>
-                                    <option value="Veterinary">Veterinary</option>
+                                    <option value="Human">👤 Human</option>
+                                    <option value="Veterinary">🐾 Veterinary</option>
                                 </select>
-                                {errors.productvariety && <span className="herbal-error">{errors.productvariety}</span>}
+                                {errors.productvariety && <span style={errorStyle}>{errors.productvariety}</span>}
                             </div>
 
-                            <div className="herbal-form-group">
-                                <label>Category*</label>
+                            <div style={formGroupStyle}>
+                                <label style={requiredLabelStyle}>Category *</label>
                                 <select 
                                     name="category" 
                                     value={formData.category} 
                                     onChange={handleChange} 
+                                    style={selectStyle}
                                     required
+                                    disabled={!formData.productvariety}
                                 >
-                                    <option value="">Select Category</option>
+                                    <option value="">{formData.productvariety ? "Select Category" : "Select variety first"}</option>
                                     {categoryList
                                         .filter(cat => cat.variety === formData.productvariety)
                                         .map((sub, index) => (
                                             <option key={index} value={sub.name}>{sub.name}</option>
                                         ))}
                                 </select>
-                                {errors.category && <span className="herbal-error">{errors.category}</span>}
+                                {errors.category && <span style={errorStyle}>{errors.category}</span>}
                             </div>
 
-                            <div className="herbal-form-group">
-                                <label>Sub Category</label>
+                            <div style={formGroupStyle}>
+                                <label style={labelStyle}>Sub Category</label>
                                 <select 
                                     name="sub_category" 
                                     value={formData.sub_category} 
                                     onChange={handleChange} 
+                                    style={selectStyle}
+                                    disabled={!formData.category}
                                 >
-                                    <option value="">Select subcategory</option>
+                                    <option value="">{formData.category ? "Select subcategory" : "Select category first"}</option>
                                     {subCategoryList.map((sub, index) => (
                                         <option key={index} value={sub.name}>{sub.name}</option>
                                     ))}
                                 </select>
                             </div>
 
-                            <div className="herbal-form-group">
-                                <label>Use By* (Expiry Date)</label>
+                            <div style={formGroupStyle}>
+                                <label style={requiredLabelStyle}>Expiry Date *</label>
                                 <input 
-                                    type="text" 
+                                    type="date" 
                                     name="expires_on" 
                                     value={formData.expires_on} 
                                     onChange={handleChange} 
+                                    style={inputStyle}
+                                    required
                                 />
-                                {errors.expires_on && <span className="herbal-error">{errors.expires_on}</span>}
+                                {errors.expires_on && <span style={errorStyle}>{errors.expires_on}</span>}
                             </div>
                         </div>
                     </div>
 
                     {/* Product Details */}
-                    <div className="herbal-form-section">
-                        <h3>Product Details</h3>
-                        <div className="herbal-form-row">
-                            <div className="herbal-form-group">
-                                <label>Suitable For</label>
+                    <div style={sectionStyle}>
+                        <h3 style={sectionTitleStyle}>
+                            <span>📝</span> Product Details
+                        </h3>
+                        <div style={formRowStyle}>
+                            <div style={formGroupStyle}>
+                                <label style={labelStyle}>Suitable For</label>
                                 <input 
                                     type="text" 
                                     name="suitable_for" 
                                     value={formData.suitable_for} 
                                     onChange={handleChange} 
                                     placeholder="e.g., Adults, Children, All ages" 
+                                    style={inputStyle}
                                 />
                             </div>
-                            <div className="herbal-form-group">
-                                <label>Benefits (comma separated)</label>
+                            <div style={formGroupStyle}>
+                                <label style={labelStyle}>Benefits</label>
                                 <textarea 
                                     name="benefits" 
                                     value={formData.benefits} 
                                     onChange={handleChange} 
                                     placeholder="Enter benefits separated by commas" 
                                     rows="3" 
+                                    style={textareaStyle}
                                 />
+                                <p style={mediaHintStyle}>Separate multiple benefits with commas</p>
                             </div>
                         </div>
-                        <div className="herbal-form-group">
-                            <label>Dosage/Usage Instructions*</label>
+                        <div style={formGroupStyle}>
+                            <label style={requiredLabelStyle}>Dosage/Usage Instructions *</label>
                             <textarea 
                                 name="dosage" 
                                 value={formData.dosage} 
                                 onChange={handleChange} 
                                 placeholder="Enter dosage instructions" 
                                 rows="3" 
+                                style={textareaStyle}
+                                required
                             />
-                            {errors.dosage && <span className="herbal-error">{errors.dosage}</span>}
+                            {errors.dosage && <span style={errorStyle}>{errors.dosage}</span>}
                         </div>
-                        <div className="herbal-form-group">
-                            <label>Side Effects</label>
+                        <div style={formGroupStyle}>
+                            <label style={labelStyle}>Side Effects</label>
                             <textarea 
                                 name="side_effects" 
                                 value={formData.side_effects} 
                                 onChange={handleChange} 
                                 placeholder="Enter any known side effects" 
                                 rows="2" 
+                                style={textareaStyle}
                             />
                         </div>
                     </div>
 
-                    <div className="herbal-form-actions">
-                        <button type="button" onClick={handleReset} className="herbal-reset-btn">
-                            Reset
+                    <div style={actionsStyle}>
+                        <button 
+                            type="button" 
+                            onClick={handleReset} 
+                            style={resetButtonStyle}
+                            onMouseEnter={(e) => e.target.style.backgroundColor = '#718096'}
+                            onMouseLeave={(e) => e.target.style.backgroundColor = '#a0aec0'}
+                        >
+                            🔄 Reset Form
                         </button>
-                        <button type="submit" className="herbal-submit-btn">
-                            {isEditMode ? "Update Product" : "Submit Product"}
+                        <button 
+                            type="submit" 
+                            style={submitButtonStyle}
+                            onMouseEnter={(e) => e.target.style.backgroundColor = '#5a67d8'}
+                            onMouseLeave={(e) => e.target.style.backgroundColor = '#667eea'}
+                            disabled={isLoading}
+                        >
+                            {isLoading ? '⏳ Processing...' : isEditMode ? '💾 Update Product' : '🚀 Submit Product'}
                         </button>
                     </div>
                 </form>
