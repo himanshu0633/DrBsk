@@ -40,6 +40,18 @@ const AddNewProduct = () => {
     const [errors, setErrors] = useState({});
     const [isSubmitted, setIsSubmitted] = useState(false);
     const fileInputRef = useRef(null);
+    const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
+    const [isTablet, setIsTablet] = useState(window.innerWidth >= 768 && window.innerWidth < 1024);
+
+    useEffect(() => {
+        const handleResize = () => {
+            setIsMobile(window.innerWidth < 768);
+            setIsTablet(window.innerWidth >= 768 && window.innerWidth < 1024);
+        };
+
+        window.addEventListener('resize', handleResize);
+        return () => window.removeEventListener('resize', handleResize);
+    }, []);
 
     useEffect(() => {
         const init = async () => {
@@ -330,72 +342,78 @@ const AddNewProduct = () => {
         }
     };
 
+    // Responsive Styles
     const containerStyle = {
         minHeight: '100vh',
         backgroundColor: '#f8fafc',
-        padding: '20px',
-        fontFamily: "'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif"
+        padding: isMobile ? '12px' : isTablet ? '16px' : '20px',
+        fontFamily: "'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif",
+        fontSize: isMobile ? '14px' : '16px'
     };
 
     const formContainerStyle = {
         maxWidth: '1400px',
         margin: '0 auto',
         backgroundColor: '#ffffff',
-        borderRadius: '16px',
+        borderRadius: isMobile ? '12px' : '16px',
         boxShadow: '0 4px 24px rgba(0, 0, 0, 0.08)',
         overflow: 'hidden',
         border: '1px solid #e2e8f0'
     };
 
     const headerStyle = {
-        padding: '24px 32px',
+        padding: isMobile ? '16px 20px' : '24px 32px',
         borderBottom: '1px solid #e2e8f0',
         display: 'flex',
+        flexDirection: isMobile ? 'column' : 'row',
+        gap: isMobile ? '12px' : '0',
         justifyContent: 'space-between',
-        alignItems: 'center',
-        background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)'
+        alignItems: isMobile ? 'stretch' : 'center',
+        background: 'linear-gradient(135deg, #8B0000 0%, #A52A2A 100%)'
     };
 
     const headerTitleStyle = {
         color: '#ffffff',
-        fontSize: '24px',
+        fontSize: isMobile ? '20px' : '24px',
         fontWeight: '600',
-        margin: '0'
+        margin: '0',
+        textAlign: isMobile ? 'center' : 'left'
     };
 
     const cancelButtonStyle = {
-        padding: '10px 20px',
+        padding: isMobile ? '8px 16px' : '10px 20px',
         backgroundColor: 'rgba(255, 255, 255, 0.2)',
         color: '#ffffff',
         border: '1px solid rgba(255, 255, 255, 0.3)',
         borderRadius: '8px',
         cursor: 'pointer',
         fontWeight: '500',
-        fontSize: '14px',
+        fontSize: isMobile ? '13px' : '14px',
         transition: 'all 0.2s ease',
-        backdropFilter: 'blur(10px)'
+        backdropFilter: 'blur(10px)',
+        width: isMobile ? '100%' : 'auto'
     };
 
     const formStyle = {
-        padding: '32px'
+        padding: isMobile ? '16px' : isTablet ? '24px' : '32px'
     };
 
     const sectionStyle = {
-        marginBottom: '32px',
-        padding: '24px',
+        marginBottom: isMobile ? '24px' : '32px',
+        padding: isMobile ? '16px' : '24px',
         backgroundColor: '#ffffff',
-        borderRadius: '12px',
+        borderRadius: isMobile ? '8px' : '12px',
         border: '1px solid #e2e8f0',
         boxShadow: '0 2px 8px rgba(0, 0, 0, 0.04)'
     };
 
     const sectionTitleStyle = {
         color: '#2d3748',
-        fontSize: '18px',
+        fontSize: isMobile ? '16px' : '18px',
         fontWeight: '600',
-        marginBottom: '20px',
+        marginBottom: isMobile ? '16px' : '20px',
         paddingBottom: '12px',
-        borderBottom: '2px solid #667eea',
+        borderBottom: '2px solid #8B0000',
         display: 'flex',
         alignItems: 'center',
         gap: '8px'
@@ -403,20 +421,20 @@ const AddNewProduct = () => {
 
     const formRowStyle = {
         display: 'grid',
-        gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))',
-        gap: '24px',
-        marginBottom: '24px'
+        gridTemplateColumns: isMobile ? '1fr' : isTablet ? 'repeat(2, 1fr)' : 'repeat(auto-fit, minmax(300px, 1fr))',
+        gap: isMobile ? '16px' : '24px',
+        marginBottom: isMobile ? '16px' : '24px'
     };
 
     const formGroupStyle = {
-        marginBottom: '20px'
+        marginBottom: isMobile ? '16px' : '20px'
     };
 
     const labelStyle = {
         display: 'block',
-        marginBottom: '8px',
+        marginBottom: '6px',
         color: '#4a5568',
-        fontSize: '14px',
+        fontSize: isMobile ? '13px' : '14px',
         fontWeight: '500'
     };
 
@@ -427,14 +445,15 @@ const AddNewProduct = () => {
 
     const inputStyle = {
         width: '100%',
-        padding: '12px 16px',
+        padding: isMobile ? '10px 14px' : '12px 16px',
         border: '2px solid #e2e8f0',
         borderRadius: '8px',
-        fontSize: '14px',
+        fontSize: isMobile ? '14px' : '15px',
         color: '#2d3748',
         backgroundColor: '#ffffff',
         transition: 'all 0.2s ease',
-        boxSizing: 'border-box'
+        boxSizing: 'border-box',
+        minHeight: isMobile ? '44px' : 'auto'
     };
 
     const selectStyle = {
@@ -450,15 +469,15 @@ const AddNewProduct = () => {
 
     const textareaStyle = {
         ...inputStyle,
-        minHeight: '80px',
+        minHeight: isMobile ? '80px' : '100px',
         resize: 'vertical',
         lineHeight: '1.5'
     };
 
     const errorStyle = {
         color: '#e53e3e',
-        fontSize: '12px',
-        marginTop: '6px',
+        fontSize: isMobile ? '11px' : '12px',
+        marginTop: '4px',
         display: 'block'
     };
 
@@ -467,35 +486,37 @@ const AddNewProduct = () => {
     };
 
     const mediaUploadButtonStyle = {
-        padding: '12px 24px',
-        backgroundColor: '#667eea',
+        padding: isMobile ? '10px 16px' : '12px 24px',
+        backgroundColor: '#8B0000',
         color: '#ffffff',
         border: 'none',
         borderRadius: '8px',
         cursor: 'pointer',
         fontWeight: '500',
-        fontSize: '14px',
+        fontSize: isMobile ? '13px' : '14px',
         transition: 'all 0.2s ease',
-        marginBottom: '12px'
+        marginBottom: '12px',
+        width: isMobile ? '100%' : 'auto'
     };
 
     const mediaHintStyle = {
         color: '#718096',
-        fontSize: '12px',
-        marginTop: '4px'
+        fontSize: isMobile ? '11px' : '12px',
+        marginTop: '4px',
+        textAlign: isMobile ? 'center' : 'left'
     };
 
     const mediaPreviewContainerStyle = {
-        display: 'flex',
-        flexWrap: 'wrap',
-        gap: '16px',
+        display: 'grid',
+        gridTemplateColumns: isMobile ? 'repeat(2, 1fr)' : isTablet ? 'repeat(3, 1fr)' : 'repeat(auto-fill, minmax(150px, 1fr))',
+        gap: isMobile ? '12px' : '16px',
         marginTop: '20px'
     };
 
     const mediaPreviewItemStyle = {
         position: 'relative',
-        width: '150px',
-        height: '150px',
+        width: '100%',
+        aspectRatio: '1/1',
         borderRadius: '8px',
         overflow: 'hidden',
         border: '1px solid #e2e8f0'
@@ -522,7 +543,8 @@ const AddNewProduct = () => {
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'center',
-        padding: '0'
+        padding: '0',
+        zIndex: '2'
     };
 
     const mediaInfoStyle = {
@@ -532,80 +554,89 @@ const AddNewProduct = () => {
         right: '0',
         backgroundColor: 'rgba(0, 0, 0, 0.7)',
         color: '#ffffff',
-        padding: '8px',
-        fontSize: '11px'
+        padding: '6px',
+        fontSize: isMobile ? '10px' : '11px',
+        overflow: 'hidden',
+        textOverflow: 'ellipsis',
+        whiteSpace: 'nowrap'
     };
 
     const quantityRowStyle = {
         backgroundColor: '#f8fafc',
         border: '1px solid #e2e8f0',
         borderRadius: '8px',
-        padding: '20px',
+        padding: isMobile ? '16px' : '20px',
         marginBottom: '16px',
         display: 'grid',
-        gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))',
-        gap: '16px',
-        alignItems: 'end'
+        gridTemplateColumns: isMobile ? '1fr' : isTablet ? 'repeat(2, 1fr)' : 'repeat(auto-fit, minmax(180px, 1fr))',
+        gap: isMobile ? '12px' : '16px',
+        alignItems: 'end',
+        position: 'relative'
     };
 
     const removeQuantityButtonStyle = {
-        padding: '8px 16px',
+        padding: isMobile ? '6px 12px' : '8px 16px',
         backgroundColor: '#e53e3e',
         color: '#ffffff',
         border: 'none',
         borderRadius: '6px',
         cursor: 'pointer',
-        fontSize: '13px',
+        fontSize: isMobile ? '12px' : '13px',
         fontWeight: '500',
         height: '42px',
-        alignSelf: 'center'
+        alignSelf: 'center',
+        gridColumn: isMobile ? '1 / -1' : 'auto',
+        width: isMobile ? '100%' : 'auto'
     };
 
     const addQuantityButtonStyle = {
-        padding: '12px 24px',
+        padding: isMobile ? '10px 16px' : '12px 24px',
         backgroundColor: '#48bb78',
         color: '#ffffff',
         border: 'none',
         borderRadius: '8px',
         cursor: 'pointer',
         fontWeight: '500',
-        fontSize: '14px',
+        fontSize: isMobile ? '13px' : '14px',
         transition: 'all 0.2s ease',
-        marginTop: '16px'
+        marginTop: '16px',
+        width: isMobile ? '100%' : 'auto'
     };
 
     const actionsStyle = {
         display: 'flex',
+        flexDirection: isMobile ? 'column' : 'row',
         justifyContent: 'flex-end',
-        gap: '16px',
+        gap: isMobile ? '12px' : '16px',
         paddingTop: '24px',
         borderTop: '1px solid #e2e8f0',
         marginTop: '32px'
     };
 
     const resetButtonStyle = {
-        padding: '14px 28px',
+        padding: isMobile ? '12px 16px' : '14px 28px',
         backgroundColor: '#a0aec0',
         color: '#ffffff',
         border: 'none',
         borderRadius: '8px',
         cursor: 'pointer',
         fontWeight: '500',
-        fontSize: '15px',
-        transition: 'all 0.2s ease'
+        fontSize: isMobile ? '14px' : '15px',
+        transition: 'all 0.2s ease',
+        width: isMobile ? '100%' : 'auto'
     };
 
     const submitButtonStyle = {
-        padding: '14px 32px',
-        backgroundColor: '#667eea',
+        padding: isMobile ? '12px 16px' : '14px 32px',
+        backgroundColor: '#8B0000',
         color: '#ffffff',
         border: 'none',
         borderRadius: '8px',
         cursor: 'pointer',
         fontWeight: '600',
-        fontSize: '15px',
+        fontSize: isMobile ? '14px' : '15px',
         transition: 'all 0.2s ease',
-        minWidth: '180px'
+        minWidth: isMobile ? '100%' : '180px'
     };
 
     const loadingOverlayStyle = {
@@ -623,28 +654,29 @@ const AddNewProduct = () => {
     };
 
     const loadingSpinnerStyle = {
-        width: '40px',
-        height: '40px',
+        width: isMobile ? '30px' : '40px',
+        height: isMobile ? '30px' : '40px',
         border: '4px solid #e2e8f0',
-        borderTop: '4px solid #667eea',
+        borderTop: '4px solid #8B0000',
         borderRadius: '50%',
         animation: 'spin 1s linear infinite'
     };
 
     const emptyMediaPlaceholderStyle = {
         width: '100%',
-        padding: '40px',
+        padding: isMobile ? '30px' : '40px',
         textAlign: 'center',
         color: '#a0aec0',
-        fontSize: '14px',
+        fontSize: isMobile ? '13px' : '14px',
         border: '2px dashed #e2e8f0',
         borderRadius: '8px',
-        backgroundColor: '#f8fafc'
+        backgroundColor: '#f8fafc',
+        gridColumn: '1 / -1'
     };
 
     const infoTextStyle = {
         color: '#718096',
-        fontSize: '13px',
+        fontSize: isMobile ? '12px' : '13px',
         marginTop: '-8px',
         marginBottom: '16px',
         fontStyle: 'italic'
@@ -660,8 +692,8 @@ const AddNewProduct = () => {
                 }
                 input:focus, select:focus, textarea:focus {
                     outline: none;
-                    border-color: #667eea !important;
-                    box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1) !important;
+                    border-color: #8B0000 !important;
+                    box-shadow: 0 0 0 3px rgba(139, 0, 0, 0.1) !important;
                 }
                 button:hover {
                     opacity: 0.9;
@@ -669,6 +701,11 @@ const AddNewProduct = () => {
                 }
                 .hover-lift:hover {
                     transform: translateY(-2px);
+                }
+                @media (max-width: 768px) {
+                    .hover-lift:hover {
+                        transform: none;
+                    }
                 }
                 `}
             </style>
@@ -759,8 +796,8 @@ const AddNewProduct = () => {
                                     type="button" 
                                     style={mediaUploadButtonStyle}
                                     onClick={triggerFileInput}
-                                    onMouseEnter={(e) => e.target.style.backgroundColor = '#5a67d8'}
-                                    onMouseLeave={(e) => e.target.style.backgroundColor = '#667eea'}
+                                    onMouseEnter={(e) => e.target.style.backgroundColor = '#700000'}
+                                    onMouseLeave={(e) => e.target.style.backgroundColor = '#8B0000'}
                                 >
                                     📁 Add Media
                                 </button>
@@ -777,6 +814,7 @@ const AddNewProduct = () => {
                                                     <video 
                                                         controls 
                                                         style={mediaImageStyle}
+                                                        playsInline
                                                     >
                                                         <source src={media.url} type={`video/${media.file?.name?.split('.').pop() || 'mp4'}`} />
                                                     </video>
@@ -786,6 +824,7 @@ const AddNewProduct = () => {
                                                         alt={`Preview ${index}`} 
                                                         style={mediaImageStyle}
                                                         onError={(e) => e.target.src = 'https://via.placeholder.com/150?text=Image+Error'}
+                                                        loading="lazy"
                                                     />
                                                 )}
                                                 <button 
@@ -797,7 +836,7 @@ const AddNewProduct = () => {
                                                     ×
                                                 </button>
                                                 <div style={mediaInfoStyle}>
-                                                    <div style={{ whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                                                    <div style={{ overflow: 'hidden', textOverflow: 'ellipsis' }}>
                                                         {media.name}
                                                     </div>
                                                     <div>{formatFileSize(media.size || 0)}</div>
@@ -1083,8 +1122,8 @@ const AddNewProduct = () => {
                         <button 
                             type="submit" 
                             style={submitButtonStyle}
-                            onMouseEnter={(e) => e.target.style.backgroundColor = '#5a67d8'}
-                            onMouseLeave={(e) => e.target.style.backgroundColor = '#667eea'}
+                            onMouseEnter={(e) => e.target.style.backgroundColor = '#700000'}
+                            onMouseLeave={(e) => e.target.style.backgroundColor = '#8B0000'}
                             disabled={isLoading}
                         >
                             {isLoading ? '⏳ Processing...' : isEditMode ? '💾 Update Product' : '🚀 Submit Product'}
