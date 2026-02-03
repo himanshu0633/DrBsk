@@ -1420,3 +1420,123 @@
     padding-top: 20px;
   }
 }
+/* Payment Method Styles */
+.payment-method-section {
+  margin: 20px 0;
+  padding: 15px;
+  border-radius: 10px;
+  background: #f9f9f9;
+  border: 1px solid #eaeaea;
+}
+
+.payment-methods {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin-top: 10px;
+}
+
+.payment-option input[type="radio"] {
+  display: none;
+}
+
+.payment-method-card {
+  display: block;
+  padding: 16px;
+  border: 2px solid #e0e0e0;
+  border-radius: 10px;
+  background: white;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.payment-method-card:hover {
+  border-color: #1976d2;
+  background: #f0f7ff;
+}
+
+.payment-method-card.selected {
+  border-color: #1976d2;
+  background: #e3f2fd;
+  box-shadow: 0 4px 12px rgba(25, 118, 210, 0.1);
+}
+
+.payment-method-content {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.payment-method-header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.payment-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  background: #f0f7ff;
+  border-radius: 8px;
+  color: #1976d2;
+}
+
+.payment-title {
+  font-weight: 600;
+  font-size: 16px;
+  color: #333;
+}
+
+.payment-description {
+  font-size: 14px;
+  color: #666;
+  margin-left: 36px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.cod-charge {
+  display: inline-block;
+  padding: 2px 8px;
+  background: #ff9800;
+  color: white;
+  border-radius: 4px;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+/* COD charge row in summary */
+.cod-charge-row {
+  color: #ff9800;
+  font-weight: 600;
+}
+
+/* COD checkout button */
+.checkout-btn.cod-btn {
+  background: linear-gradient(135deg, #ff9800 0%, #f57c00 100%);
+}
+
+.checkout-btn.cod-btn:hover:not(:disabled) {
+  background: linear-gradient(135deg, #f57c00 0%, #ef6c00 100%);
+  box-shadow: 0 6px 20px rgba(245, 124, 0, 0.3);
+}
+
+/* COD note */
+.cod-note {
+  margin-top: 15px;
+  padding: 12px 16px;
+  background: #fff3e0;
+  border-radius: 8px;
+  border-left: 4px solid #ff9800;
+  font-size: 14px;
+  color: #5d4037;
+}
+
+.cod-note strong {
+  color: #e65100;
+}
