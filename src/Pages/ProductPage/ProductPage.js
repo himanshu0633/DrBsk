@@ -5,7 +5,7 @@ import Header from "../../components/Header/Header";
 import { useNavigate, useParams } from "react-router-dom";
 import { useDispatch } from "react-redux";
 import { addData } from "../../store/Action";
-
+import API_URL from '../../config';
 import {
   Leaf,
   CalendarDays,
@@ -23,7 +23,7 @@ import {
 } from "lucide-react";
 
 import axiosInstance from "../../components/AxiosInstance";
-import API_URL from "../../config";
+
 import { toast } from "react-toastify";
 import CustomLoader from "../../components/CustomLoader";
 import JoinUrl from "../../JoinUrl";
@@ -91,6 +91,33 @@ const toNum = (v, fallback = 0) => {
   return Number.isFinite(n) ? n : fallback;
 };
 
+/** ---------- Facebook Pixel / Analytics Meta ---------- */
+const trackAddToCart = (product, variant, quantity) => {
+  if (typeof window !== "undefined" && window.fbq) {
+    window.fbq("track", "AddToCart", {
+      content_ids: [product._id],
+      content_name: product.name,
+      content_type: "product",
+      value: variant.final_price * quantity,
+      currency: "INR",
+      num_items: quantity,
+    });
+  }
+};
+
+const trackInitiateCheckout = (checkoutData) => {
+  if (typeof window !== "undefined" && window.fbq) {
+    window.fbq("track", "InitiateCheckout", {
+      content_ids: checkoutData.contentIds || [checkoutData.id],
+      content_name: checkoutData.name,
+      content_type: "product",
+      value: checkoutData.value || checkoutData.price || 0,
+      currency: "INR",
+      num_items: checkoutData.numItems || 1,
+    });
+  }
+};
+
 /** ---------- component ---------- */
 const ProductPage = () => {
   const [units, setUnits] = useState(1);
@@ -99,7 +126,6 @@ const ProductPage = () => {
 
   const [product, setProduct] = useState(null);
   const [loading, setLoading] = useState(false);
-
   const [addedToCart, setAddedToCart] = useState(false);
   const [selectedImageIndex, setSelectedImageIndex] = useState(0);
   const [selectedVariantIndex, setSelectedVariantIndex] = useState(0);
@@ -117,8 +143,15 @@ const ProductPage = () => {
     setZoomPosition({ x, y });
   };
 
-  const increaseUnits = () => setUnits((prev) => prev + 1);
-  const decreaseUnits = () => setUnits((prev) => (prev > 1 ? prev - 1 : prev));
+  const increaseUnits = () => {
+    setUnits((prev) => prev + 1);
+  };
+
+  const decreaseUnits = () => {
+    if (units > 1) {
+      setUnits((prev) => prev - 1);
+    }
+  };
 
   const fetchData = async () => {
     if (!id) return;
@@ -153,6 +186,7 @@ const ProductPage = () => {
       setSelectedImageIndex(0);
       setAddedToCart(false);
       setUnits(1);
+
     } catch (error) {
       console.error("Error fetching product:", error);
       toast.error("Failed to load product");
@@ -165,6 +199,30 @@ const ProductPage = () => {
     fetchData();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [id]);
+
+  // Scroll effect for image
+  useEffect(() => {
+    const handleScroll = () => {
+      const imageWrapper = document.querySelector('.image-wrapper');
+      const image = document.querySelector('.product-image1');
+      
+      if (imageWrapper && image) {
+        const containerRect = imageWrapper.getBoundingClientRect();
+        const windowHeight = window.innerHeight;
+
+        // If container is in viewport
+        if (containerRect.top < windowHeight && containerRect.bottom > 0) {
+          let scrollAmount = Math.min(windowHeight - containerRect.top - image.offsetHeight, 0);
+          image.style.transform = `translateY(${scrollAmount}px)`;
+        }
+      }
+    };
+
+    window.addEventListener('scroll', handleScroll);
+    return () => {
+      window.removeEventListener('scroll', handleScroll);
+    };
+  }, []);
 
   const mediaSafe = useMemo(() => (Array.isArray(product?.media) ? product.media : []), [product]);
   const variants = useMemo(() => product?.quantity || [], [product]);
@@ -179,17 +237,25 @@ const ProductPage = () => {
   const unitGst = selectedVariant?.gst ?? null;
 
   const handleSelectVariant = (i) => {
-    setSelectedVariantIndex(i);
-    setUnits(1);
+    const variant = variants[i];
+    if (variant && variant.in_stock) {
+      setSelectedVariantIndex(i);
+      setUnits(1);
+    }
   };
 
   const handleAddToCart = () => {
     if (!product || !selectedVariant) return;
     if (!selectedVariant.in_stock) return;
 
+    const qty = toNum(units, 1);
+
+    // --- META TRACKING ---
+    trackAddToCart(product, selectedVariant, qty);
+
+    // --- CART LOGIC ---
     const pid = toStr(product._id || product.id);
     const price = toNum(selectedVariant.final_price ?? product.consumer_price ?? 0, 0);
-    const qty = toNum(units, 1);
 
     const cartItem = {
       ...product,
@@ -203,11 +269,11 @@ const ProductPage = () => {
         final_price: selectedVariant.final_price,
         in_stock: selectedVariant.in_stock,
       },
-      mrp: selectedVariant.mrp,
-      discount: selectedVariant.discount,
-      gst: selectedVariant.gst,
-      retail_price: selectedVariant.retail_price,
-      final_price: selectedVariant.final_price,
+      mrp: selectedVariant.mrp ?? product.mrp,
+      discount: selectedVariant.discount ?? product.discount,
+      gst: selectedVariant.gst ?? product.gst,
+      retail_price: selectedVariant.retail_price ?? product.retail_price,
+      final_price: selectedVariant.final_price ?? product.final_price,
       quantity: qty,
       unitPrice: price,
       totalPrice: price * qty,
@@ -256,6 +322,17 @@ const ProductPage = () => {
     const price = toNum(selectedVariant.final_price ?? product.consumer_price ?? 0, 0);
     const qty = toNum(units, 1);
 
+    // --- META TRACKING ---
+    trackInitiateCheckout({
+      content_ids: [product._id],
+      content_name: product.name,
+      content_type: "product",
+      value: selectedVariant.final_price * qty,
+      currency: "INR",
+      num_items: qty,
+    });
+
+    // --- CHECKOUT LOGIC ---
     const checkoutProduct = {
       ...product,
       _id: pid,
@@ -282,12 +359,20 @@ const ProductPage = () => {
     const url = window.location.href;
     navigator.clipboard
       .writeText(url)
-      .then(() =>
-        toast.info("Link copied to clipboard!", { position: "top-right", autoClose: 2000 })
-      )
-      .catch(() =>
-        toast.error("Failed to copy link.", { position: "top-right", autoClose: 2000 })
-      );
+      .then(() => {
+        toast.info("Link copied to clipboard!", { position: "top-right", autoClose: 2000 });
+      })
+      .catch(() => {
+        toast.error("Failed to copy link.", { position: "top-right", autoClose: 2000 });
+      });
+  };
+
+  const handleImageClick = (index) => {
+    setSelectedImageIndex(index);
+  };
+
+  const handleTabClick = (tab) => {
+    setActiveTab(tab);
   };
 
   if (loading || !product) {
@@ -324,9 +409,13 @@ const ProductPage = () => {
                     src={selectedImageUrl}
                     alt={product?.name || "Product"}
                     className="product-image1"
+                    onClick={() => handleImageClick(selectedImageIndex)}
                   />
                 ) : (
-                  <div className="product-image1 no-image" aria-label="No image available">
+                  <div 
+                    className="product-image1 no-image" 
+                    aria-label="No image available"
+                  >
                     No Image
                   </div>
                 )}
@@ -370,14 +459,19 @@ const ProductPage = () => {
                       type="button"
                       key={index}
                       className={`thumbnail ${selectedImageIndex === index ? "active-thumbnail" : ""}`}
-                      onClick={() => setSelectedImageIndex(index)}
+                      onClick={() => handleImageClick(index)}
                       aria-label={`Select image ${index + 1}`}
                     >
-                      <img src={JoinUrl(API_URL, mediaItem.url)} alt={`Thumbnail ${index + 1}`} />
+                      <img 
+                        src={JoinUrl(API_URL, mediaItem.url)} 
+                        alt={`Thumbnail ${index + 1}`} 
+                      />
                     </button>
                   ))
                 ) : (
-                  <div className="thumbnail">No thumbnails</div>
+                  <div className="thumbnail">
+                    No thumbnails
+                  </div>
                 )}
               </div>
             </div>
@@ -385,9 +479,15 @@ const ProductPage = () => {
             {/* Product Info Section */}
             <div className="product-info">
               <div className="product-header">
-                <h1 className="product-title">{product?.name || "Product"}</h1>
+                <h1 className="product-title">
+                  {product?.name || "Product"}
+                </h1>
                 <div className="product-actions">
-                  <button className="share-btn" onClick={handleShare} aria-label="Share this product">
+                  <button 
+                    className="share-btn" 
+                    onClick={handleShare} 
+                    aria-label="Share this product"
+                  >
                     <Share2 size={18} />
                   </button>
                 </div>
@@ -461,7 +561,11 @@ const ProductPage = () => {
                 <div className="quantity-container">
                   <label className="quantity-label">Quantity</label>
                   <div className="quantity-control">
-                    <button onClick={decreaseUnits} className="quantity-btn" aria-label="Decrease quantity">
+                    <button 
+                      onClick={decreaseUnits} 
+                      className="quantity-btn" 
+                      aria-label="Decrease quantity"
+                    >
                       -
                     </button>
                     <input
@@ -471,7 +575,11 @@ const ProductPage = () => {
                       className="quantity-input"
                       aria-label="Current quantity"
                     />
-                    <button onClick={increaseUnits} className="quantity-btn" aria-label="Increase quantity">
+                    <button 
+                      onClick={increaseUnits} 
+                      className="quantity-btn" 
+                      aria-label="Increase quantity"
+                    >
                       +
                     </button>
                   </div>
@@ -481,7 +589,10 @@ const ProductPage = () => {
               {/* Action buttons */}
               <div className="action-buttons">
                 {addedToCart ? (
-                  <button className="add-to-cart-btn" onClick={() => navigate("/cart")}>
+                  <button 
+                    className="add-to-cart-btn" 
+                    onClick={() => navigate("/cart")}
+                  >
                     <ShoppingCart className="btn-icon" size={18} />
                     Go to Cart
                   </button>
@@ -547,13 +658,13 @@ const ProductPage = () => {
                 <div className="product-tabs">
                   <button
                     className={`tab-btn ${activeTab === "description" ? "active" : ""}`}
-                    onClick={() => setActiveTab("description")}
+                    onClick={() => handleTabClick("description")}
                   >
                     Description
                   </button>
                   <button
                     className={`tab-btn ${activeTab === "directions" ? "active" : ""}`}
-                    onClick={() => setActiveTab("directions")}
+                    onClick={() => handleTabClick("directions")}
                   >
                     Directions
                   </button>

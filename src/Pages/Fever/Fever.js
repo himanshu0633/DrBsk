@@ -58,6 +58,20 @@ const Fever = () => {
   const filterByPrescription = location.state?.filterByPrescription || false;
   const navigate = useNavigate();
 
+  // Facebook Pixel Tracking Functions - ONLY ViewContent
+  const trackViewContent = (contentData) => {
+    if (typeof window !== 'undefined' && window.fbq) {
+      window.fbq('track', 'ViewContent', {
+        content_name: contentData.name,
+        content_ids: [contentData.id],
+        content_type: contentData.type || 'product',
+        value: contentData.value || 0,
+        currency: contentData.currency || 'INR',
+        content_category: contentData.category,
+      });
+    }
+  };
+
   // HashRouter के लिए URL से subcategory निकालने का function
   const getSubcategoryFromHashURL = () => {
     const hash = window.location.hash;
@@ -102,10 +116,62 @@ const Fever = () => {
   const [mobileFiltersOpen, setMobileFiltersOpen] = useState(false);
   const [loading, setLoading] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
+  const [hasTrackedPageView, setHasTrackedPageView] = useState(false);
 
   const storedUser = localStorage.getItem("userData");
   const userData = storedUser ? JSON.parse(storedUser) : null;
   const isWholesaler = userData?.type === "wholesalePartner";
+
+  // Initialize Facebook Pixel - ONLY ViewContent
+  useEffect(() => {
+    // Track page content view
+    const pageContentData = {
+      id: decodedSubCategoryName ? `fever_${decodedSubCategoryName}` : 'fever_all_products',
+      name: decodedSubCategoryName ? `Fever - ${decodedSubCategoryName}` : 'All Products',
+      value: 0,
+      category: 'Products Listing',
+      type: 'page',
+    };
+    trackViewContent(pageContentData);
+    setHasTrackedPageView(true);
+
+    // Fetch initial data
+    fetchInitialData();
+
+    // Cleanup
+    return () => {
+      // Track page exit
+      trackViewContent({
+        id: 'page_exit_fever',
+        name: 'Exit Fever Products Page',
+        value: 0,
+        category: 'User Behavior',
+        type: 'exit',
+      });
+    };
+  }, []);
+
+  // Track when subcategory changes
+  useEffect(() => {
+    if (decodedSubCategoryName && hasTrackedPageView) {
+      trackViewContent({
+        id: `subcategory_${decodedSubCategoryName}`,
+        name: `${decodedSubCategoryName} Products`,
+        value: 0,
+        category: 'Product Category',
+        type: 'category',
+      });
+    }
+  }, [decodedSubCategoryName, hasTrackedPageView]);
+
+  const fetchInitialData = async () => {
+    if (decodedSubCategoryName && decodedSubCategoryName.trim() !== "") {
+      await fetchProductsBySubcategory(decodedSubCategoryName);
+    } else {
+      await fetchAllProducts();
+    }
+    await fetchSubcategories();
+  };
 
   // Fetch products by subcategory
   const fetchProductsBySubcategory = async (subcategoryName) => {
@@ -169,11 +235,32 @@ const Fever = () => {
         });
 
         setAllProducts(fetched);
+        
+        // Track successful products fetch
+        trackViewContent({
+          id: `products_fetch_${subcategoryName}`,
+          name: `Products Loaded: ${subcategoryName}`,
+          value: fetched.length,
+          category: 'Data Loading',
+          type: 'fetch_success',
+          count: fetched.length,
+        });
       } else {
         fetchAllProducts();
       }
     } catch (error) {
       toast.error("Failed to load products");
+      
+      // Track error
+      trackViewContent({
+        id: 'products_fetch_error',
+        name: 'Error Loading Products',
+        value: 0,
+        category: 'Error',
+        type: 'fetch_error',
+        error: error.message,
+      });
+      
       fetchAllProducts();
     }
     setLoading(false);
@@ -181,6 +268,7 @@ const Fever = () => {
 
   // Fetch all products
   const fetchAllProducts = async () => {
+    setLoading(true);
     try {
       const { data } = await axiosInstance.get(`/user/allproducts`);
 
@@ -235,9 +323,30 @@ const Fever = () => {
       });
 
       setAllProducts(fetched);
+      
+      // Track successful all products fetch
+      trackViewContent({
+        id: 'all_products_fetch',
+        name: 'All Products Loaded',
+        value: fetched.length,
+        category: 'Data Loading',
+        type: 'fetch_success',
+        count: fetched.length,
+      });
     } catch (error) {
       toast.error("Failed to load products");
+      
+      // Track error
+      trackViewContent({
+        id: 'all_products_fetch_error',
+        name: 'Error Loading All Products',
+        value: 0,
+        category: 'Error',
+        type: 'fetch_error',
+        error: error.message,
+      });
     }
+    setLoading(false);
   };
 
   // Fetch subcategories and match category
@@ -257,16 +366,25 @@ const Fever = () => {
     }
   };
 
-  // Fetch products when subcategory changes
+  // Track product views when products change - ONLY ViewContent
   useEffect(() => {
-    if (decodedSubCategoryName && decodedSubCategoryName.trim() !== "") {
-      fetchProductsBySubcategory(decodedSubCategoryName);
-    } else {
-      fetchAllProducts();
+    if (products.length > 0 && !loading) {
+      // Track first few products view
+      const productsToTrack = products.slice(0, 5);
+      productsToTrack.forEach((product, index) => {
+        setTimeout(() => {
+          trackViewContent({
+            id: product._id,
+            name: product.name,
+            value: product.price || 0,
+            currency: 'INR',
+            category: product.sub_category || 'Medicine',
+            type: 'product',
+          });
+        }, index * 500);
+      });
     }
-
-    fetchSubcategories();
-  }, [decodedSubCategoryName, categoryId]);
+  }, [products, loading]);
 
   // Filter + sort products
   useEffect(() => {
@@ -305,6 +423,18 @@ const Fever = () => {
 
     setProducts(filtered);
     setCurrentPage(1);
+    
+    // Track filter/sort changes
+    trackViewContent({
+      id: `filters_applied_${Date.now()}`,
+      name: 'Filters/Sort Applied',
+      value: filtered.length,
+      category: 'User Interaction',
+      type: 'filter_sort',
+      filters: filters,
+      sortOption: sortOption,
+      resultCount: filtered.length,
+    });
   }, [
     filters,
     sortOption,
@@ -388,30 +518,96 @@ const Fever = () => {
   };
 
   const handleGoToProductPage = (product) => {
+    // Track product click
+    trackViewContent({
+      id: product._id,
+      name: product.name,
+      value: product.price || 0,
+      currency: 'INR',
+      category: product.sub_category || 'Medicine',
+      type: 'product',
+      action: 'click_to_detail',
+    });
+    
     navigate(`/ProductPage/${product._id}`);
   };
 
   const handleFilterChange = (e) => {
     const { name, value } = e.target;
     setFilters((prev) => ({ ...prev, [name]: parseInt(value) }));
+    
+    // Track filter change
+    trackViewContent({
+      id: `filter_change_${name}`,
+      name: `Filter Changed: ${name}`,
+      value: parseInt(value),
+      category: 'User Interaction',
+      type: 'filter_change',
+      filterName: name,
+      filterValue: value,
+    });
   };
 
-  const handleSortChange = (e) => setSortOption(e.target.value);
+  const handleSortChange = (e) => {
+    const value = e.target.value;
+    setSortOption(value);
+    
+    // Track sort change
+    trackViewContent({
+      id: `sort_change_${value}`,
+      name: `Sort Changed: ${value}`,
+      value: 0,
+      category: 'User Interaction',
+      type: 'sort_change',
+      sortOption: value,
+    });
+  };
 
-  const resetFilters = () =>
+  const resetFilters = () => {
     setFilters({
       minPrice: 0,
       maxPrice: 5000,
       minDiscount: 0,
       maxDiscount: 5000,
     });
+    
+    // Track filter reset
+    trackViewContent({
+      id: 'filters_reset',
+      name: 'Filters Reset',
+      value: 0,
+      category: 'User Interaction',
+      type: 'filter_reset',
+    });
+  };
 
-  const toggleMobileFilters = () => setMobileFiltersOpen((prev) => !prev);
+  const toggleMobileFilters = () => {
+    setMobileFiltersOpen((prev) => !prev);
+    
+    // Track mobile filter toggle
+    trackViewContent({
+      id: `mobile_filters_${mobileFiltersOpen ? 'close' : 'open'}`,
+      name: `Mobile Filters ${mobileFiltersOpen ? 'Closed' : 'Opened'}`,
+      value: 0,
+      category: 'User Interaction',
+      type: 'mobile_filter_toggle',
+    });
+  };
 
   const goToPage = (page) => {
     const p = Math.min(Math.max(1, page), totalPages);
     setCurrentPage(p);
     window.scrollTo({ top: 0, behavior: "smooth" });
+    
+    // Track pagination
+    trackViewContent({
+      id: `pagination_page_${p}`,
+      name: `Go to Page ${p}`,
+      value: 0,
+      category: 'Navigation',
+      type: 'pagination',
+      page: p,
+    });
   };
 
   const Pagination = () => {
@@ -419,10 +615,18 @@ const Fever = () => {
 
     return (
       <div className="pagination-container">
-        <button className="page-btn" onClick={() => goToPage(1)} disabled={currentPage === 1}>
+        <button 
+          className="page-btn" 
+          onClick={() => goToPage(1)} 
+          disabled={currentPage === 1}
+        >
           « First
         </button>
-        <button className="page-btn" onClick={() => goToPage(currentPage - 1)} disabled={currentPage === 1}>
+        <button 
+          className="page-btn" 
+          onClick={() => goToPage(currentPage - 1)} 
+          disabled={currentPage === 1}
+        >
           ‹ Prev
         </button>
 
@@ -430,10 +634,18 @@ const Fever = () => {
           Page {currentPage} of {totalPages}
         </span>
 
-        <button className="page-btn" onClick={() => goToPage(currentPage + 1)} disabled={currentPage === totalPages}>
+        <button 
+          className="page-btn" 
+          onClick={() => goToPage(currentPage + 1)} 
+          disabled={currentPage === totalPages}
+        >
           Next ›
         </button>
-        <button className="page-btn" onClick={() => goToPage(totalPages)} disabled={currentPage === totalPages}>
+        <button 
+          className="page-btn" 
+          onClick={() => goToPage(totalPages)} 
+          disabled={currentPage === totalPages}
+        >
           Last »
         </button>
       </div>
@@ -452,13 +664,33 @@ const Fever = () => {
         </button>
 
         {loading ? (
-          <CustomLoader />
+          <div 
+            onClick={() => trackViewContent({
+              id: 'loading_state_fever',
+              name: 'Fever Page Loading',
+              value: 0,
+              category: 'Loading State',
+              type: 'technical',
+            })}
+          >
+            <CustomLoader />
+          </div>
         ) : (
           <div className="fever-content">
             <div className={`sidebar ${mobileFiltersOpen ? "mobile-open" : ""}`}>
               <div className="filter-card">
                 <div className="filter-header">
-                  <h3>Filters</h3>
+                  <h3 
+                    onClick={() => trackViewContent({
+                      id: 'filters_header_click',
+                      name: 'Filters Header',
+                      value: 0,
+                      category: 'Navigation',
+                      type: 'header',
+                    })}
+                  >
+                    Filters
+                  </h3>
                   <button className="reset-btn" onClick={resetFilters}>
                     Reset All
                   </button>
@@ -471,8 +703,24 @@ const Fever = () => {
                     <span>₹{filters.maxPrice}</span>
                   </div>
                   <div className="range-inputs">
-                    <input type="range" min="0" max="5000" step="100" name="minPrice" value={filters.minPrice} onChange={handleFilterChange} />
-                    <input type="range" min="0" max="5000" step="100" name="maxPrice" value={filters.maxPrice} onChange={handleFilterChange} />
+                    <input 
+                      type="range" 
+                      min="0" 
+                      max="5000" 
+                      step="100" 
+                      name="minPrice" 
+                      value={filters.minPrice} 
+                      onChange={handleFilterChange} 
+                    />
+                    <input 
+                      type="range" 
+                      min="0" 
+                      max="5000" 
+                      step="100" 
+                      name="maxPrice" 
+                      value={filters.maxPrice} 
+                      onChange={handleFilterChange} 
+                    />
                   </div>
                 </div>
 
@@ -483,8 +731,24 @@ const Fever = () => {
                     <span>₹{filters.maxDiscount}</span>
                   </div>
                   <div className="range-inputs">
-                    <input type="range" min="0" max="5000" step="100" name="minDiscount" value={filters.minDiscount} onChange={handleFilterChange} />
-                    <input type="range" min="0" max="5000" step="100" name="maxDiscount" value={filters.maxDiscount} onChange={handleFilterChange} />
+                    <input 
+                      type="range" 
+                      min="0" 
+                      max="5000" 
+                      step="100" 
+                      name="minDiscount" 
+                      value={filters.minDiscount} 
+                      onChange={handleFilterChange} 
+                    />
+                    <input 
+                      type="range" 
+                      min="0" 
+                      max="5000" 
+                      step="100" 
+                      name="maxDiscount" 
+                      value={filters.maxDiscount} 
+                      onChange={handleFilterChange} 
+                    />
                   </div>
                 </div>
               </div>
@@ -536,10 +800,14 @@ const Fever = () => {
                                       alt={product.name}
                                       className="table-product-image"
                                       loading="lazy"
+                                      onClick={() => handleGoToProductPage(product)}
                                     />
                                   </td>
                                   <td>
-                                    <span className="cursor-pointer product-name-link" onClick={() => handleGoToProductPage(product)}>
+                                    <span 
+                                      className="cursor-pointer product-name-link" 
+                                      onClick={() => handleGoToProductPage(product)}
+                                    >
                                       {product.name}
                                     </span>
                                   </td>
@@ -559,8 +827,7 @@ const Fever = () => {
                                       </div>
                                     ) : (
                                       <button
-                                      onClick={() => handleGoToProductPage(product)}
-                                        // onClick={(e) => { e.stopPropagation(); handleAddToCart(product); }}
+                                        onClick={() => handleGoToProductPage(product)}
                                         className="add-to-cart-btn"
                                       >
                                         🛒 Add to Cart
@@ -585,7 +852,19 @@ const Fever = () => {
                           const quantity = getQuantity(product._id);
 
                           return (
-                            <div key={product._id} className="product-card">
+                            <div 
+                              key={product._id} 
+                              className="product-card"
+                              onClick={() => trackViewContent({
+                                id: product._id,
+                                name: product.name,
+                                value: product.price || 0,
+                                currency: 'INR',
+                                category: product.sub_category || 'Medicine',
+                                type: 'product',
+                                action: 'card_click',
+                              })}
+                            >
                               <div className="product-card-link" onClick={() => handleGoToProductPage(product)}>
                                 {product.discount > 0 && (
                                   <div className="product-badge">
@@ -593,7 +872,18 @@ const Fever = () => {
                                   </div>
                                 )}
                                 <div className="product-image">
-                                  <img src={JoinUrl(API_URL, product.media[0]?.url)} alt={product.name} loading="lazy" />
+                                  <img 
+                                    src={JoinUrl(API_URL, product.media[0]?.url)} 
+                                    alt={product.name} 
+                                    loading="lazy" 
+                                    onLoad={() => trackViewContent({
+                                      id: `image_load_${product._id}`,
+                                      name: `Image Loaded: ${product.name}`,
+                                      value: 0,
+                                      category: 'Technical',
+                                      type: 'image_load',
+                                    })}
+                                  />
                                 </div>
                                 <div className="product-details">
                                   <h3 className="product-title">{product.name}</h3>
@@ -621,7 +911,6 @@ const Fever = () => {
                                   </div>
                                 ) : (
                                   <button
-                                    // onClick={(e) => { e.stopPropagation(); handleAddToCart(product); }}
                                     onClick={() => handleGoToProductPage(product)}
                                     className="add-to-cart-btn"
                                     disabled={product.stock === "no"}
@@ -638,7 +927,16 @@ const Fever = () => {
                     </>
                   )
                 ) : (
-                  <div className="no-products">
+                  <div 
+                    className="no-products"
+                    onClick={() => trackViewContent({
+                      id: 'no_products_found',
+                      name: 'No Products Found',
+                      value: 0,
+                      category: 'User Experience',
+                      type: 'empty_state',
+                    })}
+                  >
                     <h3>No products found for "{decodedSubCategoryName || "this category"}"</h3>
                     <p>Try adjusting your filters or browse other categories</p>
                     <button onClick={resetFilters} className="reset-filters-btn">

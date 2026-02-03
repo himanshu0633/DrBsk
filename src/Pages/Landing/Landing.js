@@ -12,10 +12,34 @@ import Head from '../Head/Head';
 import { Link } from 'react-router-dom';
 
 const Landing = () => {
-  const [mobileMenuActive, setMobileMenuActive] = useState(false);
   const [currentTimelineIndex, setCurrentTimelineIndex] = useState(0);
 
+  // Facebook Pixel Initialization
   useEffect(() => {
+    // Facebook Pixel Script - fixed syntax
+    (function(f, b, e, v, n, t, s) {
+      if (f.fbq) return;
+      n = f.fbq = function() {
+        n.callMethod ?
+          n.callMethod.apply(n, arguments) : n.queue.push(arguments);
+      };
+      if (!f._fbq) f._fbq = n;
+      n.push = n;
+      n.loaded = true;
+      n.version = '2.0';
+      n.queue = [];
+      t = b.createElement(e);
+      t.async = true;
+      t.src = v;
+      s = b.getElementsByTagName(e)[0];
+      s.parentNode.insertBefore(t, s);
+    })(window, document, 'script', 'https://connect.facebook.net/en_US/fbevents.js');
+
+    // Initialize Facebook Pixel using window object
+    window.fbq('init', '1131280045595284');
+    window.fbq('track', 'PageView');
+
+    // Animate on scroll
     const animateOnScroll = () => {
       const elements = document.querySelectorAll(
         '.feature-card, .certification-item, .about-image, .about-content, .stat-item'
@@ -41,7 +65,7 @@ const Landing = () => {
   useEffect(() => {
     const timelineInterval = setInterval(() => {
       setCurrentTimelineIndex(prev => (prev + 1) % 7);
-    }, 3000);
+    }, 4000);
     return () => clearInterval(timelineInterval);
   }, []);
 
@@ -91,29 +115,53 @@ const Landing = () => {
           <p className="description animate__animated animate__fadeInUp">
             <strong>India's largest</strong> private generic pharmacy retail chain offering high-quality medicines at affordable prices.
           </p>
-          <Link to='/homePage' className="cta-button animate__animated animate__fadeInUp">
+          <Link 
+            to='/homePage' 
+            className="cta-button animate__animated animate__fadeInUp"
+          >
             Shop Now
           </Link>
           <p className="tc animate__animated animate__fadeInUp">* Terms and conditions apply</p>
           <div className="social-icons">
-            <div className="social-icons">
-              <a href="https://www.facebook.com/people/Dr-BSKs/61576600531948/" target='blank' aria-label="Facebook">
-                <img src="https://cdn-icons-png.flaticon.com/512/2111/2111392.png" alt="Facebook" />
-              </a>
-              <a href="https://www.instagram.com/drbsk_humanhealth?utm_source=ig_web_button_share_sheet&igsh=ZDNlZDc0MzIxNw==" target='blank' aria-label="Instagram">
-                <img src="https://cdn-icons-png.flaticon.com/512/2111/2111463.png" alt="Instagram" />
-              </a>
-              <a href="https://www.youtube.com/@Dr.BSKsURUMEED-w4o" target='blank' aria-label="YouTube">
-                <img src="https://cdn-icons-png.flaticon.com/512/1384/1384060.png" alt="YouTube" />
-              </a>
-              <a href="https://www.linkedin.com/company/dr-bsk-s/" target='blank' aria-label="LinkedIn">
-                <img src="https://cdn-icons-png.flaticon.com/512/3536/3536505.png" alt="LinkedIn" />
-              </a>
-            </div>
+            <a 
+              href="https://www.facebook.com/people/Dr-BSKs/61576600531948/" 
+              target='_blank' 
+              rel="noopener noreferrer"
+              aria-label="Facebook"
+            >
+              <img src="https://cdn-icons-png.flaticon.com/512/2111/2111392.png" alt="Facebook" />
+            </a>
+            <a 
+              href="https://www.instagram.com/drbsk_humanhealth?utm_source=ig_web_button_share_sheet&igsh=ZDNlZDc0MzIxNw==" 
+              target='_blank' 
+              rel="noopener noreferrer"
+              aria-label="Instagram"
+            >
+              <img src="https://cdn-icons-png.flaticon.com/512/2111/2111463.png" alt="Instagram" />
+            </a>
+            <a 
+              href="https://www.youtube.com/@Dr.BSKsURUMEED-w4o" 
+              target='_blank' 
+              rel="noopener noreferrer"
+              aria-label="YouTube"
+            >
+              <img src="https://cdn-icons-png.flaticon.com/512/1384/1384060.png" alt="YouTube" />
+            </a>
+            <a 
+              href="https://www.linkedin.com/company/dr-bsk-s/" 
+              target='_blank' 
+              rel="noopener noreferrer"
+              aria-label="LinkedIn"
+            >
+              <img src="https://cdn-icons-png.flaticon.com/512/3536/3536505.png" alt="LinkedIn" />
+            </a>
           </div>
         </div>
         <div className="banner-image animate__animated animate__fadeInRight">
-          <img src='https://www.ukgermanpharmaceuticals.com/uploaded-files/gallery/photos/thumbs/APJ-Abdul-Kalam-Inspiration-Award-20244-thumbs-800X600.jpg' alt="Brand Ambassador" />
+          <img 
+            src='https://www.ukgermanpharmaceuticals.com/uploaded-files/gallery/photos/thumbs/APJ-Abdul-Kalam-Inspiration-Award-20244-thumbs-800X600.jpg' 
+            alt="Brand Ambassador" 
+          />
         </div>
       </section>
 
@@ -148,20 +196,43 @@ const Landing = () => {
       <section className="certification-section">
         <h2 className="section-title animate__animated animate__fadeInUp">Our Certifications</h2>
         <div className="certification-container">
-          <div className="certification-item cursor-pointer"><img src={nablLogo} alt="NABL Certified" /><h3>NABL Certified</h3><p>Reliable testing and calibration services.</p></div>
-          <div className="certification-item cursor-pointer"><img src={whoLogo} alt="WHO GMP" /><h3>WHO GMP</h3><p>World Health Organization Good Manufacturing Practices.</p></div>
-          <div className="certification-item cursor-pointer"><img src={fdaLogo} alt="FDA Approved" /><h3>FDA Approved</h3><p>Certified by the Food and Drug Administration.</p></div>
+          <div className="certification-item cursor-pointer">
+            <img src={nablLogo} alt="NABL Certified" />
+            <h3>NABL Certified</h3>
+            <p>Reliable testing and calibration services.</p>
+          </div>
+          <div className="certification-item cursor-pointer">
+            <img src={whoLogo} alt="WHO GMP" />
+            <h3>WHO GMP</h3>
+            <p>World Health Organization Good Manufacturing Practices.</p>
+          </div>
+          <div className="certification-item cursor-pointer">
+            <img src={fdaLogo} alt="FDA Approved" />
+            <h3>FDA Approved</h3>
+            <p>Certified by the Food and Drug Administration.</p>
+          </div>
         </div>
       </section>
 
       {/* About Section */}
       <section className="about-section">
         <div className="about-container">
-          <div className="about-image animated"><img className='objectfitImg' src='https://www.ukgermanpharmaceuticals.com/uploaded-files/banner-image/Result-Oriented-Diabetic-Medicines-Brand-In-India09.jpg' alt="BSK Pharma Store" /></div>
+          <div className="about-image animated">
+            <img 
+              className='objectfitImg' 
+              src='https://www.ukgermanpharmaceuticals.com/uploaded-files/banner-image/Result-Oriented-Diabetic-Medicines-Brand-In-India09.jpg' 
+              alt="BSK Pharma Store" 
+            />
+          </div>
           <div className="about-content animated">
             <h2>About Us</h2>
             <p>UK German Pharmaceuticals – Established in 1991, we are one of India's most trusted animal healthcare companies...</p>
-            <Link to='/aboutus' className='about-btn'>Learn More</Link>
+            <Link 
+              to='/aboutus' 
+              className='about-btn'
+            >
+              Learn More
+            </Link>
           </div>
         </div>
       </section>
@@ -188,12 +259,24 @@ const Landing = () => {
       {/* Timeline Section */}
       <div className="timeline-container">
         <div className="timeline-labels">
-          {timelineData.map((item, index) => <span key={index}>{item.year}</span>)}
+          {timelineData.map((item, index) => (
+            <span 
+              key={index}
+              onClick={() => setCurrentTimelineIndex(index)}
+            >
+              {item.year}
+            </span>
+          ))}
         </div>
         <div className="timeline-bar">
           <div className="timeline-progress" style={{ width: `${(currentTimelineIndex / (timelineData.length - 1)) * 100}%` }}></div>
           {timelineData.map((item, index) => (
-            <div key={index} className={`timeline-point ${currentTimelineIndex === index ? 'active' : ''}`} style={{ left: `${(index / (timelineData.length - 1)) * 100}%` }}></div>
+            <div 
+              key={index} 
+              className={`timeline-point ${currentTimelineIndex === index ? 'active' : ''}`} 
+              style={{ left: `${(index / (timelineData.length - 1)) * 100}%` }}
+              onClick={() => setCurrentTimelineIndex(index)}
+            ></div>
           ))}
         </div>
         <div className="timeline-description">
@@ -203,6 +286,17 @@ const Landing = () => {
       </div>
 
       <Footer />
+      
+      {/* Facebook Pixel NoScript fallback */}
+      <noscript>
+        <img 
+          height="1" 
+          width="1" 
+          style={{ display: 'none' }}
+          src="https://www.facebook.com/tr?id=1131280045595284&ev=PageView&noscript=1"
+          alt="Facebook Pixel"
+        />
+      </noscript>
     </div>
   );
 };

@@ -30,7 +30,7 @@ import JoinUrl from '../../../JoinUrl';
 
 const PharmaPrescription = () => {
     const [prescriptions, setPrescriptions] = useState([]);
-    const [users, setUsers] = useState({});
+    
     const [loading, setLoading] = useState(true);
     const [selectedImage, setSelectedImage] = useState(null);
 
@@ -47,18 +47,37 @@ const PharmaPrescription = () => {
             const data = response.data;
             setPrescriptions(data);
 
-            const userIds = [...new Set(data.map(item => item.userId))];
-            const userRes = await Promise.all(
-                userIds.map(id => axiosInstance.get(`/admin/readAdmin/${id}`))
-            );
 
-            const userMap = {};
-            userRes.forEach((res, index) => {
-                const userId = userIds[index];
-                userMap[userId] = res.data?.data || res.data;
-            });
+           
+            // const userIds = [...new Set(data.map(item => item.userId))];
+            // const userRes = await Promise.all(
+            //     userIds.map(id => axiosInstance.get(`/admin/readAdmin/${id}`))
+            // );
+            // const userMap = {};
+            // userRes.forEach((res, index) => {
+            //     const userId = userIds[index];
+            //     userMap[userId] = res.data?.data || res.data;
+            // });
 
-            setUsers(userMap);
+            // setUsers(userMap);
+
+            const fetchData = async () => {
+                try {
+                    const response = await axiosInstance.get('/user/allPrescriptions');
+                    setPrescriptions(response.data);
+                } catch (error) {
+                    console.error("Fetch error:", error);
+                } finally {
+                    setLoading(false);
+                }
+                };
+
+
+
+
+
+
+
         } catch (error) {
             console.error("Fetch error:", error);
         } finally {
@@ -71,8 +90,9 @@ const PharmaPrescription = () => {
     }, []);
 
     const handleImageClick = (imagePath) => {
-        setSelectedImage(`${API_URL}/${imagePath.replace(/\\/g, '/')}`);
-    };
+  setSelectedImage(JoinUrl(API_URL, imagePath.replace(/\\/g, '/')));
+};
+
 
     const handleCloseModal = () => {
         setSelectedImage(null);
@@ -139,29 +159,27 @@ const PharmaPrescription = () => {
                                 </TableRow>
                             </TableHead>
                             <TableBody>
-                                {currentPrescriptions.map((item, i) => {
-                                    const user = users[item.userId];
+                                {currentPrescriptions.map((item) => {
+                                    const user = item.userId;
+
                                     return (
-                                        <TableRow key={i}>
-                                            <TableCell>
-                                                <Box sx={{ display: 'flex', alignItems: 'center' }}>
-                                                    <Tooltip title={user?.name || ''}>
-                                                        <Avatar
-                                                            alt={user?.name}
-                                                            src={`https://api.dicebear.com/6.x/initials/svg?seed=${user?.name || 'U'}`}
-                                                            sx={{ mr: 2 }}
-                                                        />
-                                                    </Tooltip>
-                                                    {user?.name || 'Loading...'}
-                                                </Box>
-                                            </TableCell>
-                                            <TableCell>{user?.email || ''}</TableCell>
+                                        <TableRow key={item._id}>
+                                        <TableCell>
+                                            <Box sx={{ display: 'flex', alignItems: 'center' }}>
+                                            <Avatar sx={{ mr: 2 }}>
+                                                {user?.name?.[0] || 'U'}
+                                            </Avatar>
+                                            {user?.name || 'Unknown User'}
+                                            </Box>
+                                        </TableCell>
+
+                                        <TableCell>{user?.email || '-'}</TableCell>
+
                                             <TableCell>
                                                 <img
-                                                    // src={`${API_URL}/${item.image?.replace(/\\/g, '/')}`}
                                                     src={JoinUrl(API_URL, item.image?.replace(/\\/g, '/'))}
-                                                    alt={`Prescription ${i + 1}`}
-                                                    onClick={() => handleImageClick(item.image)}
+                                                    alt="Prescription"
+                                                    onClick={() => handleImageClick(item.image)} // ✅ yahan se pass
                                                     style={{
                                                         width: '150px',
                                                         height: '100px',
@@ -170,6 +188,7 @@ const PharmaPrescription = () => {
                                                         border: '1px solid #ccc',
                                                     }}
                                                 />
+
                                             </TableCell>
                                             <TableCell>
                                                 <IconButton

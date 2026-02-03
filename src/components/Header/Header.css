@@ -735,7 +735,6 @@
 /* Scrollable Content Area - FIXED */
 .mobile-menu-scrollable {
   flex: 1;
-  overflow-y: auto;
   padding-bottom: 0;
   -webkit-overflow-scrolling: touch;
 }
@@ -1049,7 +1048,6 @@
 /* Make scrollable area not go behind footer */
 .mobile-menu-scrollable {
   flex: 1;
-  overflow-y: auto;
   padding-bottom: 10px;
   -webkit-overflow-scrolling: touch;
 }

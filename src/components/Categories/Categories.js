@@ -7,31 +7,20 @@ import { useNavigate } from 'react-router-dom';
 import Slider from "react-slick";
 import JoinUrl from '../../JoinUrl';
 
-const Categories = () => {
+const Categories = ({ onCategoryClick }) => {
   const [categoryName, setCategoryName] = useState([]);
   const [loading, setLoading] = useState(true);
   const [windowWidth, setWindowWidth] = useState(window.innerWidth);
   const navigate = useNavigate();
 
-  useEffect(() => {
-    fetchSubCategories();
-    
-    // Handle window resize
-    const handleResize = () => {
-      setWindowWidth(window.innerWidth);
-    };
-    
-    window.addEventListener('resize', handleResize);
-    return () => window.removeEventListener('resize', handleResize);
-  }, []);
-
+  // Fetch categories
   const fetchSubCategories = async () => {
     try {
       const response = await axiosInstance.get(`/user/allSubcategories`);
-      const veterinaryCategories = response?.data?.filter(
-  (item) => item.subCategoryvariety === 'Human'
-);
-      setCategoryName(veterinaryCategories);
+      const humanCategories = response?.data?.filter(
+        (item) => item.subCategoryvariety === 'Human'
+      );
+      setCategoryName(humanCategories);
     } catch (error) {
       console.error("Error fetching subcategories:", error);
     } finally {
@@ -39,73 +28,70 @@ const Categories = () => {
     }
   };
 
+  // Handle resize + initial load
+  useEffect(() => {
+    fetchSubCategories();
+
+    const handleResize = () => {
+      setWindowWidth(window.innerWidth);
+    };
+
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
+
   const getSlidesToShow = () => {
-    if (windowWidth >= 1200) return 5; // Desktop: 5 categories
-    if (windowWidth >= 768) return 4;  // Tablet: 4 categories
-    return 2; // Mobile: 2 categories
+    if (windowWidth >= 1200) return 5;
+    if (windowWidth >= 768) return 4;
+    return 2;
+  };
+
+  const handleCategoryClick = (category) => {
+    if (onCategoryClick) {
+      onCategoryClick(category.name);
+    }
+    navigate(`/fever/${category.name}`);
+  };
+
+  const handleImageError = (e) => {
+    e.target.onerror = null;
+    e.target.src = 'https://via.placeholder.com/150x120?text=Category';
   };
 
   const settings = {
     dots: false,
     infinite: categoryName.length > getSlidesToShow(),
     speed: 500,
-    arrows: windowWidth > 768, // Show arrows only on tablet and desktop
-    initialSlide: 0,
-    autoplay: false,
-    autoplaySpeed: 3000,
-    pauseOnHover: true,
+    arrows: windowWidth > 768,
     slidesToShow: Math.min(categoryName.length, getSlidesToShow()),
     slidesToScroll: 1,
+    autoplay: false,
     centerMode: windowWidth < 768,
     centerPadding: windowWidth < 768 ? '20px' : '0',
     responsive: [
       {
         breakpoint: 1200,
         settings: {
-          slidesToShow: Math.min(categoryName.length, 5), // Desktop: 5
-          slidesToScroll: 1,
-          infinite: categoryName.length > 5
-        }
+          slidesToShow: Math.min(categoryName.length, 5),
+          infinite: categoryName.length > 5,
+        },
       },
       {
         breakpoint: 992,
         settings: {
-          slidesToShow: Math.min(categoryName.length, 4), // Tablet: 4
-          slidesToScroll: 1,
-          infinite: categoryName.length > 4
-        }
-      },
-      {
-        breakpoint: 768,
-        settings: {
-          slidesToShow: Math.min(categoryName.length, 4), // Tablet: 4
-          slidesToScroll: 1,
+          slidesToShow: Math.min(categoryName.length, 4),
           infinite: categoryName.length > 4,
-          arrows: true
-        }
+        },
       },
       {
         breakpoint: 600,
         settings: {
-          slidesToShow: 2, // Mobile: 2 categories
-          slidesToScroll: 1,
-          infinite: categoryName.length > 2,
-          arrows: false,
-          centerMode: false
-        }
-      },
-      {
-        breakpoint: 480,
-        settings: {
           slidesToShow: 2,
-          slidesToScroll: 1,
-          infinite: categoryName.length > 2,
           arrows: false,
-          centerMode: true,
-          centerPadding: '30px'
-        }
-      }
-    ]
+          infinite: categoryName.length > 2,
+        },
+      },
+    ],
   };
 
   if (categoryName.length === 0 && !loading) return null;
@@ -119,27 +105,30 @@ const Categories = () => {
       ) : (
         <div className="categories-container">
           <div className="categories-section">
-            <h2 className="section-title">Popular Human Subcategories</h2>
+            <h2 className="section-title">
+              Popular Human Subcategories
+            </h2>
+
             <div className="categories-slider-wrapper">
               <Slider {...settings} className="categories-slider">
                 {categoryName.map((item, index) => (
-                  <div key={item._id || index} className="category-slide">
-                    <div 
-                      className="category-item"
-                      onClick={() => navigate(`/fever/${item.name}`)}
-                    >
+                  <div
+                    key={item._id || index}
+                    className="category-slide"
+                    onClick={() => handleCategoryClick(item)}
+                  >
+                    <div className="category-item">
                       <div className="category-image-wrapper">
                         <img
                           src={JoinUrl(API_URL, item.image)}
-                          alt={item.name} 
+                          alt={item.name}
                           className="category-img"
-                          onError={(e) => {
-                            e.target.onerror = null;
-                            e.target.src = 'https://via.placeholder.com/150x120?text=Category';
-                          }}
+                          onError={handleImageError}
                         />
                       </div>
-                      <div className="category-name">{item.name}</div>
+                      <div className="category-name">
+                        {item.name}
+                      </div>
                     </div>
                   </div>
                 ))}
