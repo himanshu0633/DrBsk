@@ -132,6 +132,18 @@ const Header = () => {
     navigate('/login');
   };
 
+  useEffect(() => {
+    if (menuOpen) {
+      document.body.style.overflow = 'hidden';
+    } else {
+      document.body.style.overflow = 'auto';
+    }
+    
+    return () => {
+      document.body.style.overflow = 'auto';
+    };
+  }, [menuOpen]);
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (!pincode || pincode.length !== 6) {
@@ -194,9 +206,17 @@ const Header = () => {
         <div className="desktop-header">
           <div className="desktop-top-section">
             <div className="desktop-left">
-              <a href="/" className="desktop-logo">
-                <img src={logo} alt="Logo" />
-              </a>
+          <a 
+  href="/" 
+  className="desktop-logo"
+  onClick={(e) => {
+    e.preventDefault();
+    navigate('/');
+    window.scrollTo(0, 0); // Optional: page top पर scroll
+  }}
+>
+  <img src={logo} alt="Logo" />
+</a>
               
               <div className="location-container">
                 <div className="location-box" onClick={() => setShowInput(true)}>
@@ -366,9 +386,16 @@ const Header = () => {
               <button onClick={toggleMenu} className="mobile-menu-btn">
                 <Menu size={28} />
               </button>
-              <a href="/" className="mobile-logo">
-                <img src={logo} alt="Logo" />
-              </a>
+             <a 
+  href="/" 
+  className="mobile-logo"
+  onClick={(e) => {
+   
+    if (menuOpen) setMenuOpen(false); // Mobile menu close करें
+  }}
+>
+  <img src={logo} alt="Logo" />
+</a>
             </div>
             
             <div className="mobile-right-section">
@@ -428,149 +455,136 @@ const Header = () => {
             </div>
           )}
           
-          {menuOpen && (
-            <div className="mobile-menu-overlay">
-              <div className="mobile-menu-content">
-                <div className="mobile-menu-header">
-                  <h3>Menu</h3>
-                  <button onClick={toggleMenu} className="close-menu-btn">
-                    <X size={24}  />
-                  </button>
-                </div>
-                
-                <div className="mobile-profile-section">
-                  {userData ? (
-                    <div className="mobile-user-info">
-                      <div className="mobile-user-avatar">
-                        <User size={24} />
-                      </div>
-                      <div className="mobile-user-details">
-                        <div className="mobile-user-name">{userData.name || 'User'}</div>
-                        <div className="mobile-user-email">{userData.email}</div>
-                      </div>
-                    </div>
-                  ) : (
-                    <button 
-                      className="mobile-login-btn"
-                      onClick={() => { navigate('/login'); setMenuOpen(false); }}
-                    >
-                      <User size={20} />
-                      <span>Sign In / Register</span>
-                    </button>
-                  )}
-                </div>
-                
-                {userData?.type !== "wholesalePartner" && (
-                  <button 
-                    className="mobile-upload-prescription-btn"
-                    onClick={() => { navigate('/Prescription'); setMenuOpen(false); }}
-                  >
-                    <Upload size={20} />
-                    <span>Upload Prescription</span>
-                  </button>
-                )}
-                
-                {/* FIXED MOBILE CATEGORIES SECTION */}
-                <div className="mobile-categories-section">
-                  <h4 className="mobile-categories-title">Categories</h4>
-                  <div className="mobile-categories-list">
-                    {categoryName?.slice(0, 4).map((category) => (
-                      <div className="mobile-category-item" key={category._id}>
-                        <div 
-                          className="mobile-category-header"
-                          onClick={() => toggleMobileCategory(category._id)}
-                        >
-                          <span className="mobile-category-name">{category.name}</span>
-                          <ChevronRight 
-                            size={18} 
-                            className={`mobile-category-arrow ${
-                              openCategoryId === category._id ? 'open' : ''
-                            }`}
-                          />
-                        </div>
-                        
-                        {openCategoryId === category._id && (
-                          <div className="mobile-subcategories-list">
-                            {subcategoryName
-                              .filter(sub => sub.category_id?._id === category._id)
-                              .map(sub => (
-                                <button
-                                  key={sub._id}
-                                  onClick={() => handleMobileSubcategoryClick(sub.name, category._id)}
-                                  className="mobile-subcategory-item"
-                                >
-                                  {sub.name}
-                                </button>
-                              ))}
-                          </div>
-                        )}
-                      </div>
-                    ))}
-                  </div>
-                </div>
-                
-                {userData && (
-                  <div className="mobile-user-links">
-                    <button onClick={() => { navigate('/EditProfile'); setMenuOpen(false); }}>
-                      <User size={18} />
-                      <span>My Profile</span>
-                    </button>
-                    <button onClick={() => { navigate('/OrderPage'); setMenuOpen(false); }}>
-                      <span>📦</span>
-                      <span>My Orders</span>
-                    </button>
-                    <button onClick={handleLogout} className="mobile-logout-btn">
-                      <span>🚪</span>
-                      <span>Logout</span>
-                    </button>
-                  </div>
-                )}
-                
-                <div className="mobile-contact-info">
-                  <a href="tel:+919115513759" className="mobile-contact-link">
-                    <Phone size={18} />
-                    <span>+91-911-551-3759</span>
-                  </a>
-                  <a href="mailto:ukgermanpharmaceutical@gmail.com" className="mobile-contact-link">
-                    <Mail size={18} />
-                    <span>ukgermanpharmaceutical@gmail.com</span>
-                  </a>
-                  <button 
-                    className="mobile-app-btn"
-                    onClick={() => { navigate('/phone'); setMenuOpen(false); }}
-                  >
-                    <Smartphone size={18} />
-                    <span>Get the App</span>
-                  </button>
-                </div>
+
+{menuOpen && (
+  <>
+    <div className="mobile-menu-overlay" onClick={toggleMenu} />
+    <div className="mobile-menu-content">
+      <div className="mobile-menu-header">
+        <h3>Menu</h3>
+        <button onClick={toggleMenu} className="close-menu-btn">
+          <X size={24} />
+        </button>
+      </div>
+      
+      {/* Scrollable Content - LIMITED HEIGHT */}
+      <div className="mobile-menu-scrollable">
+        <div className="mobile-profile-section">
+          {userData ? (
+            <div className="mobile-user-info">
+              <div className="mobile-user-avatar">
+                <User size={24} />
+              </div>
+              <div className="mobile-user-details">
+                <div className="mobile-user-name">{userData.name || 'User'}</div>
+                <div className="mobile-user-email">{userData.email}</div>
               </div>
             </div>
-          )}
-          
-          <div className="mobile-bottom-bar">
-            <div 
-              className="mobile-location-box"
-              onClick={() => setShowInput(true)}
+          ) : (
+            <button 
+              className="mobile-login-btn"
+              onClick={() => { navigate('/login'); setMenuOpen(false); }}
             >
-              <MapPin size={16} />
-              <div className="mobile-location-info">
-                <span className="mobile-pincode">{currentPincode || "Set location"}</span>
-                <span className="mobile-location-name">{locationName || "Tap to set pincode"}</span>
+              <User size={20} />
+              <span>Sign In / Register</span>
+            </button>
+          )}
+        </div>
+        
+        {userData?.type !== "wholesalePartner" && (
+          <button 
+            className="mobile-upload-prescription-btn"
+            onClick={() => { navigate('/Prescription'); setMenuOpen(false); }}
+          >
+            <Upload size={20} />
+            <span>Upload Prescription</span>
+          </button>
+        )}
+        
+        <div className="mobile-categories-section">
+          <h4 className="mobile-categories-title">Categories</h4>
+          <div className="mobile-categories-list">
+            {categoryName?.slice(0, 4).map((category) => (
+              <div className="mobile-category-item" key={category._id}>
+                <div 
+                  className="mobile-category-header"
+                  onClick={() => toggleMobileCategory(category._id)}
+                >
+                  <span className="mobile-category-name">{category.name}</span>
+                  <ChevronRight 
+                    size={18} 
+                    className={`mobile-category-arrow ${
+                      openCategoryId === category._id ? 'open' : ''
+                    }`}
+                  />
+                </div>
+                
+                {openCategoryId === category._id && (
+                  <div className="mobile-subcategories-list">
+                    {subcategoryName
+                      .filter(sub => sub.category_id?._id === category._id)
+                      .map(sub => (
+                        <button
+                          key={sub._id}
+                          onClick={() => handleMobileSubcategoryClick(sub.name, category._id)}
+                          className="mobile-subcategory-item"
+                        >
+                          {sub.name}
+                        </button>
+                      ))}
+                  </div>
+                )}
               </div>
-            </div>
-            
-            <div className="mobile-quick-actions">
-              <a href="tel:+919115513759" className="mobile-quick-btn">
-                <Phone size={18} />
-              </a>
-              <button 
-                className="mobile-quick-btn"
-                onClick={() => navigate('/phone')}
-              >
-                <Smartphone size={18} />
-              </button>
-            </div>
+            ))}
           </div>
+        </div>
+        
+        {userData && (
+          <div className="mobile-user-links">
+            <button onClick={() => { navigate('/EditProfile'); setMenuOpen(false); }}>
+              <User size={18} />
+              <span>My Profile</span>
+            </button>
+            <button onClick={() => { navigate('/OrderPage'); setMenuOpen(false); }}>
+              <span>📦</span>
+              <span>My Orders</span>
+            </button>
+            <button onClick={handleLogout} className="mobile-logout-btn">
+              <span>🚪</span>
+              <span>Logout</span>
+            </button>
+          </div>
+        )}
+      </div>
+      
+      {/* FIXED FOOTER - ALWAYS VISIBLE */}
+      <div className="mobile-menu-footer">
+        <div className="mobile-contact-section">
+          <div className="mobile-contact-info">
+            <a href="tel:+919115513759" className="mobile-contact-link">
+              <Phone size={18} />
+              <span>+91-911-551-3759</span>
+            </a>
+            <a href="mailto:ukgermanpharmaceutical@gmail.com" className="mobile-contact-link">
+              <Mail size={18} />
+              <span>ukgermanpharmaceutical@gmail.com</span>
+            </a>
+          </div>
+        </div>
+        
+        <div className="mobile-app-section">
+          <button 
+            className="mobile-app-btn"
+            onClick={() => { navigate('/phone'); setMenuOpen(false); }}
+          >
+            <Smartphone size={20} />
+            <span>Get the App</span>
+          </button>
+        </div>
+      </div>
+    </div>
+  </>
+)}
           
           {showInput && (
             <div className="mobile-location-modal">

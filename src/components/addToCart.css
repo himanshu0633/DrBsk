@@ -490,7 +490,9 @@
   .cart-items-section,
   .summary-card {
     padding: 20px;
+    margin-bottom: 80px;
   }
+  
 
   .cart-item {
     flex-direction: column;

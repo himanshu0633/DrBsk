@@ -636,6 +636,7 @@ body {
   .davaindia-form-card {
     max-width: 440px;
     padding: 3rem;
+    margin-bottom: 75px !important;
   }
 
   .davaindia-form-title {
@@ -688,6 +689,7 @@ body {
   .davaindia-form-card {
     background: #1a202c;
     border-color: #2d3748;
+    margin-bottom: 75px;
   }
   
   .davaindia-form-title,

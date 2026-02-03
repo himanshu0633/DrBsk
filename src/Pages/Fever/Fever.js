@@ -58,7 +58,7 @@ const Fever = () => {
   const filterByPrescription = location.state?.filterByPrescription || false;
   const navigate = useNavigate();
 
-  // Facebook Pixel Tracking Functions
+  // Facebook Pixel Tracking Functions - ONLY ViewContent
   const trackViewContent = (contentData) => {
     if (typeof window !== 'undefined' && window.fbq) {
       window.fbq('track', 'ViewContent', {
@@ -70,104 +70,6 @@ const Fever = () => {
         content_category: contentData.category,
       });
     }
-
-    // Server-side event send
-    sendServerEvent('ViewContent', contentData);
-  };
-
-  const trackPageView = () => {
-    if (typeof window !== 'undefined' && window.fbq) {
-      window.fbq('track', 'PageView');
-    }
-    
-    // Server-side event send
-    sendServerEvent('PageView', {
-      id: 'fever_page_view',
-      name: 'Fever Products Page',
-      value: 0,
-      category: 'Products Page',
-      type: 'page',
-    });
-  };
-
-  const trackAddToCart = (productData) => {
-    if (typeof window !== 'undefined' && window.fbq) {
-      window.fbq('track', 'AddToCart', {
-        content_ids: [productData.id],
-        content_name: productData.name,
-        content_type: 'product',
-        value: productData.value || productData.price || 0,
-        currency: 'INR',
-        num_items: productData.quantity || 1,
-      });
-    }
-    sendServerEvent('AddToCart', productData);
-  };
-
-  const trackInitiateCheckout = () => {
-    if (typeof window !== 'undefined' && window.fbq) {
-      window.fbq('track', 'InitiateCheckout');
-    }
-    
-    sendServerEvent('InitiateCheckout', {
-      id: 'initiate_checkout_fever',
-      name: 'Initiate Checkout from Fever Page',
-      value: 0,
-      category: 'Checkout',
-      type: 'checkout',
-    });
-  };
-
-  const trackPurchase = (purchaseData) => {
-    if (typeof window !== 'undefined' && window.fbq) {
-      window.fbq('track', 'Purchase', {
-        value: purchaseData.value || 0,
-        currency: 'INR',
-        content_ids: purchaseData.contentIds || [],
-        content_type: 'product',
-        num_items: purchaseData.numItems || 1,
-        order_id: purchaseData.orderId,
-      });
-    }
-    sendServerEvent('Purchase', purchaseData);
-  };
-
-  // Server-side event function
-  const sendServerEvent = async (eventName, data) => {
-    try {
-      const eventData = {
-        eventName,
-        data: {
-          ...data,
-          eventSourceUrl: window.location.href,
-          actionSource: 'website',
-          eventTime: Math.floor(Date.now() / 1000),
-        },
-        fbp: getCookie('_fbp'),
-        fbc: getCookie('_fbc'),
-        clientUserAgent: navigator.userAgent,
-      };
-
-      // Send to your backend API
-      await fetch(`${API_URL}api/facebook-events`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(eventData),
-      });
-    } catch (error) {
-      console.error('Error sending server event:', error);
-    }
-  };
-
-  // Helper function to get cookies
-  const getCookie = (name) => {
-    if (typeof document === 'undefined') return null;
-    const value = `; ${document.cookie}`;
-    const parts = value.split(`; ${name}=`);
-    if (parts.length === 2) return parts.pop().split(';').shift();
-    return null;
   };
 
   // HashRouter के लिए URL से subcategory निकालने का function
@@ -220,12 +122,8 @@ const Fever = () => {
   const userData = storedUser ? JSON.parse(storedUser) : null;
   const isWholesaler = userData?.type === "wholesalePartner";
 
-  // Initialize Facebook Pixel
+  // Initialize Facebook Pixel - ONLY ViewContent
   useEffect(() => {
-    // Track PageView
-    trackPageView();
-    setHasTrackedPageView(true);
-
     // Track page content view
     const pageContentData = {
       id: decodedSubCategoryName ? `fever_${decodedSubCategoryName}` : 'fever_all_products',
@@ -235,6 +133,7 @@ const Fever = () => {
       type: 'page',
     };
     trackViewContent(pageContentData);
+    setHasTrackedPageView(true);
 
     // Fetch initial data
     fetchInitialData();
@@ -467,7 +366,7 @@ const Fever = () => {
     }
   };
 
-  // Track product views when products change
+  // Track product views when products change - ONLY ViewContent
   useEffect(() => {
     if (products.length > 0 && !loading) {
       // Track first few products view
@@ -586,21 +485,6 @@ const Fever = () => {
     );
 
     toast.success("Item added to cart!");
-    
-    // Track AddToCart event
-    trackAddToCart({
-      id: product._id,
-      name: product.name,
-      price: finalPrice,
-      value: finalPrice,
-      currency: 'INR',
-      category: product.sub_category || 'Medicine',
-      type: 'product',
-      quantity: 1,
-    });
-    
-    // Track potential purchase initiation
-    trackInitiateCheckout();
   };
 
   const increaseQuantity = (id) => {
@@ -621,18 +505,6 @@ const Fever = () => {
           price: finalPrice,
         })
       );
-      
-      // Track quantity increase
-      trackAddToCart({
-        id: product._id,
-        name: product.name,
-        price: finalPrice,
-        value: finalPrice,
-        currency: 'INR',
-        category: product.sub_category || 'Medicine',
-        type: 'product',
-        quantity: currentQty + 1,
-      });
     }
   };
 

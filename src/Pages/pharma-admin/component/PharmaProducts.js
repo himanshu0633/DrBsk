@@ -139,7 +139,7 @@ const PharmaProducts = () => {
             component={Link}
             to="/pharma-admin/addNewProduct"
           >
-            Add New Product
+            Add New Product 
           </Button>
         </Box>
 
