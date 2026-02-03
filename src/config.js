@@ -6,4 +6,3 @@ const API_URL = 'https://drbskhealthcare.com/';
 
 
 export default API_URL
-
