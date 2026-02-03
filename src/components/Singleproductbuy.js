@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { useLocation, useNavigate, useParams } from 'react-router-dom';
-import { ShoppingBag, ArrowLeft, CheckCircle } from 'lucide-react';
+import { ShoppingBag, ArrowLeft, CheckCircle, CreditCard, Wallet } from 'lucide-react';
 import { toast } from 'react-toastify';
 import Header from '../../src/components/Header/Header';
 import Footer from '../../src/components/Footer/Footer';
@@ -43,12 +43,31 @@ const SingleProductCheckout = () => {
   });
   
   // Payment States
+  const [paymentMethod, setPaymentMethod] = useState('online'); // 'online' or 'cod'
+  const [codCharge] = useState(99); // COD का extra charge
   const [paymentProcessing, setPaymentProcessing] = useState(false);
   const [checkoutLoading, setCheckoutLoading] = useState(false);
+  const [codProcessing, setCodProcessing] = useState(false);
   const [isProcessing, setIsProcessing] = useState(false);
   const [processingMessage, setProcessingMessage] = useState('');
   
   const userData = JSON.parse(localStorage.getItem('userData') || '{}');
+
+  // Calculate totals
+  const getSelectedVariant = () => {
+    if (!product || !product.quantity || !Array.isArray(product.quantity)) {
+      return null;
+    }
+    return product.quantity[0] || null;
+  };
+
+  const selectedVariant = getSelectedVariant();
+  const unitPrice = selectedVariant?.final_price || product?.final_price || product?.retail_price || 0;
+  const mrpPrice = selectedVariant?.mrp || product?.mrp || unitPrice;
+  const discount = selectedVariant?.discount || product?.discount || 0;
+  const baseTotal = unitPrice * quantity;
+  const codTotal = paymentMethod === 'cod' ? baseTotal + codCharge : baseTotal;
+  const finalTotal = paymentMethod === 'cod' ? codTotal : baseTotal;
 
   // Email validation function
   const isValidEmail = useCallback((email) => {
@@ -96,7 +115,6 @@ const SingleProductCheckout = () => {
           
           if (mergedAddresses.length > 0) {
             setFormData(prev => {
-              // Only set selectedAddress if not already set
               if (!prev.selectedAddress) {
                 const firstAddr = mergedAddresses[0];
                 const addrValue = typeof firstAddr === 'object' ? firstAddr.fullAddress : firstAddr;
@@ -128,9 +146,8 @@ const SingleProductCheckout = () => {
     const savedPhone = localStorage.getItem('guestPhone') || '';
     const savedAddresses = JSON.parse(localStorage.getItem('guestAddresses') || '[]');
     
-    // Set initial form data - use functional update
+    // Set initial form data
     setFormData(prev => {
-      // Check if we need to auto-select first address
       const shouldAutoSelect = savedAddresses.length > 0 && !prev.selectedAddress;
       
       if (shouldAutoSelect) {
@@ -222,21 +239,6 @@ const SingleProductCheckout = () => {
   const increaseQuantity = () => setQuantity(prev => prev + 1);
   const decreaseQuantity = () => setQuantity(prev => prev > 1 ? prev - 1 : 1);
 
-  // Calculate totals
-  const getSelectedVariant = () => {
-    if (!product || !product.quantity || !Array.isArray(product.quantity)) {
-      return null;
-    }
-    // Using index 0 since selectedVariantIndex is not used
-    return product.quantity[0] || null;
-  };
-
-  const selectedVariant = getSelectedVariant();
-  const unitPrice = selectedVariant?.final_price || product?.final_price || product?.retail_price || 0;
-  const mrpPrice = selectedVariant?.mrp || product?.mrp || unitPrice;
-  const discount = selectedVariant?.discount || product?.discount || 0;
-  const totalPrice = unitPrice * quantity;
-
   // Add new address
   const handleAddAddress = async () => {
     setAddressLoading(true);
@@ -297,6 +299,12 @@ const SingleProductCheckout = () => {
   // Load Razorpay script
   const loadRazorpayScript = () => {
     return new Promise((resolve) => {
+      if (window.Razorpay) {
+        console.log("✅ Razorpay SDK already loaded");
+        resolve(true);
+        return;
+      }
+
       const script = document.createElement('script');
       script.src = 'https://checkout.razorpay.com/v1/checkout.js';
       script.onload = () => {
@@ -311,15 +319,194 @@ const SingleProductCheckout = () => {
     });
   };
 
-  // Handle checkout
-  const handleCheckout = async () => {
-    console.log("=== STARTING CHECKOUT PROCESS ===");
-    
-    if (checkoutLoading || paymentProcessing) {
-      console.log("Checkout already in progress");
+
+// Handle COD checkout - UPDATED VERSION
+const handleCODCheckout = async () => {
+  console.log("=== STARTING COD CHECKOUT ===");
+  
+  setCodProcessing(true);
+
+  try {
+    // Form validation
+    if (!formData.selectedAddress) {
+      toast.warn('Please select an address before checkout.');
+      setCodProcessing(false);
       return;
     }
 
+    if (!product) {
+      toast.error('Product information is missing');
+      setCodProcessing(false);
+      return;
+    }
+
+    // Get email from form or localStorage
+    const checkoutEmail = formData.email || localStorage.getItem('guestEmail') || '';
+    
+    if (!checkoutEmail || !isValidEmail(checkoutEmail)) {
+      toast.error('Please provide a valid email address');
+      setCodProcessing(false);
+      return;
+    }
+
+    // Get phone number
+    let phoneNumber = formData.phone?.toString().trim();
+
+    if (!phoneNumber) {
+      // Try to get from saved addresses
+      const selectedAddressObj = addresses.find(addr => 
+        typeof addr === 'object' ? addr.fullAddress === formData.selectedAddress : addr === formData.selectedAddress
+      );
+      
+      if (selectedAddressObj && typeof selectedAddressObj === 'object' && selectedAddressObj.phone) {
+        phoneNumber = selectedAddressObj.phone;
+      } else {
+        phoneNumber = localStorage.getItem('guestPhone') || '';
+      }
+    }
+
+    phoneNumber = phoneNumber.replace(/^\+91/, '').replace(/^91/, '').trim();
+
+    if (!phoneNumber || !/^\d{10}$/.test(phoneNumber)) {
+      toast.error('Please provide a valid 10-digit phone number');
+      setCodProcessing(false);
+      return;
+    }
+
+    // Calculate amounts correctly
+    const itemPrice = unitPrice; // Single unit price
+    const itemsTotal = itemPrice * quantity; // Total for items only
+    const codTotal = itemsTotal + codCharge; // Total with COD charge
+    
+    console.log("Amount calculations:", {
+      unitPrice: unitPrice,
+      quantity: quantity,
+      itemsTotal: itemsTotal,
+      codCharge: codCharge,
+      codTotal: codTotal,
+      finalTotal: finalTotal
+    });
+
+    // Prepare order items with CORRECT price (unit price)
+    const orderItems = [{
+      productId: product._id || product.id,
+      name: product.name.trim(),
+      quantity: quantity,
+      price: itemPrice, // Unit price (NOT total price)
+      variant: selectedVariant?.label || 'Standard Pack',
+      mrp: mrpPrice,
+      discount: discount
+    }];
+
+    // Create user ID
+    const userId = isAuthenticated ? userData._id : `guest_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+
+    // Prepare COD order payload - CORRECT AMOUNTS
+    const codPayload = {
+      userId: userId,
+      items: orderItems,
+      address: formData.selectedAddress.trim(),
+      phone: phoneNumber,
+      email: checkoutEmail,
+      totalAmount: parseFloat(codTotal.toFixed(2)), // Total with COD charge
+      baseAmount: parseFloat(itemsTotal.toFixed(2)), // Items total without COD
+      codCharge: codCharge,
+      isGuest: !isAuthenticated,
+      productName: product.name,
+      productImage: product.media?.[0]?.url || '',
+      paymentMethod: 'cod',
+      paymentStatus: 'pending'
+    };
+
+    console.log("Creating COD order:", codPayload);
+    
+    // Show processing loader
+    setIsProcessing(true);
+    setProcessingMessage("Creating your COD order...");
+
+    // API call to create COD order
+    const response = await axiosInstance.post('/api/createCOD', codPayload);
+
+    if (response.data.success) {
+      console.log("✅ COD order created successfully:", response.data.orderId);
+      
+      setProcessingMessage("Finalizing your order...");
+      
+      // Clear guest addresses if guest user
+      if (!isAuthenticated) {
+        localStorage.removeItem('guestAddresses');
+        localStorage.removeItem('guestEmail');
+        localStorage.removeItem('guestPhone');
+      }
+      
+      // Show success for 2 seconds before redirecting
+      toast.success(
+        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+          <CheckCircle size={20} />
+          COD Order placed successfully! Redirecting...
+        </div>,
+        {
+          position: 'top-right',
+          autoClose: 2000,
+          hideProgressBar: false,
+          closeOnClick: true,
+          pauseOnHover: true,
+          draggable: true
+        }
+      );
+      
+      // Wait 2 seconds before navigating
+      setTimeout(() => {
+        setIsProcessing(false);
+        setCodProcessing(false);
+        navigate(`/success`, {
+          state: {
+            orderId: response.data.orderId,
+            orderDetails: response.data.orderDetails,
+            isCOD: true,
+            codCharge: codCharge
+          }
+        });
+      }, 2000);
+      
+    } else {
+      console.error("❌ COD order creation failed:", response.data.message);
+      setIsProcessing(false);
+      setCodProcessing(false);
+      toast.error(response.data.message || 'Failed to create COD order');
+    }
+
+  } catch (error) {
+    console.error('=== COD CHECKOUT ERROR ===');
+    console.error('Error:', error.message);
+    console.error('Response:', error.response?.data);
+
+    let errorMessage = 'COD order failed. Please try again.';
+
+    if (error.response?.status === 400) {
+      const validationError = error.response.data?.message;
+      if (validationError) {
+        errorMessage = validationError;
+      }
+      
+      // Show validation errors if available
+      if (error.response.data?.validationErrors) {
+        const validationErrors = error.response.data.validationErrors;
+        const errorList = Object.values(validationErrors).join(', ');
+        errorMessage = `Validation errors: ${errorList}`;
+      }
+    } 
+
+    toast.error(errorMessage);
+    setIsProcessing(false);
+    setCodProcessing(false);
+  }
+};
+
+  // Handle online payment checkout
+  const handleOnlineCheckout = async () => {
+    console.log("=== STARTING ONLINE CHECKOUT PROCESS ===");
+    
     setCheckoutLoading(true);
 
     try {
@@ -390,10 +577,11 @@ const SingleProductCheckout = () => {
         address: formData.selectedAddress.trim(),
         phone: phoneNumber,
         email: checkoutEmail,
-        totalAmount: parseFloat(totalPrice.toFixed(2)),
+        totalAmount: parseFloat(finalTotal.toFixed(2)),
         isGuest: !isAuthenticated,
         productName: product.name,
-        productImage: product.media?.[0]?.url || ''
+        productImage: product.media?.[0]?.url || '',
+        paymentMethod: 'online'
       };
 
       console.log("Step 1: Creating Razorpay order...");
@@ -486,10 +674,12 @@ const SingleProductCheckout = () => {
               setTimeout(() => {
                 // Hide loader and navigate
                 setIsProcessing(false);
+                setPaymentProcessing(false);
                 navigate(`/success`, {
                   state: {
                     orderId: verifyResponse.data.orderId,
-                    orderDetails: verifyResponse.data.orderDetails
+                    orderDetails: verifyResponse.data.orderDetails,
+                    isCOD: false
                   }
                 });
               }, 2000);
@@ -497,15 +687,14 @@ const SingleProductCheckout = () => {
             } else {
               console.error("❌ Order creation failed:", verifyResponse.data.message);
               setIsProcessing(false);
+              setPaymentProcessing(false);
               toast.error(verifyResponse.data.message || 'Failed to create order');
             }
           } catch (error) {
             console.error("❌ Payment verification error:", error);
             setIsProcessing(false);
-            toast.error('Payment verification failed. Please contact support.');
-          } finally {
             setPaymentProcessing(false);
-            setCheckoutLoading(false);
+            toast.error('Payment verification failed. Please contact support.');
           }
         },
         prefill: {
@@ -544,9 +733,9 @@ const SingleProductCheckout = () => {
       rzp.on('payment.failed', function (response) {
         console.error("❌ Payment failed:", response.error);
         setIsProcessing(false);
+        setPaymentProcessing(false);
         toast.error(`Payment failed: ${response.error.description || 'Unknown error'}`);
         setCheckoutLoading(false);
-        setPaymentProcessing(false);
       });
       
       console.log("Razorpay Order ID received:", razorpayOrder.id);
@@ -570,6 +759,22 @@ const SingleProductCheckout = () => {
       setIsProcessing(false);
       setCheckoutLoading(false);
       setPaymentProcessing(false);
+    }
+  };
+
+  // Handle checkout based on payment method
+  const handleCheckout = async () => {
+    console.log("=== STARTING CHECKOUT ===");
+    
+    if (checkoutLoading || paymentProcessing || codProcessing || isProcessing) {
+      console.log("Checkout already in progress");
+      return;
+    }
+
+    if (paymentMethod === 'cod') {
+      await handleCODCheckout();
+    } else {
+      await handleOnlineCheckout();
     }
   };
 
@@ -603,7 +808,7 @@ const SingleProductCheckout = () => {
     );
   };
 
-  // Render address in list (AddToCart के जैसा)
+  // Render address in list
   const renderAddressItem = (addr, index) => {
     if (typeof addr === 'string') {
       return (
@@ -809,11 +1014,69 @@ const SingleProductCheckout = () => {
                   )}
                 </div>
 
+                {/* Payment Method Selection */}
+                <div className="payment-method-section">
+                  <h4 className="section-subtitle">💳 Payment Method</h4>
+                  <div className="payment-methods">
+                    <div className="payment-option">
+                      <label className={`payment-method-card ${paymentMethod === 'online' ? 'selected' : ''}`}>
+                        <input
+                          type="radio"
+                          name="paymentMethod"
+                          value="online"
+                          checked={paymentMethod === 'online'}
+                          onChange={(e) => setPaymentMethod(e.target.value)}
+                        />
+                        <div className="payment-method-content">
+                          <div className="payment-method-header">
+                            <span className="payment-icon"><CreditCard size={20} /></span>
+                            <span className="payment-title">Online Payment</span>
+                          </div>
+                          <p className="payment-description">
+                            Pay securely with Razorpay
+                          </p>
+                        </div>
+                      </label>
+                    </div>
+                    
+                    <div className="payment-option">
+                      <label className={`payment-method-card ${paymentMethod === 'cod' ? 'selected' : ''}`}>
+                        <input
+                          type="radio"
+                          name="paymentMethod"
+                          value="cod"
+                          checked={paymentMethod === 'cod'}
+                          onChange={(e) => setPaymentMethod(e.target.value)}
+                        />
+                        <div className="payment-method-content">
+                          <div className="payment-method-header">
+                            <span className="payment-icon"><Wallet size={20} /></span>
+                            <span className="payment-title">Cash on Delivery</span>
+                          </div>
+                          <p className="payment-description">
+                            Pay when you receive your order
+                            <span className="cod-charge">+ ₹{codCharge} COD charge</span>
+                          </p>
+                        </div>
+                      </label>
+                    </div>
+                  </div>
+                </div>
+
                 <div className="summary-details">
                   <div className="summary-row">
                     <span>Price ({quantity} item{quantity > 1 ? 's' : ''})</span>
-                    <span>₹{(unitPrice * quantity).toFixed(2)}</span>
+                    <span>₹{baseTotal.toFixed(2)}</span>
                   </div>
+                  
+                  {/* COD charge display */}
+                  {paymentMethod === 'cod' && (
+                    <div className="summary-row cod-charge-row">
+                      <span>COD Charge</span>
+                      <span>+ ₹{codCharge.toFixed(2)}</span>
+                    </div>
+                  )}
+                  
                   <div className="summary-row">
                     <span>Shipping</span>
                     <span className="free-shipping">FREE</span>
@@ -831,17 +1094,18 @@ const SingleProductCheckout = () => {
                 <div className="summary-divider"></div>
                 <div className="summary-total">
                   <span>Total</span>
-                  <span>₹{totalPrice.toFixed(2)}</span>
+                  <span>₹{finalTotal.toFixed(2)}</span>
                 </div>
 
                 <button
-                  className="checkout-btn"
+                  className={`checkout-btn ${paymentMethod === 'cod' ? 'cod-btn' : ''}`}
                   onClick={handleCheckout}
                   disabled={
                     !formData.selectedAddress || 
                     checkoutLoading || 
                     paymentProcessing || 
                     isProcessing ||
+                    codProcessing ||
                     !formData.email ||
                     !isValidEmail(formData.email) ||
                     !formData.phone ||
@@ -849,20 +1113,29 @@ const SingleProductCheckout = () => {
                   }
                 >
                   {checkoutLoading ? (
-                    <>
-                      <span>Creating Order...</span>
-                    </>
+                    <span>Creating Order...</span>
                   ) : paymentProcessing || isProcessing ? (
-                    <>
-                      <span>Processing Payment...</span>
-                    </>
+                    <span>Processing Payment...</span>
+                  ) : codProcessing ? (
+                    <span>Creating COD Order...</span>
                   ) : (
                     <>
-                      {isAuthenticated ? 'Proceed to Payment' : 'Proceed as Guest'}
+                      {paymentMethod === 'cod' 
+                        ? `Place COD Order (₹${finalTotal.toFixed(2)})`
+                        : isAuthenticated 
+                          ? 'Proceed to Payment' 
+                          : 'Proceed as Guest'
+                      }
                       <ArrowLeft size={18} style={{ transform: 'rotate(180deg)' }} />
                     </>
                   )}
                 </button>
+
+                {paymentMethod === 'cod' && (
+                  <div className="cod-note">
+                    <p>💡 <strong>Note:</strong> You'll pay ₹{finalTotal.toFixed(2)} (including ₹{codCharge} COD charge) when your order is delivered.</p>
+                  </div>
+                )}
 
                 {!isAuthenticated && (!formData.email || !isValidEmail(formData.email) || !formData.phone || formData.phone.length !== 10) && (
                   <div className="email-warning">
@@ -880,14 +1153,13 @@ const SingleProductCheckout = () => {
                   </div>
                 )}
 
-             
               </div>
             </div>
           </div>
         </div>
       </div>
 
-      {/* Address Modal (AddToCart के जैसा) */}
+      {/* Address Modal */}
       <Dialog
         open={showAddressModal}
         onClose={() => setShowAddressModal(false)}
