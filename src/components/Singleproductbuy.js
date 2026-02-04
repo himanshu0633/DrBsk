@@ -51,7 +51,10 @@ const SingleProductCheckout = () => {
   const [isProcessing, setIsProcessing] = useState(false);
   const [processingMessage, setProcessingMessage] = useState('');
   
-  const userData = JSON.parse(localStorage.getItem('userData') || '{}');
+  // Fever page की तरह user type detection
+  const storedUser = localStorage.getItem('userData');
+  const userData = storedUser ? JSON.parse(storedUser) : null;
+  const isWholesaler = userData?.type === "wholesalePartner";
 
   // Calculate totals
   const getSelectedVariant = () => {
@@ -62,7 +65,12 @@ const SingleProductCheckout = () => {
   };
 
   const selectedVariant = getSelectedVariant();
-  const unitPrice = selectedVariant?.final_price || product?.final_price || product?.retail_price || 0;
+
+  // Fever page की तरह price calculation
+  const unitPrice = isWholesaler
+    ? selectedVariant?.retail_price || product?.retail_price || 0
+    : selectedVariant?.final_price || product?.final_price || product?.retail_price || 0;
+
   const mrpPrice = selectedVariant?.mrp || product?.mrp || unitPrice;
   const discount = selectedVariant?.discount || product?.discount || 0;
   const baseTotal = unitPrice * quantity;
@@ -374,7 +382,7 @@ const handleCODCheckout = async () => {
     }
 
     // Calculate amounts correctly
-    const itemPrice = unitPrice; // Single unit price
+    const itemPrice = unitPrice; // Single unit price (already user type based)
     const itemsTotal = itemPrice * quantity; // Total for items only
     const codTotal = itemsTotal + codCharge; // Total with COD charge
     
@@ -384,7 +392,8 @@ const handleCODCheckout = async () => {
       itemsTotal: itemsTotal,
       codCharge: codCharge,
       codTotal: codTotal,
-      finalTotal: finalTotal
+      finalTotal: finalTotal,
+      isWholesaler: isWholesaler
     });
 
     // Prepare order items with CORRECT price (unit price)
@@ -392,10 +401,11 @@ const handleCODCheckout = async () => {
       productId: product._id || product.id,
       name: product.name.trim(),
       quantity: quantity,
-      price: itemPrice, // Unit price (NOT total price)
+      price: itemPrice, // Unit price (NOT total price) - already user type based
       variant: selectedVariant?.label || 'Standard Pack',
       mrp: mrpPrice,
-      discount: discount
+      discount: discount,
+      isWholesaler: isWholesaler // Include user type in order
     }];
 
     // Create user ID
@@ -415,7 +425,8 @@ const handleCODCheckout = async () => {
       productName: product.name,
       productImage: product.media?.[0]?.url || '',
       paymentMethod: 'cod',
-      paymentStatus: 'pending'
+      paymentStatus: 'pending',
+      isWholesaler: isWholesaler // Include user type
     };
 
     console.log("Creating COD order:", codPayload);
@@ -556,15 +567,16 @@ const handleCODCheckout = async () => {
         return;
       }
 
-      // Prepare order items
+      // Prepare order items with user type based price
       const orderItems = [{
         productId: product._id || product.id,
         name: product.name.trim(),
         quantity: quantity,
-        price: unitPrice,
+        price: unitPrice, // Already user type based
         variant: selectedVariant?.label || 'Standard Pack',
         mrp: mrpPrice,
-        discount: discount
+        discount: discount,
+        isWholesaler: isWholesaler // Include user type
       }];
 
       // Create user ID
@@ -581,7 +593,8 @@ const handleCODCheckout = async () => {
         isGuest: !isAuthenticated,
         productName: product.name,
         productImage: product.media?.[0]?.url || '',
-        paymentMethod: 'online'
+        paymentMethod: 'online',
+        isWholesaler: isWholesaler // Include user type
       };
 
       console.log("Step 1: Creating Razorpay order...");
@@ -945,6 +958,9 @@ const handleCODCheckout = async () => {
                     <div className="item-pricing">
                       <span className="current-price">
                         ₹{unitPrice.toFixed(2)}
+                        {isWholesaler && (
+                          <span className="wholesale-tag-checkout">Wholesale</span>
+                        )}
                       </span>
                       {mrpPrice > unitPrice && (
                         <>
@@ -989,6 +1005,12 @@ const handleCODCheckout = async () => {
                 {!isAuthenticated && (
                   <div className="guest-notice">
                     <p>🎯 <strong>Guest Checkout Available!</strong> Enter your details below to proceed without login.</p>
+                  </div>
+                )}
+
+                {isWholesaler && (
+                  <div className="wholesaler-note">
+                    <p>🛒 You are viewing <strong>wholesale prices</strong>. Payment will be processed at wholesale rates.</p>
                   </div>
                 )}
 

@@ -87,9 +87,17 @@ const AddToCart = () => {
   const [isProcessing, setIsProcessing] = useState(false);
   const [processingMessage, setProcessingMessage] = useState('');
 
-  // Calculate totals
+  // Fever page की तरह user type detection
+  const storedUser = localStorage.getItem("userData");
+  const parsedUserData = storedUser ? JSON.parse(storedUser) : null;
+  const isWholesaler = parsedUserData?.type === "wholesalePartner";
+
+  // Calculate totals with user type based pricing
   const baseTotal = cartItems.reduce((acc, item) => {
-    const price = parseFloat(item.final_price || 0);
+    // Fever page की तरह price selection based on user type
+    const price = isWholesaler 
+      ? parseFloat(item.retail_price || item.final_price || 0)
+      : parseFloat(item.final_price || 0);
     return acc + price * (item.quantity || 1);
   }, 0);
 
@@ -224,7 +232,7 @@ const AddToCart = () => {
       items: cartItems.map(item => ({
         id: item._id,
         name: item.name,
-        price: item.final_price,
+        price: isWholesaler ? item.retail_price || item.final_price : item.final_price,
         quantity: item.quantity
       })),
     });
@@ -235,7 +243,7 @@ const AddToCart = () => {
         trackViewContent({
           id: `cart_item_view_${item._id}`,
           name: `${item.name} - In Cart`,
-          value: item.final_price,
+          value: isWholesaler ? item.retail_price || item.final_price : item.final_price,
           currency: 'INR',
           category: 'Cart Item',
           type: 'cart_product_view',
@@ -294,17 +302,22 @@ const AddToCart = () => {
       toast.success('Item quantity updated!', { position: 'top-right', autoClose: 2000 });
       
       // Track quantity change
+      const itemPrice = isWholesaler 
+        ? updatedItem.retail_price || updatedItem.final_price 
+        : updatedItem.final_price;
+      
       trackAddToCart({
         id: updatedItem._id,
         name: updatedItem.name,
-        price: updatedItem.final_price,
-        value: updatedItem.final_price * newQuantity,
+        price: itemPrice,
+        value: itemPrice * newQuantity,
         currency: 'INR',
         category: 'Cart Update',
         type: 'quantity_update',
         quantity: newQuantity,
         old_quantity: updatedItem.quantity,
         action: newQuantity > updatedItem.quantity ? 'increase' : 'decrease',
+        user_type: isWholesaler ? 'wholesaler' : 'retail',
       });
     }
   };
@@ -312,12 +325,17 @@ const AddToCart = () => {
   const handleRemoveItem = (itemId) => {
     const removedItem = cartItems.find((item) => item._id === itemId);
     if (removedItem) {
+      const itemPrice = isWholesaler 
+        ? removedItem.retail_price || removedItem.final_price 
+        : removedItem.final_price;
+      
       trackRemoveFromCart({
         id: removedItem._id,
         name: removedItem.name,
-        price: removedItem.final_price,
-        value: removedItem.final_price * (removedItem.quantity || 1),
+        price: itemPrice,
+        value: itemPrice * (removedItem.quantity || 1),
         currency: 'INR',
+        user_type: isWholesaler ? 'wholesaler' : 'retail',
       });
     }
     
@@ -342,6 +360,7 @@ const AddToCart = () => {
         value: 0,
         category: 'User Information',
         type: 'email_update',
+        user_type: isWholesaler ? 'wholesaler' : 'retail',
       });
     }
   };
@@ -363,6 +382,7 @@ const AddToCart = () => {
           value: 0,
           category: 'User Information',
           type: 'phone_update',
+          user_type: isWholesaler ? 'wholesaler' : 'retail',
         });
       }
     }
@@ -430,6 +450,7 @@ const AddToCart = () => {
       category: 'User Information',
       type: 'address_add',
       address_type: isAuthenticated ? 'registered_user' : 'guest_user',
+      user_type: isWholesaler ? 'wholesaler' : 'retail',
     });
   };
 
@@ -595,10 +616,13 @@ const AddToCart = () => {
         return;
       }
 
-      // Prepare order items
+      // Prepare order items with user type based price
       const orderItems = cartItems.map((item) => {
         const qty = parseInt(item.quantity) || 1;
-        const price = parseFloat(item.final_price) || 0;
+        // Fever page की तरह price selection based on user type
+        const price = isWholesaler 
+          ? parseFloat(item.retail_price || item.final_price || 0)
+          : parseFloat(item.final_price || 0);
 
         if (!item._id || !item.name || qty < 1 || price <= 0) {
           throw new Error(`Invalid item data for: ${item.name || 'Unknown item'}`);
@@ -608,7 +632,7 @@ const AddToCart = () => {
           productId: item._id,
           name: item.name.trim(),
           quantity: qty,
-          price: price // Unit price
+          price: price // Unit price - already user type based
         };
       });
 
@@ -625,7 +649,8 @@ const AddToCart = () => {
         totalAmount: parseFloat(finalTotal.toFixed(2)),
         baseAmount: parseFloat(baseTotal.toFixed(2)),
         codCharge: codCharge,
-        isGuest: !isAuthenticated
+        isGuest: !isAuthenticated,
+        isWholesaler: isWholesaler // Include user type in payload
       };
 
       console.log("Creating COD order:", codPayload);
@@ -650,7 +675,8 @@ const AddToCart = () => {
           numItems: cartItems.length,
           orderId: response.data.orderId,
           user_type: isAuthenticated ? 'registered' : 'guest',
-          payment_method: 'cod'
+          payment_method: 'cod',
+          customer_type: isWholesaler ? 'wholesaler' : 'retail',
         });
         
         setProcessingMessage("Finalizing your order...");
@@ -741,7 +767,8 @@ const AddToCart = () => {
       content_ids: cartItems.map(item => item._id),
       item_count: cartItems.length,
       user_type: isAuthenticated ? 'registered' : 'guest',
-      payment_method: 'online'
+      payment_method: 'online',
+      customer_type: isWholesaler ? 'wholesaler' : 'retail',
     });
 
     try {
@@ -791,10 +818,13 @@ const AddToCart = () => {
         return;
       }
 
-      // Prepare order items
+      // Prepare order items with user type based price
       const orderItems = cartItems.map((item) => {
         const qty = parseInt(item.quantity) || 1;
-        const price = parseFloat(item.final_price) || 0;
+        // Fever page की तरह price selection based on user type
+        const price = isWholesaler 
+          ? parseFloat(item.retail_price || item.final_price || 0)
+          : parseFloat(item.final_price || 0);
 
         if (!item._id || !item.name || qty < 1 || price <= 0) {
           throw new Error(`Invalid item data for: ${item.name || 'Unknown item'}`);
@@ -804,7 +834,7 @@ const AddToCart = () => {
           productId: item._id,
           name: item.name.trim(),
           quantity: qty,
-          price: price
+          price: price // Unit price - already user type based
         };
       });
 
@@ -819,7 +849,8 @@ const AddToCart = () => {
         phone: phoneNumber,
         email: checkoutEmail,
         totalAmount: parseFloat(finalTotal.toFixed(2)),
-        isGuest: !isAuthenticated
+        isGuest: !isAuthenticated,
+        isWholesaler: isWholesaler // Include user type in payload
       };
 
       console.log("Step 1: Creating Razorpay order...");
@@ -892,7 +923,8 @@ const AddToCart = () => {
                 numItems: cartItems.length,
                 orderId: verifyResponse.data.orderId,
                 user_type: isAuthenticated ? 'registered' : 'guest',
-                payment_method: 'online'
+                payment_method: 'online',
+                customer_type: isWholesaler ? 'wholesaler' : 'retail',
               });
               
               // Update loader for final step
@@ -977,6 +1009,7 @@ const AddToCart = () => {
                 type: 'checkout_abandonment',
                 item_count: cartItems.length,
                 total_value: finalTotal,
+                customer_type: isWholesaler ? 'wholesaler' : 'retail',
               });
             }
           }
@@ -1015,6 +1048,7 @@ const AddToCart = () => {
           type: 'payment_failure',
           error_code: response.error.code,
           error_description: response.error.description,
+          customer_type: isWholesaler ? 'wholesaler' : 'retail',
         });
       });
       
@@ -1052,6 +1086,7 @@ const AddToCart = () => {
         category: 'Checkout Error',
         type: 'checkout_error',
         error_message: errorMessage,
+        customer_type: isWholesaler ? 'wholesaler' : 'retail',
       });
     }
   };
@@ -1115,6 +1150,7 @@ const AddToCart = () => {
             currency: 'INR',
             category: 'User Type',
             type: 'guest_user',
+            customer_type: isWholesaler ? 'wholesaler' : 'retail',
           })}
         >
           <p>You are browsing as a guest. 
@@ -1125,6 +1161,7 @@ const AddToCart = () => {
                 value: 0,
                 category: 'User Action',
                 type: 'login_prompt_click',
+                customer_type: isWholesaler ? 'wholesaler' : 'retail',
               });
               navigate('/login');
             }} className="login-link">Login</button> 
@@ -1150,6 +1187,7 @@ const AddToCart = () => {
             category: 'Checkout Process',
             type: 'address_selection',
             address_type: 'text',
+            customer_type: isWholesaler ? 'wholesaler' : 'retail',
           })}
         >
           <label>
@@ -1166,6 +1204,7 @@ const AddToCart = () => {
                   value: 0,
                   category: 'Checkout Process',
                   type: 'address_selection',
+                  customer_type: isWholesaler ? 'wholesaler' : 'retail',
                 });
               }}
             />
@@ -1186,6 +1225,7 @@ const AddToCart = () => {
             category: 'Checkout Process',
             type: 'address_selection',
             address_type: 'object',
+            customer_type: isWholesaler ? 'wholesaler' : 'retail',
           })}
         >
           <label>
@@ -1216,6 +1256,7 @@ const AddToCart = () => {
                   value: 0,
                   category: 'Checkout Process',
                   type: 'address_selection',
+                  customer_type: isWholesaler ? 'wholesaler' : 'retail',
                 });
               }}
             />
@@ -1240,6 +1281,7 @@ const AddToCart = () => {
       category: 'Navigation',
       type: 'cart_exit',
       item_count: cartItems.length,
+      customer_type: isWholesaler ? 'wholesaler' : 'retail',
     });
     navigate(-1);
   };
@@ -1254,6 +1296,7 @@ const AddToCart = () => {
       category: 'Navigation',
       type: 'continue_shopping',
       item_count: cartItems.length,
+      customer_type: isWholesaler ? 'wholesaler' : 'retail',
     });
     navigate("/fever");
   };
@@ -1288,9 +1331,13 @@ const AddToCart = () => {
                     value: 0,
                     category: 'User Interaction',
                     type: 'section_header_click',
+                    customer_type: isWholesaler ? 'wholesaler' : 'retail',
                   })}
                 >
                   Your Items ({cartItems.length})
+                  {isWholesaler && (
+                    <span className="wholesale-tag-cart">Wholesale</span>
+                  )}
                 </h2>
                 {cartItems.length > 0 && (
                   <button
@@ -1305,6 +1352,7 @@ const AddToCart = () => {
                         category: 'Cart Action',
                         type: 'clear_cart_click',
                         item_count: cartItems.length,
+                        customer_type: isWholesaler ? 'wholesaler' : 'retail',
                       });
                       
                       dispatch(clearProducts());
@@ -1329,6 +1377,7 @@ const AddToCart = () => {
                     value: 0,
                     category: 'Cart State',
                     type: 'empty_cart',
+                    customer_type: isWholesaler ? 'wholesaler' : 'retail',
                   })}
                 >
                   <div className="empty-cart-icon">
@@ -1340,69 +1389,80 @@ const AddToCart = () => {
                 </div>
               ) : (
                 <div className="cart-items">
-                  {cartItems.map((item) => (
-                    <div 
-                      key={item._id} 
-                      className="cart-item"
-                      onClick={() => trackViewContent({
-                        id: `cart_item_click_${item._id}`,
-                        name: `${item.name} - Cart Item Clicked`,
-                        value: item.final_price,
-                        currency: 'INR',
-                        category: 'Cart Item',
-                        type: 'cart_item_interaction',
-                      })}
-                    >
-                      <Link to={`/ProductPage/${item._id}`} className="item-image">
-                        <img src={JoinUrl(API_URL, item.media[0]?.url)} alt={item.name} />
-                      </Link>
+                  {cartItems.map((item) => {
+                    // Fever page की तरह price selection based on user type
+                    const itemPrice = isWholesaler 
+                      ? parseFloat(item.retail_price || item.final_price || 0)
+                      : parseFloat(item.final_price || 0);
+                    
+                    return (
+                      <div 
+                        key={item._id} 
+                        className="cart-item"
+                        onClick={() => trackViewContent({
+                          id: `cart_item_click_${item._id}`,
+                          name: `${item.name} - Cart Item Clicked`,
+                          value: itemPrice,
+                          currency: 'INR',
+                          category: 'Cart Item',
+                          type: 'cart_item_interaction',
+                          customer_type: isWholesaler ? 'wholesaler' : 'retail',
+                        })}
+                      >
+                        <Link to={`/ProductPage/${item._id}`} className="item-image">
+                          <img src={JoinUrl(API_URL, item.media[0]?.url)} alt={item.name} />
+                        </Link>
 
-                      <div className="item-details">
-                        <h3 className="item-name">{item.name}</h3>
-                        <p className="item-description">{item.quantity} Pack</p>
+                        <div className="item-details">
+                          <h3 className="item-name">{item.name}</h3>
+                          <p className="item-description">{item.quantity} Pack</p>
 
-                        <div className="item-pricing">
-                          <span className="current-price">
-                            ₹{parseFloat(item.final_price || 0).toFixed(2)}
-                          </span>
-                          <span className="discount">
-                            {Math.round((item.discount))}% OFF
-                          </span>
+                          <div className="item-pricing">
+                            <span className="current-price">
+                              ₹{itemPrice.toFixed(2)}
+                              {isWholesaler && (
+                                <span className="wholesale-tag-cart-item">Wholesale</span>
+                              )}
+                            </span>
+                            <span className="discount">
+                              {Math.round((item.discount))}% OFF
+                            </span>
+                          </div>
+                        </div>
+
+                        <div className="item-actions">
+                          <div className="quantity-controls">
+                            <button
+                              className="quantity-btn"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                handleQuantityChange(item._id, (item.quantity || 1) - 1);
+                              }}
+                              disabled={(item.quantity || 1) <= 1}
+                            >
+                              <span>-</span>
+                            </button>
+                            <span className="quantity">{item.quantity || 1}</span>
+                            <button
+                              className="quantity-btn"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                handleQuantityChange(item._id, (item.quantity || 1) + 1);
+                              }}
+                            >
+                              <span>+</span>
+                            </button>
+                          </div>
+                          <button className="remove-btn" onClick={(e) => {
+                            e.stopPropagation();
+                            handleRemoveItem(item._id);
+                          }}>
+                            <Trash2 size={18} />
+                          </button>
                         </div>
                       </div>
-
-                      <div className="item-actions">
-                        <div className="quantity-controls">
-                          <button
-                            className="quantity-btn"
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              handleQuantityChange(item._id, (item.quantity || 1) - 1);
-                            }}
-                            disabled={(item.quantity || 1) <= 1}
-                          >
-                            <span>-</span>
-                          </button>
-                          <span className="quantity">{item.quantity || 1}</span>
-                          <button
-                            className="quantity-btn"
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              handleQuantityChange(item._id, (item.quantity || 1) + 1);
-                            }}
-                          >
-                            <span>+</span>
-                          </button>
-                        </div>
-                        <button className="remove-btn" onClick={(e) => {
-                          e.stopPropagation();
-                          handleRemoveItem(item._id);
-                        }}>
-                          <Trash2 size={18} />
-                        </button>
-                      </div>
-                    </div>
-                  ))}
+                    );
+                  })}
                 </div>
               )}
             </div>
@@ -1419,6 +1479,7 @@ const AddToCart = () => {
                       currency: 'INR',
                       category: 'Order Summary',
                       type: 'order_summary_interaction',
+                      customer_type: isWholesaler ? 'wholesaler' : 'retail',
                     })}
                   >
                     Order Summary
@@ -1433,9 +1494,16 @@ const AddToCart = () => {
                         value: 0,
                         category: 'User Type',
                         type: 'guest_notice',
+                        customer_type: isWholesaler ? 'wholesaler' : 'retail',
                       })}
                     >
                       <p>🎯 <strong>Guest Checkout Available!</strong> Enter your details below to proceed without login.</p>
+                    </div>
+                  )}
+
+                  {isWholesaler && (
+                    <div className="wholesaler-note-cart">
+                      <p>📦 You are viewing <strong>wholesale prices</strong>. Payment will be processed at wholesale rates.</p>
                     </div>
                   )}
 
@@ -1450,6 +1518,7 @@ const AddToCart = () => {
                         value: 0,
                         category: 'Checkout Process',
                         type: 'add_address_click',
+                        customer_type: isWholesaler ? 'wholesaler' : 'retail',
                       });
                     }}
                   >
@@ -1490,7 +1559,8 @@ const AddToCart = () => {
                                 value: 0,
                                 category: 'Payment',
                                 type: 'payment_method_selection',
-                                method: 'online'
+                                method: 'online',
+                                customer_type: isWholesaler ? 'wholesaler' : 'retail',
                               });
                             }}
                           />
@@ -1521,7 +1591,8 @@ const AddToCart = () => {
                                 value: 0,
                                 category: 'Payment',
                                 type: 'payment_method_selection',
-                                method: 'cod'
+                                method: 'cod',
+                                customer_type: isWholesaler ? 'wholesaler' : 'retail',
                               });
                             }}
                           />
@@ -1630,6 +1701,7 @@ const AddToCart = () => {
                             value: 0,
                             category: 'User Action',
                             type: 'login_suggestion_click',
+                            customer_type: isWholesaler ? 'wholesaler' : 'retail',
                           });
                           navigate('/login');
                         }} className="login-suggestion-btn">
@@ -1658,6 +1730,7 @@ const AddToCart = () => {
             category: 'User Interaction',
             type: 'modal_close',
             action: 'address_modal',
+            customer_type: isWholesaler ? 'wholesaler' : 'retail',
           });
         }}
         fullWidth
@@ -1821,6 +1894,7 @@ const AddToCart = () => {
                       category: 'Address Form',
                       type: 'state_selection',
                       state: e.target.value,
+                      customer_type: isWholesaler ? 'wholesaler' : 'retail',
                     });
                   }}
                   className="custom-select"
@@ -1868,6 +1942,7 @@ const AddToCart = () => {
                       category: 'Address Form',
                       type: 'city_selection',
                       city: e.target.value,
+                      customer_type: isWholesaler ? 'wholesaler' : 'retail',
                     });
                   }}
                   className="custom-select"
@@ -2051,6 +2126,7 @@ const AddToCart = () => {
                 value: 0,
                 category: 'User Action',
                 type: 'modal_cancel',
+                customer_type: isWholesaler ? 'wholesaler' : 'retail',
               });
             }}
             style={{
