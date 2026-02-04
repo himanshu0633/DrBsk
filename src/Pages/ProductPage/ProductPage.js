@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef, useMemo } from "react";
+import React, { useState, useEffect, useRef, useMemo, useCallback } from "react"; 
 import "./ProductPage.css";
 import Footer from "../../components/Footer/Footer";
 import Header from "../../components/Header/Header";
@@ -136,6 +136,11 @@ const ProductPage = () => {
   const navigate = useNavigate();
   const dispatch = useDispatch();
 
+  // Fever page की तरह user type detection
+  const storedUser = localStorage.getItem("userData");
+  const userData = storedUser ? JSON.parse(storedUser) : null;
+  const isWholesaler = userData?.type === "wholesalePartner";
+
   const handleMouseMove = (e) => {
     const { left, top, width, height } = e.currentTarget.getBoundingClientRect();
     const x = ((e.clientX - left) / width) * 100;
@@ -230,8 +235,16 @@ const ProductPage = () => {
 
   const canAddToCart = Boolean(selectedVariant?.in_stock);
 
-  // Dynamic price area
-  const unitPrice = selectedVariant?.final_price ?? product?.consumer_price ?? 0;
+  // Dynamic price area - user type के based
+  const getDisplayPrice = useCallback((variant) => {
+    if (!variant) return 0;
+    if (isWholesaler) {
+      return variant.retail_price ?? product?.retail_price ?? 0;
+    }
+    return variant.final_price ?? product?.consumer_price ?? 0;
+  }, [isWholesaler, product]);
+
+  const unitPrice = getDisplayPrice(selectedVariant);
   const unitMrp = selectedVariant?.mrp ?? product?.mrp ?? null;
   const unitDiscount = selectedVariant?.discount ?? product?.discount ?? null;
   const unitGst = selectedVariant?.gst ?? null;
@@ -250,12 +263,16 @@ const ProductPage = () => {
 
     const qty = toNum(units, 1);
 
+    // Price selection based on user type - Fever page की तरह
+    const price = isWholesaler
+      ? toNum(selectedVariant.retail_price ?? product.retail_price ?? 0, 0)
+      : toNum(selectedVariant.final_price ?? product.consumer_price ?? 0, 0);
+
     // --- META TRACKING ---
     trackAddToCart(product, selectedVariant, qty);
 
     // --- CART LOGIC ---
     const pid = toStr(product._id || product.id);
-    const price = toNum(selectedVariant.final_price ?? product.consumer_price ?? 0, 0);
 
     const cartItem = {
       ...product,
@@ -269,6 +286,8 @@ const ProductPage = () => {
         final_price: selectedVariant.final_price,
         in_stock: selectedVariant.in_stock,
       },
+      // Fever page की तरह price selection
+      price: price,
       mrp: selectedVariant.mrp ?? product.mrp,
       discount: selectedVariant.discount ?? product.discount,
       gst: selectedVariant.gst ?? product.gst,
@@ -277,6 +296,8 @@ const ProductPage = () => {
       quantity: qty,
       unitPrice: price,
       totalPrice: price * qty,
+      // User type flag
+      isWholesaler: isWholesaler,
     };
 
     const existingCartItems = JSON.parse(localStorage.getItem("reduxState") || "[]");
@@ -319,7 +340,12 @@ const ProductPage = () => {
     if (!selectedVariant.in_stock) return;
 
     const pid = toStr(product._id || product.id);
-    const price = toNum(selectedVariant.final_price ?? product.consumer_price ?? 0, 0);
+    
+    // Price selection based on user type - Fever page की तरह
+    const price = isWholesaler
+      ? toNum(selectedVariant.retail_price ?? product.retail_price ?? 0, 0)
+      : toNum(selectedVariant.final_price ?? product.consumer_price ?? 0, 0);
+      
     const qty = toNum(units, 1);
 
     // --- META TRACKING ---
@@ -327,7 +353,7 @@ const ProductPage = () => {
       content_ids: [product._id],
       content_name: product.name,
       content_type: "product",
-      value: selectedVariant.final_price * qty,
+      value: price * qty,
       currency: "INR",
       num_items: qty,
     });
@@ -338,6 +364,8 @@ const ProductPage = () => {
       _id: pid,
       selectedVariant,
       selectedVariantIndex,
+      // Price based on user type
+      price: price,
       purchaseQuantity: qty,
       unitPrice: price,
       totalPrice: price * qty,
@@ -345,6 +373,8 @@ const ProductPage = () => {
       discount: selectedVariant.discount ?? product.discount,
       gst: selectedVariant.gst ?? product.gst,
       inStock: selectedVariant.in_stock ?? product.stock,
+      // User type flag
+      isWholesaler: isWholesaler,
     };
 
     navigate("/checkout", {
@@ -500,6 +530,10 @@ const ProductPage = () => {
                   {variants.length > 0 ? (
                     variants.map((v, i) => {
                       const selected = i === selectedVariantIndex;
+                      const displayPrice = isWholesaler 
+                        ? v.retail_price ?? product?.retail_price ?? 0
+                        : v.final_price ?? product?.consumer_price ?? 0;
+                      
                       return (
                         <button
                           type="button"
@@ -521,7 +555,12 @@ const ProductPage = () => {
                             )}
                           </div>
                           <div className="variant-card__price">
-                            <span className="variant-card__price--current">{money(v.final_price)}</span>
+                            <span className="variant-card__price--current">
+                              {money(displayPrice)}
+                            </span>
+                            {isWholesaler && (
+                              <div className="wholesale-tag">Wholesale</div>
+                            )}
                           </div>
                         </button>
                       );
@@ -536,23 +575,46 @@ const ProductPage = () => {
               <div className={`stock-status ${product.stock ? "bg-green" : "bg-red"}`}>
                 <div className={`status-indicator ${product.stock ? "bg-green" : "bg-red"}`}></div>
                 <span className="stock-status__text">
-                  {product.stock ? "In Stock - Ready to Ship" : "Out of Stock"}
+                  {product.stock 
+                    ? (isWholesaler ? "Available for Wholesale" : "In Stock - Ready to Ship")
+                    : "Out of Stock"
+                  }
                 </span>
+                {isWholesaler && product.stock && (
+                  <span className="wholesale-note">(Bulk orders available)</span>
+                )}
               </div>
 
-              {/* Dynamic price block */}
+              {/* Dynamic price block - Fever page की तरह user type के based */}
               <div className="price-section">
                 <div className="price-container">
-                  <div className="current-price">{money(unitPrice)}</div>
-                  {unitMrp != null && unitMrp > unitPrice && (
-                    <div className="original-price">{money(unitMrp)}</div>
-                  )}
-                  {unitDiscount != null && unitDiscount > 0 && (
-                    <div className="discount-badge">{unitDiscount}% OFF</div>
+                  {/* Wholesaler के लिए retail_price दिखाएं, normal user के लिए consumer/final price */}
+                  {isWholesaler ? (
+                    <>
+                      <div className="current-price">
+                        {money(selectedVariant?.retail_price ?? product?.retail_price ?? 0)}
+                      </div>
+                      <div className="wholesale-label">Wholesale Price</div>
+                    </>
+                  ) : (
+                    <>
+                      <div className="current-price">{money(unitPrice)}</div>
+                      {unitMrp != null && unitMrp > unitPrice && (
+                        <div className="original-price">{money(unitMrp)}</div>
+                      )}
+                      {unitDiscount != null && unitDiscount > 0 && (
+                        <div className="discount-badge">{unitDiscount}% OFF</div>
+                      )}
+                    </>
                   )}
                 </div>
-                <div className="tax-info">
-                  {unitGst != null ? `Inclusive of ${unitGst}% GST` : "Inclusive of all taxes"}
+                <div className={`tax-info ${isWholesaler ? 'wholesale-tax' : ''}`}>
+                  {isWholesaler 
+                    ? "Exclusive of GST" 
+                    : unitGst != null 
+                      ? `Inclusive of ${unitGst}% GST` 
+                      : "Inclusive of all taxes"
+                  }
                 </div>
               </div>
 

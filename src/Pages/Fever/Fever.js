@@ -376,7 +376,7 @@ const Fever = () => {
           trackViewContent({
             id: product._id,
             name: product.name,
-            value: product.price || 0,
+            value: isWholesaler ? product.retail_price : product.price || 0,
             currency: 'INR',
             category: product.sub_category || 'Medicine',
             type: 'product',
@@ -384,12 +384,15 @@ const Fever = () => {
         }, index * 500);
       });
     }
-  }, [products, loading]);
+  }, [products, loading, isWholesaler]);
 
   // Filter + sort products
   useEffect(() => {
     const filtered = allProducts.filter((product) => {
-      const price = parseFloat(product.price) || 0;
+      // Use appropriate price based on user type
+      const price = isWholesaler 
+        ? parseFloat(product.retail_price) || 0 
+        : parseFloat(product.price) || 0;
       const discount = parseFloat(product.discount) || 0;
 
       const matchesCategory = categoryId
@@ -409,10 +412,18 @@ const Fever = () => {
 
     switch (sortOption) {
       case "price-low":
-        filtered.sort((a, b) => a.price - b.price);
+        filtered.sort((a, b) => {
+          const priceA = isWholesaler ? a.retail_price : a.price;
+          const priceB = isWholesaler ? b.retail_price : b.price;
+          return priceA - priceB;
+        });
         break;
       case "price-high":
-        filtered.sort((a, b) => b.price - a.price);
+        filtered.sort((a, b) => {
+          const priceA = isWholesaler ? a.retail_price : a.price;
+          const priceB = isWholesaler ? b.retail_price : b.price;
+          return priceB - priceA;
+        });
         break;
       case "discount-high":
         filtered.sort((a, b) => b.discount - a.discount);
@@ -443,6 +454,7 @@ const Fever = () => {
     categoryId,
     categorySubNames,
     filterByPrescription,
+    isWholesaler,
   ]);
 
   const totalPages = Math.max(1, Math.ceil(products.length / PAGE_SIZE));
@@ -467,13 +479,14 @@ const Fever = () => {
   const handleAddToCart = (product) => {
     const quantityVariant = pickBestVariant(product.quantity);
 
-    const finalPrice = Number(
-      quantityVariant?.final_price ?? product.consumer_price ?? product.price ?? 0
-    );
+    // Determine price based on user type
+    const finalPrice = isWholesaler
+      ? Number(quantityVariant?.retail_price ?? product.retail_price ?? product.price ?? 0)
+      : Number(quantityVariant?.consumer_price ?? quantityVariant?.final_price ?? product.consumer_price ?? product.price ?? 0);
 
-    const mrpPrice = Number(
-      quantityVariant?.mrp ?? product.retail_price ?? finalPrice
-    );
+    const mrpPrice = isWholesaler
+      ? null // Wholesaler doesn't need MRP
+      : Number(quantityVariant?.mrp ?? product.retail_price ?? finalPrice);
 
     dispatch(
       addData({
@@ -494,9 +507,9 @@ const Fever = () => {
 
     if (product) {
       const quantityVariant = pickBestVariant(product.quantity);
-      const finalPrice = Number(
-        quantityVariant?.final_price ?? product.consumer_price ?? product.price ?? 0
-      );
+      const finalPrice = isWholesaler
+        ? Number(quantityVariant?.retail_price ?? product.retail_price ?? product.price ?? 0)
+        : Number(quantityVariant?.consumer_price ?? quantityVariant?.final_price ?? product.consumer_price ?? product.price ?? 0);
 
       dispatch(
         addData({
@@ -522,7 +535,7 @@ const Fever = () => {
     trackViewContent({
       id: product._id,
       name: product.name,
-      value: product.price || 0,
+      value: isWholesaler ? product.retail_price : product.price || 0,
       currency: 'INR',
       category: product.sub_category || 'Medicine',
       type: 'product',
@@ -781,7 +794,7 @@ const Fever = () => {
                               <th>Image</th>
                               <th>Name</th>
                               <th>Description</th>
-                              <th>Price</th>
+                              <th>Wholesale Price</th>
                               <th>Actions</th>
                             </tr>
                           </thead>
@@ -789,8 +802,7 @@ const Fever = () => {
                             {paginatedProducts.map((product) => {
                               const quantity = getQuantity(product._id);
                               const quantityVariant = pickBestVariant(product.quantity);
-                              const finalPrice = quantityVariant?.final_price ?? product.consumer_price ?? 0;
-                              const mrpPrice = quantityVariant?.mrp ?? product.retail_price ?? null;
+                              const wholesalePrice = quantityVariant?.retail_price ?? product.retail_price ?? 0;
 
                               return (
                                 <tr key={product._id}>
@@ -814,8 +826,7 @@ const Fever = () => {
                                   <td>{product.description}</td>
                                   <td>
                                     <div className="product-price">
-                                      <span>₹{finalPrice}</span>
-                                      {mrpPrice && mrpPrice > finalPrice && <span className="original-price">₹{mrpPrice}</span>}
+                                      <span className="wholesale-price">₹{wholesalePrice}</span>
                                     </div>
                                   </td>
                                   <td>
@@ -847,7 +858,7 @@ const Fever = () => {
                       <div className="products-container">
                         {paginatedProducts.map((product) => {
                           const quantityVariant = pickBestVariant(product.quantity);
-                          const finalPrice = quantityVariant?.final_price ?? product.consumer_price ?? 0;
+                          const retailPrice = quantityVariant?.consumer_price ?? quantityVariant?.final_price ?? product.consumer_price ?? 0;
                           const mrpPrice = quantityVariant?.mrp ?? product.retail_price ?? null;
                           const quantity = getQuantity(product._id);
 
@@ -858,7 +869,7 @@ const Fever = () => {
                               onClick={() => trackViewContent({
                                 id: product._id,
                                 name: product.name,
-                                value: product.price || 0,
+                                value: retailPrice || 0,
                                 currency: 'INR',
                                 category: product.sub_category || 'Medicine',
                                 type: 'product',
@@ -895,8 +906,8 @@ const Fever = () => {
                                   </p>
                                 </div>
                                 <div className="product-price ms-2">
-                                  <span>₹{finalPrice}</span>
-                                  {mrpPrice && mrpPrice > finalPrice && (
+                                  <span>₹{retailPrice}</span>
+                                  {mrpPrice && mrpPrice > retailPrice && (
                                     <span className="original-price">₹{mrpPrice}</span>
                                   )}
                                 </div>
