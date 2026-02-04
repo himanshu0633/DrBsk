@@ -60,7 +60,7 @@ const Prescription = () => {
 
     try {
       setUploading(true);
-      const response = await axios.post(`${API_URL}/user/createPrescription`, formData, {
+      const response = await axios.post(`${API_URL}user/createPrescription`, formData, {
         headers: {
           'Content-Type': 'multipart/form-data',
         },
