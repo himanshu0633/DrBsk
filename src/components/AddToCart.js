@@ -2,6 +2,8 @@ import React, { useEffect, useState, useCallback } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
 import { Trash2, ShoppingBag, ArrowLeft, CheckCircle, CreditCard, Wallet } from 'lucide-react';
 import './addToCart.css';
+import Footer from "./Footer/Footer";
+
 import { Link, useNavigate } from 'react-router-dom';
 import { toast } from 'react-toastify';
 import { deleteProduct, updateData, clearProducts } from '../store/Action';
@@ -2147,6 +2149,7 @@ const AddToCart = () => {
           </button>
         </DialogActions>
       </Dialog>
+       <Footer />
     </>
   );
 };

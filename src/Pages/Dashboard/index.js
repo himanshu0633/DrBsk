@@ -35,7 +35,7 @@ function Dashboard() {
     document.head.appendChild(script);
 
     // ✅ Pixel Init
-    window.fbq("init", "1131280045595284");
+    window.fbq("init", "1089413259423195");
 
     // ✅ ONLY PAGEVIEW
     window.fbq("track", "PageView");
@@ -97,7 +97,7 @@ function Dashboard() {
           height="1"
           width="1"
           style={{ display: "none" }}
-          src="https://www.facebook.com/tr?id=1131280045595284&ev=PageView&noscript=1"
+          src="https://www.facebook.com/tr?id=1089413259423195&ev=PageView&noscript=1"
           alt="fb-pixel"
         />
       </noscript>

@@ -1039,26 +1039,17 @@ const AddNewProduct = () => {
                             </div>
 
                             <div style={formGroupStyle}>
-                                <label style={requiredLabelStyle}>Expiry Year *</label>
+                                <label style={requiredLabelStyle}>Self Life *</label>
 
                                 <input
-                                    type="number"
+                                    type="text"
                                     name="expires_on"
                                     value={formData.expires_on}
-                                    onChange={(e) => {
-                                    const value = e.target.value;
-
-                                    // ❌ 4 digit se zyada allow nahi
-                                    if (value.length > 4) return;
-
-                                    handleChange(e);
-                                    }}
-                                    placeholder="YYYY"
-                                    min={new Date().getFullYear()}
-                                    max={new Date().getFullYear() + 20}
+                                    onChange={handleChange}
                                     style={inputStyle}
                                     required
                                 />
+
 
                                 {errors.expires_on && (
                                     <span style={errorStyle}>{errors.expires_on}</span>

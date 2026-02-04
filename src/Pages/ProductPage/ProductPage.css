@@ -71,20 +71,26 @@
   background: white;
   border-radius: 10px;
   box-shadow: 0 2px 15px rgba(0, 0, 0, 0.05);
-  overflow: hidden;
+  overflow: visible; /* ✅ ADD THIS */
+  
 }
+
 
 .product-wrapper {
   display: flex;
   flex-wrap: wrap;
+  align-items: flex-start; /* 🔥 MUST */
 }
 
-/* Product Image */
+
 .product-image-container {
   flex: 1 1 45%;
   min-width: 300px;
   padding: 30px;
-  position: relative;
+  position: sticky;
+  top: 10px;          /* header ke niche */
+  align-self: flex-start;
+  height: fit-content;
 }
 
 .image-wrapper {
@@ -92,18 +98,15 @@
   border-radius: 8px;
   padding: 20px;
   text-align: center;
-  position: relative;
-  width: 100%;
 }
 
-
-/* Image */
 .product-image1 {
   width: 100%;
   object-fit: contain;
-  transition: transform 0.3s ease;
   display: block;
 }
+
+
 
 .product-image1:hover {
   transform: scale(1.05);
@@ -1041,11 +1044,16 @@
     flex-direction: column;
   }
 
-  .product-info {
-    border-left: none;
-    border-top: 1px solid #eee;
+ .product-image-container {
+    position: relative;
+    z-index: 1;   /* piche */
   }
 
+  .product-info {
+    position: relative;
+    z-index: 1000;  /* upar */
+    background: #fff;
+  }
   .bought-together-products {
     flex-direction: column;
   }

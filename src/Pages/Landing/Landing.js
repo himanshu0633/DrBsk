@@ -36,7 +36,7 @@ const Landing = () => {
     })(window, document, 'script', 'https://connect.facebook.net/en_US/fbevents.js');
 
     // Initialize Facebook Pixel using window object
-    window.fbq('init', '1131280045595284');
+    window.fbq('init', '1089413259423195');
     window.fbq('track', 'PageView');
 
     // Animate on scroll
@@ -293,7 +293,7 @@ const Landing = () => {
           height="1" 
           width="1" 
           style={{ display: 'none' }}
-          src="https://www.facebook.com/tr?id=1131280045595284&ev=PageView&noscript=1"
+          src="https://www.facebook.com/tr?id=1089413259423195&ev=PageView&noscript=1"
           alt="Facebook Pixel"
         />
       </noscript>
