@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef, useMemo, useCallback } from "react"; 
+import React, { useState, useEffect, useRef, useMemo, useCallback } from "react";
 import "./ProductPage.css";
 import Footer from "../../components/Footer/Footer";
 import Header from "../../components/Header/Header";
@@ -113,6 +113,35 @@ const ProductPage = () => {
   const storedUser = localStorage.getItem("userData");
   const userData = storedUser ? JSON.parse(storedUser) : null;
   const isWholesaler = userData?.type === "wholesalePartner";
+
+  // ---------- Facebook Pixel: ViewContent Event ----------
+  // Product load होने के बाद फायर करें
+  useEffect(() => {
+    if (!product) return;
+
+    // Price selection based on user type
+    const price = isWholesaler
+      ? toNum(product.retail_price ?? 0, 0)
+      : toNum(product.consumer_price ?? product.final_price ?? product.price ?? 0, 0);
+
+    if (window.fbq) {
+      window.fbq("track", "ViewContent", {
+        content_name: product.name || product.title || "Product",
+        content_ids: [product._id || product.id || id],
+        content_type: "product",
+        value: price,
+        currency: "INR",
+      });
+      
+      console.log("✅ Facebook Pixel: ViewContent tracked", {
+        content_name: product.name,
+        content_id: product._id,
+        value: price
+      });
+    } else {
+      console.log("⚠️ Facebook Pixel not available");
+    }
+  }, [product, isWholesaler, id]);
 
   const handleMouseMove = (e) => {
     const { left, top, width, height } = e.currentTarget.getBoundingClientRect();
@@ -240,6 +269,27 @@ const ProductPage = () => {
     const price = isWholesaler
       ? toNum(selectedVariant.retail_price ?? product.retail_price ?? 0, 0)
       : toNum(selectedVariant.final_price ?? product.consumer_price ?? 0, 0);
+
+    // ---------- Facebook Pixel: AddToCart Event ----------
+    // Same click पर 1 बार fire होगा
+    if (window.fbq) {
+      window.fbq("track", "AddToCart", {
+        content_name: product?.name || product?.title || "Product",
+        content_ids: [product?._id || product?.id || id],
+        content_type: "product",
+        value: Number(price || 0),
+        currency: "INR",
+      });
+      
+      console.log("✅ Facebook Pixel: AddToCart tracked", {
+        content_name: product?.name,
+        content_id: product?._id,
+        value: price,
+        quantity: qty
+      });
+    } else {
+      console.log("⚠️ Facebook Pixel not available for AddToCart");
+    }
 
     // --- CART LOGIC ---
     const pid = toStr(product._id || product.id);
