@@ -363,6 +363,27 @@ const Fever = () => {
       ? null // Wholesaler doesn't need MRP
       : Number(quantityVariant?.mrp ?? product.retail_price ?? finalPrice);
 
+    // ---------- Facebook Pixel: AddToCart Event ----------
+    // Same click पर 1 बार fire होगा
+    if (window.fbq) {
+      window.fbq("track", "AddToCart", {
+        content_name: product?.name || product?.title || "Product",
+        content_ids: [product?._id || product?.id],
+        content_type: "product",
+        value: Number(finalPrice || 0),
+        currency: "INR",
+      });
+      
+      console.log("✅ Facebook Pixel: AddToCart tracked", {
+        content_name: product?.name,
+        content_id: product?._id,
+        value: finalPrice,
+        quantity: 1
+      });
+    } else {
+      console.log("⚠️ Facebook Pixel not available for AddToCart");
+    }
+
     dispatch(
       addData({
         ...product,
