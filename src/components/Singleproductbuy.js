@@ -9,6 +9,8 @@ import API_URL from '../config';
 import { Dialog, DialogTitle, DialogContent, DialogActions, TextField, InputAdornment } from '@mui/material';
 import JoinUrl from '../JoinUrl';
 import './addToCart.css';
+import './singleProduct.css'
+
 
 const SingleProductCheckout = () => {
   const { productId } = useParams();
