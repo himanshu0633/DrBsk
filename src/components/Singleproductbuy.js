@@ -401,6 +401,24 @@ const SingleProductCheckout = () => {
       if (response.data.success) {
         setProcessingMessage("Finalizing your order...");
         
+        // ---------- Facebook Pixel: Purchase Event (COD) ----------
+        if (window.fbq) {
+          window.fbq("track", "Purchase", {
+            value: Number(finalTotal || 0),
+            currency: "INR",
+            content_ids: [product?._id || product?.id].filter(Boolean),
+            content_type: "product",
+          });
+          
+          console.log("✅ Facebook Pixel: Purchase (COD) tracked", {
+            value: finalTotal,
+            content_id: product?._id,
+            payment_method: 'cod'
+          });
+        } else {
+          console.log("⚠️ Facebook Pixel not available for Purchase (COD)");
+        }
+        
         if (!isAuthenticated) {
           localStorage.removeItem('guestAddresses');
           localStorage.removeItem('guestEmail');
@@ -571,6 +589,24 @@ const SingleProductCheckout = () => {
             if (verifyResponse.data.success) {
               setProcessingMessage("Finalizing your order...");
               
+              // ---------- Facebook Pixel: Purchase Event (Online) ----------
+              if (window.fbq) {
+                window.fbq("track", "Purchase", {
+                  value: Number(finalTotal || 0),
+                  currency: "INR",
+                  content_ids: [product?._id || product?.id].filter(Boolean),
+                  content_type: "product",
+                });
+                
+                console.log("✅ Facebook Pixel: Purchase (Online) tracked", {
+                  value: finalTotal,
+                  content_id: product?._id,
+                  payment_method: 'online'
+                });
+              } else {
+                console.log("⚠️ Facebook Pixel not available for Purchase (Online)");
+              }
+              
               if (!isAuthenticated) {
                 localStorage.removeItem('guestAddresses');
                 localStorage.removeItem('guestEmail');
@@ -665,6 +701,26 @@ const SingleProductCheckout = () => {
   };
 
   const handleCheckout = async () => {
+    // ---------- Facebook Pixel: InitiateCheckout Event ----------
+    if (window.fbq) {
+      window.fbq("track", "InitiateCheckout", {
+        value: Number(finalTotal || 0),
+        currency: "INR",
+        content_ids: [product?._id || product?.id].filter(Boolean),
+        content_type: "product",
+        num_items: Number(quantity || 1),
+      });
+      
+      console.log("✅ Facebook Pixel: InitiateCheckout tracked", {
+        value: finalTotal,
+        content_id: product?._id,
+        quantity: quantity,
+        payment_method: paymentMethod
+      });
+    } else {
+      console.log("⚠️ Facebook Pixel not available for InitiateCheckout");
+    }
+
     if (checkoutLoading || paymentProcessing || codProcessing || isProcessing) {
       return;
     }
