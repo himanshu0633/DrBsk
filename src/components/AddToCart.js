@@ -416,6 +416,24 @@ const AddToCart = () => {
         
         setProcessingMessage("Finalizing your order...");
         
+        // ---------- Facebook Pixel: Purchase Event (COD) ----------
+        if (window.fbq) {
+          window.fbq("track", "Purchase", {
+            value: Number(finalTotal || 0),
+            currency: "INR",
+            content_ids: (cartItems || []).map(i => i._id).filter(Boolean),
+            content_type: "product",
+          });
+          
+          console.log("✅ Facebook Pixel: Purchase (COD) tracked", {
+            value: finalTotal,
+            content_ids: cartItems.map(i => i._id).filter(Boolean),
+            payment_method: 'cod'
+          });
+        } else {
+          console.log("⚠️ Facebook Pixel not available for Purchase (COD)");
+        }
+        
         // Clear cart
         dispatch(clearProducts());
         localStorage.removeItem('cartItems');
@@ -634,6 +652,24 @@ const AddToCart = () => {
               // Update loader for final step
               setProcessingMessage("Finalizing your order...");
               
+              // ---------- Facebook Pixel: Purchase Event (Online) ----------
+              if (window.fbq) {
+                window.fbq("track", "Purchase", {
+                  value: Number(finalTotal || 0),
+                  currency: "INR",
+                  content_ids: (cartItems || []).map(i => i._id).filter(Boolean),
+                  content_type: "product",
+                });
+                
+                console.log("✅ Facebook Pixel: Purchase (Online) tracked", {
+                  value: finalTotal,
+                  content_ids: cartItems.map(i => i._id).filter(Boolean),
+                  payment_method: 'online'
+                });
+              } else {
+                console.log("⚠️ Facebook Pixel not available for Purchase (Online)");
+              }
+              
               // Clear cart
               dispatch(clearProducts());
               localStorage.removeItem('cartItems');
@@ -762,6 +798,27 @@ const AddToCart = () => {
     if (checkoutLoading || paymentProcessing || codProcessing || isProcessing) {
       console.log("Checkout already in progress");
       return;
+    }
+
+    // ---------- Facebook Pixel: InitiateCheckout Event ----------
+    // Fire once when checkout starts
+    if (window.fbq) {
+      window.fbq("track", "InitiateCheckout", {
+        value: Number(finalTotal || 0),
+        currency: "INR",
+        content_ids: (cartItems || []).map(i => i._id).filter(Boolean),
+        content_type: "product",
+        num_items: (cartItems || []).length,
+      });
+      
+      console.log("✅ Facebook Pixel: InitiateCheckout tracked", {
+        value: finalTotal,
+        content_ids: cartItems.map(i => i._id).filter(Boolean),
+        num_items: cartItems.length,
+        payment_method: paymentMethod
+      });
+    } else {
+      console.log("⚠️ Facebook Pixel not available for InitiateCheckout");
     }
 
     if (paymentMethod === 'cod') {
