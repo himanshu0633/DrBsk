@@ -91,33 +91,6 @@ const toNum = (v, fallback = 0) => {
   return Number.isFinite(n) ? n : fallback;
 };
 
-/** ---------- Facebook Pixel / Analytics Meta ---------- */
-const trackAddToCart = (product, variant, quantity) => {
-  if (typeof window !== "undefined" && window.fbq) {
-    window.fbq("track", "AddToCart", {
-      content_ids: [product._id],
-      content_name: product.name,
-      content_type: "product",
-      value: variant.final_price * quantity,
-      currency: "INR",
-      num_items: quantity,
-    });
-  }
-};
-
-const trackInitiateCheckout = (checkoutData) => {
-  if (typeof window !== "undefined" && window.fbq) {
-    window.fbq("track", "InitiateCheckout", {
-      content_ids: checkoutData.contentIds || [checkoutData.id],
-      content_name: checkoutData.name,
-      content_type: "product",
-      value: checkoutData.value || checkoutData.price || 0,
-      currency: "INR",
-      num_items: checkoutData.numItems || 1,
-    });
-  }
-};
-
 /** ---------- component ---------- */
 const ProductPage = () => {
   const [units, setUnits] = useState(1);
@@ -268,9 +241,6 @@ const ProductPage = () => {
       ? toNum(selectedVariant.retail_price ?? product.retail_price ?? 0, 0)
       : toNum(selectedVariant.final_price ?? product.consumer_price ?? 0, 0);
 
-    // --- META TRACKING ---
-    trackAddToCart(product, selectedVariant, qty);
-
     // --- CART LOGIC ---
     const pid = toStr(product._id || product.id);
 
@@ -347,16 +317,6 @@ const ProductPage = () => {
       : toNum(selectedVariant.final_price ?? product.consumer_price ?? 0, 0);
       
     const qty = toNum(units, 1);
-
-    // --- META TRACKING ---
-    trackInitiateCheckout({
-      content_ids: [product._id],
-      content_name: product.name,
-      content_type: "product",
-      value: price * qty,
-      currency: "INR",
-      num_items: qty,
-    });
 
     // --- CHECKOUT LOGIC ---
     const checkoutProduct = {
