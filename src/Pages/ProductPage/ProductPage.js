@@ -46,8 +46,19 @@ const parseQuantityVariants = (raw) => {
     let arr = [];
 
     if (Array.isArray(raw)) {
-      if (raw.length > 0 && typeof raw[0] === "string") {
-        arr = raw.flatMap((item) => {
+      if (raw.length > 0) {
+        // Handle nested array structure [[{...}]]
+        if (Array.isArray(raw[0])) {
+          // Flatten the nested array
+          arr = raw.flat();
+        } else {
+          arr = raw;
+        }
+      }
+
+      // If items are strings, parse them
+      if (arr.length > 0 && typeof arr[0] === "string") {
+        arr = arr.flatMap((item) => {
           try {
             const parsed = JSON.parse(item);
             return Array.isArray(parsed) ? parsed : [];
@@ -55,11 +66,13 @@ const parseQuantityVariants = (raw) => {
             return [];
           }
         });
-      } else {
-        arr = raw;
       }
     } else if (typeof raw === "string") {
       arr = JSON.parse(raw);
+      // Handle nested array in string format
+      if (Array.isArray(arr) && arr.length > 0 && Array.isArray(arr[0])) {
+        arr = arr.flat();
+      }
     } else {
       arr = [];
     }
@@ -166,7 +179,17 @@ const ProductPage = () => {
     try {
       const { data: p } = await axiosInstance.get(`/user/product/${id}`);
 
-      const variants = parseQuantityVariants(p.quantity);
+      // Handle the nested quantity array
+      let quantityData = p.quantity;
+      
+      // If quantity is nested array [[{...}]], flatten it
+      if (Array.isArray(quantityData) && 
+          quantityData.length > 0 && 
+          Array.isArray(quantityData[0])) {
+        quantityData = quantityData.flat();
+      }
+
+      const variants = parseQuantityVariants(quantityData);
       let defaultIndex = 0;
       const firstInStock = variants.findIndex((v) => v.in_stock);
       if (firstInStock >= 0) defaultIndex = firstInStock;
@@ -533,53 +556,7 @@ const ProductPage = () => {
                 </div>
               </div>
 
-              {/* Variant selector */}
-              <div className="variant-section">
-                <div className="variant-header mb-1">Select Quantity</div>
-                <div className="variant-grid" role="listbox" aria-label="Variants">
-                  {variants.length > 0 ? (
-                    variants.map((v, i) => {
-                      const selected = i === selectedVariantIndex;
-                      const displayPrice = isWholesaler 
-                        ? v.retail_price ?? product?.retail_price ?? 0
-                        : v.final_price ?? product?.consumer_price ?? 0;
-                      
-                      return (
-                        <button
-                          type="button"
-                          key={v._key || i}
-                          role="option"
-                          aria-selected={selected}
-                          className={`variant-card ${selected ? "selected" : ""} ${
-                            v.in_stock ? "" : "disabled"
-                          }`}
-                          onClick={() => v.in_stock && handleSelectVariant(i)}
-                          title={v.in_stock ? "Select variant" : "Out of stock"}
-                        >
-                          <div className="variant-card__row">
-                            <div className="variant-card__label">{v.label || "—"}</div>
-                            {selected && (
-                              <div className="variant-card__check">
-                                <Check size={16} />
-                              </div>
-                            )}
-                          </div>
-                          <div className="variant-card__price">
-                            <span className="variant-card__price--current">
-                              {money(displayPrice)}
-                            </span>
-                            {isWholesaler && (
-                              <div className="wholesale-tag">Wholesale</div>
-                            )}
-                          </div>
-                        </button>
-                      );
-                    })
-                  ) : (
-                    <div className="variant-empty">No variant data available</div>
-                  )}
-                </div>
-              </div>
+       
 
               {/* Stock banner */}
               <div className={`stock-status ${product.stock ? "bg-green" : "bg-red"}`}>
@@ -595,7 +572,7 @@ const ProductPage = () => {
                 )}
               </div>
 
-              {/* Dynamic price block - Fever page की तरह user type के based */}
+              {/* Dynamic price block - UPDATED with savings calculation */}
               <div className="price-section">
                 <div className="price-container">
                   {/* Wholesaler के लिए retail_price दिखाएं, normal user के लिए consumer/final price */}
@@ -610,7 +587,12 @@ const ProductPage = () => {
                     <>
                       <div className="current-price">{money(unitPrice)}</div>
                       {unitMrp != null && unitMrp > unitPrice && (
-                        <div className="original-price">{money(unitMrp)}</div>
+                        <>
+                          <div className="original-price">{money(unitMrp)}</div>
+                          <div className="savings-badge">
+                            Save {money(unitMrp - unitPrice)}
+                          </div>
+                        </>
                       )}
                       {unitDiscount != null && unitDiscount > 0 && (
                         <div className="discount-badge">{unitDiscount}% OFF</div>

@@ -17,8 +17,19 @@ const parseQuantityVariants = (raw) => {
   try {
     let arr = [];
     if (Array.isArray(raw)) {
-      if (raw.length > 0 && typeof raw[0] === "string") {
-        arr = raw.flatMap((item) => {
+      if (raw.length > 0) {
+        // Handle nested array structure [[{...}]]
+        if (Array.isArray(raw[0])) {
+          // Flatten the nested array
+          arr = raw.flat();
+        } else {
+          arr = raw;
+        }
+      }
+      
+      // If items are strings, parse them
+      if (arr.length > 0 && typeof arr[0] === "string") {
+        arr = arr.flatMap((item) => {
           try {
             const parsed = JSON.parse(item);
             return Array.isArray(parsed) ? parsed : [parsed];
@@ -26,15 +37,18 @@ const parseQuantityVariants = (raw) => {
             return [];
           }
         });
-      } else {
-        arr = raw;
       }
     } else if (typeof raw === "string") {
       arr = JSON.parse(raw);
+      if (Array.isArray(arr) && arr.length > 0 && Array.isArray(arr[0])) {
+        arr = arr.flat();
+      }
     } else {
       arr = [];
     }
+    
     if (!Array.isArray(arr)) return [];
+    
     return arr.map((v, i) => ({
       ...v,
       mrp: v.mrp ? parseFloat(v.mrp) : null,
@@ -44,7 +58,8 @@ const parseQuantityVariants = (raw) => {
       final_price: v.final_price ? parseFloat(v.final_price) : null,
       in_stock: v.in_stock ? String(v.in_stock).toLowerCase() === "yes" : false,
     }));
-  } catch {
+  } catch (error) {
+    console.error("Error parsing quantity variants:", error);
     return [];
   }
 };
@@ -138,22 +153,40 @@ const Fever = () => {
         };
 
         const pickVariation = (q) => {
-          if (!q) return null;
-          let arr = q;
-          if (typeof q === "string") {
-            try {
-              arr = JSON.parse(q);
-            } catch {
-              return null;
-            }
-          }
-          if (!Array.isArray(arr) || arr.length === 0) return null;
-          return (
-            arr.find(
-              (v) => String(v.in_stock || "").toLowerCase() === "yes"
-            ) || arr[0]
-          );
-        };
+  if (!q) return null;
+  
+  let variants = [];
+  
+  // Handle nested array structure
+  if (Array.isArray(q)) {
+    if (q.length > 0 && Array.isArray(q[0])) {
+      // Nested array: [[{...}]]
+      variants = q.flat();
+    } else if (q.length > 0 && typeof q[0] === "object") {
+      // Array of objects: [{...}]
+      variants = q;
+    }
+  } else if (typeof q === "string") {
+    try {
+      const parsed = JSON.parse(q);
+      if (Array.isArray(parsed)) {
+        if (parsed.length > 0 && Array.isArray(parsed[0])) {
+          variants = parsed.flat();
+        } else {
+          variants = parsed;
+        }
+      }
+    } catch {
+      return null;
+    }
+  }
+  
+  if (!variants.length) return null;
+  
+  return variants.find((v) => 
+    v.in_stock && String(v.in_stock).toLowerCase() === "yes"
+  ) || variants[0];
+};
 
         const fetched = data.map((p) => {
           let retail = toNum(p.retail_price);
@@ -339,10 +372,28 @@ const Fever = () => {
   }, [products, currentPage]);
 
   const pickBestVariant = (quantityArr) => {
-    const variants = parseQuantityVariants(quantityArr);
-    if (!variants.length) return null;
-    return variants.find((v) => v.in_stock) || variants[0];
-  };
+  if (!quantityArr) return null;
+  
+  let variants = [];
+  
+  // Handle the nested array structure
+  if (Array.isArray(quantityArr)) {
+    if (quantityArr.length > 0 && Array.isArray(quantityArr[0])) {
+      // Nested array case: [[{...}]]
+      variants = quantityArr.flat();
+    } else if (quantityArr.length > 0 && typeof quantityArr[0] === "object") {
+      // Already array of objects: [{...}]
+      variants = quantityArr;
+    }
+  }
+  
+  if (!variants.length) return null;
+  
+  // Find in-stock variant or return first
+  return variants.find((v) => 
+    v.in_stock && String(v.in_stock).toLowerCase() === "yes"
+  ) || variants[0];
+};
 
   const getQuantity = useCallback(
     (id) => {
