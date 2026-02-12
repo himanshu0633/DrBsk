@@ -8,7 +8,6 @@ import axiosInstance from '../../src/components/AxiosInstance';
 import API_URL from '../config';
 import { Dialog, DialogTitle, DialogContent, DialogActions, TextField, InputAdornment } from '@mui/material';
 import JoinUrl from '../JoinUrl';
-import './addToCart.css';
 import './singleProduct.css'
 
 
@@ -991,7 +990,7 @@ const SingleProductCheckout = () => {
                         </label>
                       </div>
                       
-                      <div className="payment-option">
+                      {/* <div className="payment-option">
                         <label className={`payment-method-card ${paymentMethod === 'cod' ? 'selected' : ''} ${isMobile ? 'mobile' : ''}`}>
                           <input
                             type="radio"
@@ -1011,7 +1010,7 @@ const SingleProductCheckout = () => {
                             </p>
                           </div>
                         </label>
-                      </div>
+                      </div> */}
                     </div>
                   </div>
 

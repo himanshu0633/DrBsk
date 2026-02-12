@@ -6,6 +6,7 @@ import {
     Package,
     Image,
     Settings,
+    TicketPercent,
     X
 } from 'lucide-react';
 import '../../../components/Admin/Admin.css';
@@ -61,6 +62,10 @@ const PharmaSidebar = ({ onClose }) => {
                     <NavLink to="/pharma-admin/prescriptions" className="admin-nav-link" onClick={onClose}>
                         <Users className="nav-icon" size={20} />
                         <span className="nav-text">Prescriptions</span>
+                    </NavLink>
+                    <NavLink to="/pharma-admin/couponManagement" className="admin-nav-link" onClick={onClose}>
+                        <TicketPercent className="nav-icon" size={20} />
+                        <span className="nav-text">Cupan</span>
                     </NavLink>
                     {/* <NavLink to="/pharma-admin/settings" className="admin-nav-link" onClick={onClose}>
                         <Settings className="nav-icon" size={20} />

@@ -33,7 +33,10 @@ import MyChart from "./Pages/pharma-admin/component/Mychart";
 import PharmaWholeSale from "./Pages/pharma-admin/component/PharmaWholeSale";
 import PharmaAdminLogin from "./Pages/pharma-admin/page/PharmaAdminLogin";
 import ProtectedRoute from "./Pages/pharma-admin/page/ProtectedRoute";
+import CouponManagement from "./Pages/pharma-admin/component/CouponManagement";
+
 import PharmaPrescription from "./Pages/pharma-admin/component/PharmaPrescription";
+
 
 import AboutUs from "./Pages/footerLinksPages/AboutUs";
 import ContactusForm from "./Pages/footerLinksPages/ContactusForm";
@@ -104,6 +107,8 @@ function App() {
             <Route path="chart" element={<MyChart />} />
             <Route path="wholesale" element={<PharmaWholeSale />} />
             <Route path="prescriptions" element={<PharmaPrescription />} />
+            <Route path="couponManagement" element={<CouponManagement />}/>
+
           </Route>
         </Route>
       </Routes>
