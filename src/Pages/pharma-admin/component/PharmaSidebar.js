@@ -63,10 +63,10 @@ const PharmaSidebar = ({ onClose }) => {
                         <Users className="nav-icon" size={20} />
                         <span className="nav-text">Prescriptions</span>
                     </NavLink>
-                    <NavLink to="/pharma-admin/couponManagement" className="admin-nav-link" onClick={onClose}>
+                    {/* <NavLink to="/pharma-admin/couponManagement" className="admin-nav-link" onClick={onClose}>
                         <TicketPercent className="nav-icon" size={20} />
                         <span className="nav-text">Cupan</span>
-                    </NavLink>
+                    </NavLink> */}
                     {/* <NavLink to="/pharma-admin/settings" className="admin-nav-link" onClick={onClose}>
                         <Settings className="nav-icon" size={20} />
                         <span className="nav-text">Settings</span>
