@@ -24,8 +24,17 @@ import {
   DialogTitle,
   Alert,
   AlertTitle,
+  IconButton,
+  Tooltip,
+  Checkbox,
+  FormControlLabel,
+  Snackbar
 } from '@mui/material';
 import { styled } from '@mui/material/styles';
+import DeleteIcon from '@mui/icons-material/Delete';
+import VisibilityIcon from '@mui/icons-material/Visibility';
+import DeleteSweepIcon from '@mui/icons-material/DeleteSweep';
+import WarningIcon from '@mui/icons-material/Warning';
 
 const StyledTableContainer = styled(TableContainer)(({ theme }) => ({
   marginTop: theme.spacing(3),
@@ -53,15 +62,15 @@ const StatusChip = styled(Chip)(({ theme, status }) => ({
     status === 'delivered' ? theme.palette.success.dark :
       status === 'pending' ? theme.palette.warning.dark :
         status === 'cancelled' ? theme.palette.error.dark :
-      status === 'refunded' ? theme.palette.info.dark :
-        status === 'captured' || status === 'paid' ? theme.palette.success.dark :
-          status === 'authorized' ? theme.palette.info.dark :
-            status === 'failed' ? theme.palette.error.dark :
-              status === 'processed' ? theme.palette.success.dark :
-                status === 'initiated' ? theme.palette.warning.dark :
-                  status === 'created' ? theme.palette.grey.dark :
-                    status === 'none' ? theme.palette.grey.dark :
-                      theme.palette.grey.dark,
+          status === 'refunded' ? theme.palette.info.dark :
+            status === 'captured' || status === 'paid' ? theme.palette.success.dark :
+              status === 'authorized' ? theme.palette.info.dark :
+                status === 'failed' ? theme.palette.error.dark :
+                  status === 'processed' ? theme.palette.success.dark :
+                    status === 'initiated' ? theme.palette.warning.dark :
+                      status === 'created' ? theme.palette.grey.dark :
+                        status === 'none' ? theme.palette.grey.dark :
+                          theme.palette.grey.dark,
 }));
 
 const statusOptions = ['Pending', 'Delivered', 'Cancelled'];
@@ -72,11 +81,9 @@ const safeString = (value, defaultValue = '') => {
   if (typeof value === 'string') return value;
   if (typeof value === 'number' || typeof value === 'boolean') return String(value);
   if (typeof value === 'object') {
-    // Try to extract common properties
     if (value.name) return safeString(value.name, defaultValue);
     if (value.title) return safeString(value.title, defaultValue);
     if (value.productName) return safeString(value.productName, defaultValue);
-    // Fallback to JSON string if it's a simple object
     try {
       return JSON.stringify(value);
     } catch {
@@ -110,6 +117,24 @@ const PharmaOrder = () => {
   const [rowsPerPage, setRowsPerPage] = useState(10);
   const [refreshing, setRefreshing] = useState(false);
   const [processingCapture, setProcessingCapture] = useState(null);
+  
+  // New state for delete functionality
+  const [deleteDialog, setDeleteDialog] = useState({
+    open: false,
+    orderId: null,
+    orderDetails: null
+  });
+  const [bulkDeleteMode, setBulkDeleteMode] = useState(false);
+  const [selectedOrders, setSelectedOrders] = useState([]);
+  const [bulkDeleteDialog, setBulkDeleteDialog] = useState({
+    open: false,
+    count: 0
+  });
+  const [snackbar, setSnackbar] = useState({
+    open: false,
+    message: '',
+    severity: 'success'
+  });
 
   useEffect(() => {
     fetchData();
@@ -127,6 +152,7 @@ const PharmaOrder = () => {
       setOrders(response.data.orders || []);
     } catch (error) {
       console.error("Error fetching data:", error);
+      showSnackbar('Error fetching orders', 'error');
     } finally {
       setLoading(false);
     }
@@ -142,6 +168,117 @@ const PharmaOrder = () => {
     } finally {
       setRefreshing(false);
     }
+  };
+
+  const showSnackbar = (message, severity = 'success') => {
+    setSnackbar({
+      open: true,
+      message,
+      severity
+    });
+  };
+
+  const handleCloseSnackbar = () => {
+    setSnackbar({ ...snackbar, open: false });
+  };
+
+  // ==================== DELETE SINGLE ORDER ====================
+  const handleDeleteClick = (order) => {
+    setDeleteDialog({
+      open: true,
+      orderId: order._id,
+      orderDetails: order
+    });
+  };
+
+  const confirmDeleteOrder = async () => {
+    if (!deleteDialog.orderId) return;
+
+    try {
+      const response = await axiosInstance.delete(`/api/orders/${deleteDialog.orderId}`);
+      
+      // Remove order from state
+      setOrders(prevOrders => prevOrders.filter(order => order._id !== deleteDialog.orderId));
+      
+      // Also remove from selected orders if present
+      setSelectedOrders(prev => prev.filter(id => id !== deleteDialog.orderId));
+      
+      showSnackbar(response.data.message || 'Order deleted successfully');
+      
+      // Close the delete dialog
+      setDeleteDialog({ open: false, orderId: null, orderDetails: null });
+      
+    } catch (error) {
+      console.error("Failed to delete order:", error);
+      showSnackbar(
+        error.response?.data?.message || 'Failed to delete order',
+        'error'
+      );
+    }
+  };
+
+  // ==================== BULK DELETE ====================
+  const handleSelectOrder = (orderId) => {
+    setSelectedOrders(prev => {
+      if (prev.includes(orderId)) {
+        return prev.filter(id => id !== orderId);
+      } else {
+        return [...prev, orderId];
+      }
+    });
+  };
+
+  const handleSelectAll = () => {
+    if (selectedOrders.length === currentOrders.length) {
+      setSelectedOrders([]);
+    } else {
+      setSelectedOrders(currentOrders.map(order => order._id));
+    }
+  };
+
+  const handleBulkDeleteClick = () => {
+    if (selectedOrders.length === 0) {
+      showSnackbar('Please select at least one order to delete', 'warning');
+      return;
+    }
+    
+    setBulkDeleteDialog({
+      open: true,
+      count: selectedOrders.length
+    });
+  };
+
+  const confirmBulkDelete = async () => {
+    try {
+      const response = await axiosInstance.post('/api/orders/bulk-delete', {
+        orderIds: selectedOrders
+      });
+
+      // Remove all deleted orders from state
+      setOrders(prevOrders => 
+        prevOrders.filter(order => !selectedOrders.includes(order._id))
+      );
+      
+      // Clear selection
+      setSelectedOrders([]);
+      setBulkDeleteMode(false);
+      
+      showSnackbar(response.data.message || `Successfully deleted ${response.data.deletedCount} orders`);
+      setBulkDeleteDialog({ open: false, count: 0 });
+      
+    } catch (error) {
+      console.error("Failed to bulk delete orders:", error);
+      showSnackbar(
+        error.response?.data?.message || 'Failed to delete orders',
+        'error'
+      );
+      setBulkDeleteDialog({ open: false, count: 0 });
+    }
+  };
+
+  // Check if order can be deleted
+  const canDeleteOrder = (order) => {
+    return ['Pending', 'Cancelled', 'Delivered'].includes(order.status);
   };
 
   const handleViewOrder = async (order) => {
@@ -190,11 +327,11 @@ const PharmaOrder = () => {
             : order
         )
       );
-      alert('Payment Paid successfully!');
+      showSnackbar('Payment captured successfully!');
       fetchData();
     } catch (error) {
       console.error("Failed to capture payment:", error);
-      alert("Failed to capture payment. Please try again.");
+      showSnackbar("Failed to capture payment. Please try again.", 'error');
     } finally {
       setProcessingCapture(null);
     }
@@ -219,10 +356,10 @@ const PharmaOrder = () => {
         )
       );
 
-      alert('Order status updated successfully!');
+      showSnackbar('Order status updated successfully!');
     } catch (error) {
       console.error("Failed to update order status:", error);
-      alert("Failed to update order status. Please try again.");
+      showSnackbar("Failed to update order status. Please try again.", 'error');
     } finally {
       setUpdatingStatusId(null);
     }
@@ -254,12 +391,12 @@ const PharmaOrder = () => {
         ? `Order cancelled and refund initiated! Refund will be processed within 5-7 business days.`
         : 'Order cancelled successfully! No refund needed.';
 
-      alert(message);
+      showSnackbar(message);
       await fetchData();
 
     } catch (error) {
       console.error("Failed to cancel order:", error);
-      alert("Failed to cancel order. Please try again.");
+      showSnackbar("Failed to cancel order. Please try again.", 'error');
     } finally {
       setUpdatingStatusId(null);
       setShowCancelDialog(false);
@@ -279,14 +416,11 @@ const PharmaOrder = () => {
     });
   };
 
-const getPaymentStatusLabel = (paymentInfo) => {
-  if (!paymentInfo || typeof paymentInfo !== 'object') return 'Unknown';
-  
-  // Check if the payment status is 'captured' and return 'Paid' instead
-  const status = safeString(paymentInfo.status, 'Unknown');
-  return status === 'captured' ? 'Paid' : 'Unknown';
-};
-
+  const getPaymentStatusLabel = (paymentInfo) => {
+    if (!paymentInfo || typeof paymentInfo !== 'object') return 'Unknown';
+    const status = safeString(paymentInfo.status, 'Unknown');
+    return status === 'captured' ? 'Paid' : status.charAt(0).toUpperCase() + status.slice(1);
+  };
 
   const getRefundStatusText = (refundInfo) => {
     if (!refundInfo || typeof refundInfo !== 'object') return 'No Refund';
@@ -326,7 +460,6 @@ const getPaymentStatusLabel = (paymentInfo) => {
     
     if (children !== null && children !== undefined) {
       if (typeof children === 'object' && !Array.isArray(children)) {
-        // If it's an object, convert to string
         safeChildren = safeString(children);
       }
     }
@@ -341,11 +474,36 @@ const getPaymentStatusLabel = (paymentInfo) => {
           <Typography variant="h4" component="h1" className='fontSize25sml' gutterBottom sx={{ fontWeight: 'bold' }}>
             Orders Management
           </Typography>
-          <Box sx={{ display: 'flex', gap: 2 }}>
+          <Box sx={{ display: 'flex', gap: 2, alignItems: 'center' }}>
             {refreshing && <CircularProgress size={20} />}
             <Button variant="outlined" onClick={fetchData} disabled={loading}>
               Refresh Orders
             </Button>
+            
+            {/* Bulk Delete Toggle Button */}
+            {/* <Button
+              variant={bulkDeleteMode ? "contained" : "outlined"}
+              color={bulkDeleteMode ? "error" : "primary"}
+              startIcon={<DeleteSweepIcon />}
+              onClick={() => {
+                setBulkDeleteMode(!bulkDeleteMode);
+                setSelectedOrders([]);
+              }}
+            >
+              {bulkDeleteMode ? 'Exit Bulk Delete' : 'Bulk Delete'}
+            </Button> */}
+            
+            {/* Bulk Delete Action Button */}
+            {bulkDeleteMode && selectedOrders.length > 0 && (
+              <Button
+                variant="contained"
+                color="error"
+                startIcon={<DeleteIcon />}
+                onClick={handleBulkDeleteClick}
+              >
+                Delete {selectedOrders.length} Selected
+              </Button>
+            )}
           </Box>
         </Box>
 
@@ -358,7 +516,17 @@ const getPaymentStatusLabel = (paymentInfo) => {
             <Table>
               <TableHead>
                 <TableRow sx={{ backgroundColor: (theme) => theme.palette.primary.main }}>
-                  <TableCell sx={{ color: 'white', fontWeight: 'bold' }}>Name</TableCell>
+                  {bulkDeleteMode && (
+                    <TableCell sx={{ color: 'white', fontWeight: 'bold', width: '50px' }}>
+                      <Checkbox
+                        checked={selectedOrders.length === currentOrders.length && currentOrders.length > 0}
+                        indeterminate={selectedOrders.length > 0 && selectedOrders.length < currentOrders.length}
+                        onChange={handleSelectAll}
+                        sx={{ color: 'white', '&.Mui-checked': { color: 'white' } }}
+                      />
+                    </TableCell>
+                  )}
+                  <TableCell sx={{ color: 'white', fontWeight: 'bold' }}>Product Name</TableCell>
                   <TableCell sx={{ color: 'white', fontWeight: 'bold' }}>Price</TableCell>
                   <TableCell sx={{ color: 'white', fontWeight: 'bold' }}>Quantity</TableCell>
                   <TableCell sx={{ color: 'white', fontWeight: 'bold' }}>Order Status</TableCell>
@@ -370,7 +538,7 @@ const getPaymentStatusLabel = (paymentInfo) => {
               <TableBody>
                 {currentOrders.length === 0 ? (
                   <TableRow>
-                    <TableCell colSpan={7} align="center">
+                    <TableCell colSpan={bulkDeleteMode ? 9 : 8} align="center">
                       <Typography>No orders found</Typography>
                     </TableCell>
                   </TableRow>
@@ -379,14 +547,33 @@ const getPaymentStatusLabel = (paymentInfo) => {
                     const items = order.items || [];
 
                     return items.map((item, index) => (
-                      <TableRow key={`${order._id}-${item.productId || index}-${index}`} hover>
+                      <TableRow 
+                        key={`${order._id}-${item.productId || index}-${index}`} 
+                        hover
+                        sx={{
+                          backgroundColor: selectedOrders.includes(order._id) ? 'action.selected' : 'inherit',
+                          '&:hover': {
+                            backgroundColor: selectedOrders.includes(order._id) ? 'action.selected' : 'action.hover'
+                          }
+                        }}
+                      >
+                        {bulkDeleteMode && index === 0 && (
+                          <TableCell rowSpan={items.length}>
+                            <Checkbox
+                              checked={selectedOrders.includes(order._id)}
+                              onChange={() => handleSelectOrder(order._id)}
+                              disabled={!canDeleteOrder(order)}
+                            />
+                          </TableCell>
+                        )}
+                        
                         <SafeTableCell>
                           {getProductName(item)}
                         </SafeTableCell>
 
                         {index === 0 && (
                           <TableCell rowSpan={items.length}>
-                            ₹{safeNumber(order.totalAmount, 0)}
+                            ₹{safeNumber(order.totalAmount, 0).toFixed(2)}
                           </TableCell>
                         )}
 
@@ -404,7 +591,8 @@ const getPaymentStatusLabel = (paymentInfo) => {
                                 padding: '4px 8px',
                                 borderRadius: '4px',
                                 border: '1px solid #ccc',
-                                backgroundColor: canCancelOrder(order) ? 'white' : '#f5f5f5'
+                                backgroundColor: canCancelOrder(order) ? 'white' : '#f5f5f5',
+                                width: '100%'
                               }}
                             >
                               {statusOptions.map((status) => (
@@ -460,13 +648,33 @@ const getPaymentStatusLabel = (paymentInfo) => {
                         {index === 0 && (
                           <TableCell rowSpan={items.length}>
                             <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
-                              <Button
-                                variant="outlined"
-                                size="small"
-                                onClick={() => handleViewOrder(order)}
-                              >
-                                View Details
-                              </Button>
+                              <Tooltip title="View Order Details">
+                                <Button
+                                  variant="outlined"
+                                  size="small"
+                                  startIcon={<VisibilityIcon />}
+                                  onClick={() => handleViewOrder(order)}
+                                  sx={{ justifyContent: 'flex-start' }}
+                                >
+                                  View
+                                </Button>
+                              </Tooltip>
+                              
+                              <Tooltip title={canDeleteOrder(order) ? "Delete Order" : "Cannot delete order with current status"}>
+                                <span>
+                                  <Button
+                                    variant="outlined"
+                                    size="small"
+                                    color="error"
+                                    startIcon={<DeleteIcon />}
+                                    onClick={() => handleDeleteClick(order)}
+                                    disabled={!canDeleteOrder(order)}
+                                    sx={{ justifyContent: 'flex-start' }}
+                                  >
+                                    Delete
+                                  </Button>
+                                </span>
+                              </Tooltip>
                             </Box>
                           </TableCell>
                         )}
@@ -494,13 +702,138 @@ const getPaymentStatusLabel = (paymentInfo) => {
         )}
       </Box>
 
+      {/* ========== DELETE SINGLE ORDER DIALOG ========== */}
+      <Dialog open={deleteDialog.open} onClose={() => setDeleteDialog({ open: false, orderId: null, orderDetails: null })} maxWidth="sm" fullWidth>
+        <DialogTitle sx={{ color: 'error.main', display: 'flex', alignItems: 'center', gap: 1 }}>
+          <WarningIcon color="error" />
+          Delete Order
+        </DialogTitle>
+        <DialogContent>
+          <Alert severity="error" sx={{ mb: 2 }}>
+            <AlertTitle>Warning: This action cannot be undone!</AlertTitle>
+            You are about to permanently delete this order.
+          </Alert>
+          
+          {deleteDialog.orderDetails && (
+            <Box sx={{ mt: 2 }}>
+              <Typography variant="subtitle2" gutterBottom sx={{ fontWeight: 'bold', mb: 1 }}>
+                Order Details:
+              </Typography>
+              <Paper variant="outlined" sx={{ p: 2, bgcolor: '#fafafa' }}>
+                <Grid container spacing={1}>
+                  <Grid item xs={4}>
+                    <Typography variant="body2" color="text.secondary">Order ID:</Typography>
+                  </Grid>
+                  <Grid item xs={8}>
+                    <Typography variant="body2" sx={{ wordBreak: 'break-all' }}>{safeString(deleteDialog.orderDetails._id)}</Typography>
+                  </Grid>
+                  
+                  <Grid item xs={4}>
+                    <Typography variant="body2" color="text.secondary">Customer:</Typography>
+                  </Grid>
+                  <Grid item xs={8}>
+                    <Typography variant="body2">{safeString(deleteDialog.orderDetails.userName) || safeString(deleteDialog.orderDetails.email)}</Typography>
+                  </Grid>
+                  
+                  <Grid item xs={4}>
+                    <Typography variant="body2" color="text.secondary">Amount:</Typography>
+                  </Grid>
+                  <Grid item xs={8}>
+                    <Typography variant="body2" fontWeight="bold">₹{safeNumber(deleteDialog.orderDetails.totalAmount, 0).toFixed(2)}</Typography>
+                  </Grid>
+                  
+                  <Grid item xs={4}>
+                    <Typography variant="body2" color="text.secondary">Status:</Typography>
+                  </Grid>
+                  <Grid item xs={8}>
+                    <StatusChip
+                      label={safeString(deleteDialog.orderDetails.status)}
+                      status={safeString(deleteDialog.orderDetails.status, '').toLowerCase()}
+                      size="small"
+                    />
+                  </Grid>
+                  
+                  <Grid item xs={4}>
+                    <Typography variant="body2" color="text.secondary">Date:</Typography>
+                  </Grid>
+                  <Grid item xs={8}>
+                    <Typography variant="body2">{formatDate(deleteDialog.orderDetails.createdAt)}</Typography>
+                  </Grid>
+                  
+                  <Grid item xs={4}>
+                    <Typography variant="body2" color="text.secondary">Items:</Typography>
+                  </Grid>
+                  <Grid item xs={8}>
+                    <Typography variant="body2">{deleteDialog.orderDetails.items?.length || 0} items</Typography>
+                  </Grid>
+                </Grid>
+              </Paper>
+            </Box>
+          )}
+        </DialogContent>
+        <DialogActions sx={{ p: 2, pt: 0 }}>
+          <Button 
+            onClick={() => setDeleteDialog({ open: false, orderId: null, orderDetails: null })}
+            variant="outlined"
+          >
+            Cancel
+          </Button>
+          <Button
+            onClick={confirmDeleteOrder}
+            color="error"
+            variant="contained"
+            startIcon={<DeleteIcon />}
+          >
+            Permanently Delete
+          </Button>
+        </DialogActions>
+      </Dialog>
+
+      {/* ========== BULK DELETE DIALOG ========== */}
+      <Dialog open={bulkDeleteDialog.open} onClose={() => setBulkDeleteDialog({ open: false, count: 0 })} maxWidth="sm" fullWidth>
+        <DialogTitle sx={{ color: 'error.main', display: 'flex', alignItems: 'center', gap: 1 }}>
+          <WarningIcon color="error" />
+          Delete Multiple Orders
+        </DialogTitle>
+        <DialogContent>
+          <Alert severity="error" sx={{ mb: 2 }}>
+            <AlertTitle>Warning: This action cannot be undone!</AlertTitle>
+            You are about to permanently delete <strong>{bulkDeleteDialog.count}</strong> order(s) from the database.
+          </Alert>
+          <Typography variant="body2" color="text.secondary" sx={{ mt: 2 }}>
+            This will remove all selected orders and their associated data permanently.
+            Please ensure you have verified the orders before proceeding.
+          </Typography>
+        </DialogContent>
+        <DialogActions sx={{ p: 2, pt: 0 }}>
+          <Button 
+            onClick={() => setBulkDeleteDialog({ open: false, count: 0 })}
+            variant="outlined"
+          >
+            Cancel
+          </Button>
+          <Button
+            onClick={confirmBulkDelete}
+            color="error"
+            variant="contained"
+            startIcon={<DeleteSweepIcon />}
+          >
+            Delete {bulkDeleteDialog.count} Orders
+          </Button>
+        </DialogActions>
+      </Dialog>
+
       {/* Cancel Order Dialog */}
       <Dialog open={showCancelDialog} onClose={() => setShowCancelDialog(false)} maxWidth="sm" fullWidth>
-        <DialogTitle>Cancel Order</DialogTitle>
+        <DialogTitle sx={{ color: 'warning.main', display: 'flex', alignItems: 'center', gap: 1 }}>
+          <WarningIcon color="warning" />
+          Cancel Order
+        </DialogTitle>
         <DialogContent>
           <Alert severity="warning" sx={{ mb: 2 }}>
             <AlertTitle>Cancel Order & Process Refund</AlertTitle>
             Cancelling this order will automatically process a refund if payment has been captured.
+            This action cannot be undone.
           </Alert>
           <TextField
             fullWidth
@@ -512,10 +845,14 @@ const getPaymentStatusLabel = (paymentInfo) => {
             rows={3}
             variant="outlined"
             required
+            error={!cancelReason.trim() && cancelReason !== ''}
+            helperText={!cancelReason.trim() && cancelReason !== '' ? 'Cancellation reason is required' : ''}
           />
         </DialogContent>
-        <DialogActions>
-          <Button onClick={() => setShowCancelDialog(false)}>Cancel</Button>
+        <DialogActions sx={{ p: 2, pt: 0 }}>
+          <Button onClick={() => setShowCancelDialog(false)} variant="outlined">
+            Cancel
+          </Button>
           <Button
             onClick={confirmCancelOrder}
             color="error"
@@ -532,119 +869,219 @@ const getPaymentStatusLabel = (paymentInfo) => {
         {selectedOrder && (
           <>
             <DialogTitle>
-              <Typography variant="h6">Order Details - #{safeString(selectedOrder._id, '').slice(-8)}</Typography>
+              <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                <Typography variant="h6">Order Details - #{safeString(selectedOrder._id, '').slice(-8)}</Typography>
+                <Chip 
+                  label={safeString(selectedOrder.status, 'Pending')}
+                  color={
+                    selectedOrder.status === 'Delivered' ? 'success' :
+                    selectedOrder.status === 'Cancelled' ? 'error' :
+                    selectedOrder.status === 'Pending' ? 'warning' : 'default'
+                  }
+                  size="small"
+                />
+              </Box>
             </DialogTitle>
             <DialogContent dividers>
               <Grid container spacing={3}>
                 <Grid item xs={12} md={6}>
-                  <Typography variant="subtitle1" gutterBottom sx={{ fontWeight: 'bold' }}>
+                  <Typography variant="subtitle1" gutterBottom sx={{ fontWeight: 'bold', color: 'primary.main' }}>
                     Order Information
                   </Typography>
                   <Divider sx={{ mb: 2 }} />
-                  <Typography><strong>Status:</strong>
-                    <StatusChip
-                      label={safeString(selectedOrder.status, 'Pending')}
-                      status={safeString(selectedOrder.status, '').toLowerCase()}
-                      size="small"
-                      sx={{ ml: 1 }}
-                    />
-                  </Typography>
-                  <Typography><strong>Total Amount:</strong> ₹{safeNumber(selectedOrder.totalAmount, 0)}</Typography>
-                  <Typography><strong>Date:</strong> {formatDate(selectedOrder.createdAt)}</Typography>
-                  <Typography><strong>Phone:</strong> {safeString(selectedOrder.phone, 'N/A')}</Typography>
-                  <Typography><strong>Address:</strong> {safeString(selectedOrder.address, 'N/A')}</Typography>
-                  <Typography><strong>User Email:</strong> {safeString(selectedOrder.userEmail, 'N/A')}</Typography>
-                  <Typography><strong>Razorpay Order ID:</strong> {safeString(selectedOrder.razorpayOrderId, 'N/A')}</Typography>
+                  <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
+                    <Typography variant="body2">
+                      <strong>Order ID:</strong> {safeString(selectedOrder._id)}
+                    </Typography>
+                    <Typography variant="body2">
+                      <strong>Total Amount:</strong> ₹{safeNumber(selectedOrder.totalAmount, 0).toFixed(2)}
+                    </Typography>
+                    <Typography variant="body2">
+                      <strong>Date:</strong> {formatDate(selectedOrder.createdAt)}
+                    </Typography>
+                    <Typography variant="body2">
+                      <strong>Phone:</strong> {safeString(selectedOrder.phone, 'N/A')}
+                    </Typography>
+                    <Typography variant="body2">
+                      <strong>Address:</strong> {safeString(selectedOrder.address, 'N/A')}
+                    </Typography>
+                    <Typography variant="body2">
+                      <strong>User Email:</strong> {safeString(selectedOrder.userEmail, 'N/A')}
+                    </Typography>
+                    <Typography variant="body2">
+                      <strong>Razorpay Order ID:</strong> {safeString(selectedOrder.razorpayOrderId, 'N/A')}
+                    </Typography>
+                  </Box>
 
                   {selectedOrder.cancelReason && (
-                    <Box mt={2} p={2} bgcolor="error.light" borderRadius={1}>
-                      <Typography variant="subtitle2" color="error.dark">Cancellation Reason:</Typography>
-                      <Typography variant="body2">{safeString(selectedOrder.cancelReason)}</Typography>
-                      {selectedOrder.cancelledAt && (
-                        <Typography variant="body2"><strong>Cancelled on:</strong> {formatDate(selectedOrder.cancelledAt)}</Typography>
-                      )}
-                    </Box>
-                  )}
-                </Grid>
-
-                <Grid item xs={12} md={6}>
-                  <Typography variant="subtitle1" gutterBottom sx={{ fontWeight: 'bold' }}>
-                    Payment Information
-                  </Typography>
-                  <Divider sx={{ mb: 2 }} />
-                  <Typography><strong>Payment ID:</strong> {selectedOrder.paymentInfo?.paymentId || 'N/A'}</Typography>
-                  <Typography><strong>Payment Status:</strong>
-                    <StatusChip
-                      label={getPaymentStatusLabel(selectedOrder.paymentInfo)}
-                      status={safeString(selectedOrder.paymentInfo?.status, 'unknown').toLowerCase()}
-                      size="small"
-                      sx={{ ml: 1 }}
-                    />
-                  </Typography>
-                  {selectedOrder.paymentInfo?.method && (
-                    <Typography><strong>Payment Method:</strong> {safeString(selectedOrder.paymentInfo.method)}</Typography>
-                  )}
-                  {selectedOrder.paymentInfo?.updatedAt && (
-                    <Typography><strong>Last Updated:</strong> {formatDate(selectedOrder.paymentInfo.updatedAt)}</Typography>
-                  )}
-
-                  {selectedOrder.refundInfo && selectedOrder.refundInfo.refundId && (
-                    <Box mt={2} p={2} bgcolor="info.light" borderRadius={1}>
-                      <Typography variant="subtitle2" color="info.dark">Refund Information:</Typography>
-                      <Typography variant="body2"><strong>Refund ID:</strong> {safeString(selectedOrder.refundInfo.refundId)}</Typography>
-                      <Typography variant="body2"><strong>Amount:</strong> ₹{safeNumber(selectedOrder.refundInfo.amount, 0)}</Typography>
-                      <Typography variant="body2"><strong>Status:</strong>
-                        <StatusChip
-                          label={getRefundStatusText(selectedOrder.refundInfo)}
-                          status={safeString(selectedOrder.refundInfo.status, 'unknown').toLowerCase()}
-                          size="small"
-                          sx={{ ml: 1 }}
-                        />
+                    <Box mt={3} p={2} bgcolor="error.light" borderRadius={1}>
+                      <Typography variant="subtitle2" color="error.dark" gutterBottom>
+                        <strong>Cancellation Details:</strong>
                       </Typography>
-                      <Typography variant="body2"><strong>Reason:</strong> {safeString(selectedOrder.refundInfo.reason, 'N/A')}</Typography>
-                      {selectedOrder.refundInfo.initiatedAt && (
-                        <Typography variant="body2"><strong>Initiated:</strong> {formatDate(selectedOrder.refundInfo.initiatedAt)}</Typography>
-                      )}
-                      {selectedOrder.refundInfo.processedAt && (
-                        <Typography variant="body2"><strong>Processed:</strong> {formatDate(selectedOrder.refundInfo.processedAt)}</Typography>
-                      )}
-                      {selectedOrder.refundInfo.estimatedSettlement && (
+                      <Typography variant="body2">
+                        <strong>Reason:</strong> {safeString(selectedOrder.cancelReason)}
+                      </Typography>
+                      {selectedOrder.cancelledAt && (
                         <Typography variant="body2">
-                          <strong>Expected Settlement:</strong> {formatDate(selectedOrder.refundInfo.estimatedSettlement)}
-                          <Typography variant="caption" display="block" color="text.secondary">
-                            ({getEstimatedRefundDays(selectedOrder.refundInfo)})
-                          </Typography>
+                          <strong>Cancelled on:</strong> {formatDate(selectedOrder.cancelledAt)}
+                        </Typography>
+                      )}
+                      {selectedOrder.cancelledBy && (
+                        <Typography variant="body2">
+                          <strong>Cancelled by:</strong> {safeString(selectedOrder.cancelledBy)}
                         </Typography>
                       )}
                     </Box>
                   )}
                 </Grid>
 
+                <Grid item xs={12} md={6}>
+                  <Typography variant="subtitle1" gutterBottom sx={{ fontWeight: 'bold', color: 'primary.main' }}>
+                    Payment Information
+                  </Typography>
+                  <Divider sx={{ mb: 2 }} />
+                  <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
+                    <Typography variant="body2">
+                      <strong>Payment ID:</strong> {safeString(selectedOrder.paymentInfo?.paymentId, 'N/A')}
+                    </Typography>
+                    <Typography variant="body2">
+                      <strong>Payment Status:</strong>{' '}
+                      <StatusChip
+                        label={getPaymentStatusLabel(selectedOrder.paymentInfo)}
+                        status={safeString(selectedOrder.paymentInfo?.status, 'unknown').toLowerCase()}
+                        size="small"
+                        sx={{ ml: 0.5 }}
+                      />
+                    </Typography>
+                    {selectedOrder.paymentInfo?.method && (
+                      <Typography variant="body2">
+                        <strong>Payment Method:</strong> {safeString(selectedOrder.paymentInfo.method)}
+                      </Typography>
+                    )}
+                    {selectedOrder.paymentInfo?.capturedAt && (
+                      <Typography variant="body2">
+                        <strong>Captured At:</strong> {formatDate(selectedOrder.paymentInfo.capturedAt)}
+                      </Typography>
+                    )}
+                    {selectedOrder.paymentInfo?.updatedAt && (
+                      <Typography variant="body2">
+                        <strong>Last Updated:</strong> {formatDate(selectedOrder.paymentInfo.updatedAt)}
+                      </Typography>
+                    )}
+                  </Box>
+
+                  {selectedOrder.refundInfo && selectedOrder.refundInfo.refundId && (
+                    <Box mt={3} p={2} bgcolor="info.light" borderRadius={1}>
+                      <Typography variant="subtitle2" color="info.dark" gutterBottom>
+                        <strong>Refund Information:</strong>
+                      </Typography>
+                      <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0.5 }}>
+                        <Typography variant="body2">
+                          <strong>Refund ID:</strong> {safeString(selectedOrder.refundInfo.refundId)}
+                        </Typography>
+                        <Typography variant="body2">
+                          <strong>Amount:</strong> ₹{safeNumber(selectedOrder.refundInfo.amount, 0).toFixed(2)}
+                        </Typography>
+                        <Typography variant="body2">
+                          <strong>Status:</strong>{' '}
+                          <StatusChip
+                            label={getRefundStatusText(selectedOrder.refundInfo)}
+                            status={safeString(selectedOrder.refundInfo.status, 'unknown').toLowerCase()}
+                            size="small"
+                            sx={{ ml: 0.5 }}
+                          />
+                        </Typography>
+                        <Typography variant="body2">
+                          <strong>Reason:</strong> {safeString(selectedOrder.refundInfo.reason, 'N/A')}
+                        </Typography>
+                        {selectedOrder.refundInfo.initiatedAt && (
+                          <Typography variant="body2">
+                            <strong>Initiated:</strong> {formatDate(selectedOrder.refundInfo.initiatedAt)}
+                          </Typography>
+                        )}
+                        {selectedOrder.refundInfo.processedAt && (
+                          <Typography variant="body2">
+                            <strong>Processed:</strong> {formatDate(selectedOrder.refundInfo.processedAt)}
+                          </Typography>
+                        )}
+                        {selectedOrder.refundInfo.estimatedSettlement && (
+                          <Typography variant="body2">
+                            <strong>Expected Settlement:</strong> {formatDate(selectedOrder.refundInfo.estimatedSettlement)}
+                            <Typography variant="caption" display="block" color="text.secondary">
+                              ({getEstimatedRefundDays(selectedOrder.refundInfo)})
+                            </Typography>
+                          </Typography>
+                        )}
+                      </Box>
+                    </Box>
+                  )}
+                </Grid>
+
                 <Grid item xs={12}>
-                  <Typography variant="subtitle1" gutterBottom sx={{ fontWeight: 'bold' }}>
-                    Items in this Order
+                  <Typography variant="subtitle1" gutterBottom sx={{ fontWeight: 'bold', color: 'primary.main', mt: 2 }}>
+                    Order Items
                   </Typography>
                   <Divider sx={{ mb: 2 }} />
                   {selectedOrder.items && selectedOrder.items.map((item, index) => (
-                    <Box key={index} sx={{ mb: 2, p: 2, border: '1px solid #eee', borderRadius: 1 }}>
-                      <Typography><strong>Product ID:</strong> {safeString(item.productId, 'N/A')}</Typography>
-                      <Typography><strong>Name:</strong> {getProductName(item)}</Typography>
-                      <Typography><strong>Price:</strong> ₹{safeNumber(item.price, 0)}</Typography>
-                      <Typography><strong>Quantity:</strong> {safeNumber(item.quantity, 0)}</Typography>
-                      <Typography><strong>Subtotal:</strong> ₹{safeNumber(item.price, 0) * safeNumber(item.quantity, 0)}</Typography>
-                    </Box>
+                    <Paper key={index} variant="outlined" sx={{ mb: 2, p: 2 }}>
+                      <Grid container spacing={2}>
+                        <Grid item xs={12} sm={6}>
+                          <Typography variant="body2">
+                            <strong>Product:</strong> {getProductName(item)}
+                          </Typography>
+                          <Typography variant="body2">
+                            <strong>Product ID:</strong> {safeString(item.productId, 'N/A')}
+                          </Typography>
+                          {item.category && (
+                            <Typography variant="body2">
+                              <strong>Category:</strong> {safeString(item.category)}
+                            </Typography>
+                          )}
+                        </Grid>
+                        <Grid item xs={12} sm={6}>
+                          <Typography variant="body2">
+                            <strong>Price:</strong> ₹{safeNumber(item.price, 0).toFixed(2)}
+                          </Typography>
+                          <Typography variant="body2">
+                            <strong>Quantity:</strong> {safeNumber(item.quantity, 0)}
+                          </Typography>
+                          <Typography variant="body2" fontWeight="bold" color="primary.main">
+                            <strong>Subtotal:</strong> ₹{(safeNumber(item.price, 0) * safeNumber(item.quantity, 0)).toFixed(2)}
+                          </Typography>
+                        </Grid>
+                        {item.description && (
+                          <Grid item xs={12}>
+                            <Typography variant="body2" color="text.secondary">
+                              <strong>Description:</strong> {safeString(item.description)}
+                            </Typography>
+                          </Grid>
+                        )}
+                      </Grid>
+                    </Paper>
                   ))}
                 </Grid>
               </Grid>
             </DialogContent>
-            <DialogActions>
-              <Button onClick={handleCloseDialog} color="primary">
+            <DialogActions sx={{ p: 2 }}>
+              <Button onClick={handleCloseDialog} variant="contained" color="primary">
                 Close
               </Button>
             </DialogActions>
           </>
         )}
       </Dialog>
+
+      {/* Snackbar for notifications */}
+      <Snackbar
+        open={snackbar.open}
+        autoHideDuration={6000}
+        onClose={handleCloseSnackbar}
+        anchorOrigin={{ vertical: 'top', horizontal: 'center' }}
+      >
+        <Alert onClose={handleCloseSnackbar} severity={snackbar.severity} sx={{ width: '100%' }} elevation={6}>
+          {snackbar.message}
+        </Alert>
+      </Snackbar>
     </Container>
   );
 };
