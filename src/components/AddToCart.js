@@ -9,11 +9,11 @@ import { toast } from 'react-toastify';
 import { deleteProduct, updateData, clearProducts } from '../store/Action';
 import API_URL from '../config';
 import axiosInstance from './AxiosInstance';
-import { Dialog, DialogTitle, DialogContent, DialogActions, TextField, Button, Grid, InputAdornment } from '@mui/material';
+import { Dialog, DialogTitle, DialogContent, DialogActions, TextField, InputAdornment } from '@mui/material';
 import JoinUrl from '../JoinUrl';
 
 /** ---------- Facebook Pixel Functions ---------- */
-// Server-side event function
+// Server-side event function (Conversions API)
 const sendServerEvent = async (eventName, data) => {
   try {
     const eventData = {
@@ -29,7 +29,6 @@ const sendServerEvent = async (eventName, data) => {
       clientUserAgent: navigator.userAgent,
     };
 
-    // ✅ Use API_URL from config.js here
     await fetch(`${API_URL}api/facebook-events`, {
       method: 'POST',
       headers: {
@@ -60,11 +59,10 @@ const AddToCart = () => {
   const [cities, setCities] = useState([]);
   const [checkoutLoading, setCheckoutLoading] = useState(false);
   const [paymentProcessing, setPaymentProcessing] = useState(false);
-  const [hasTrackedPageView, setHasTrackedPageView] = useState(false);
   
   // Payment method states
-  const [paymentMethod, setPaymentMethod] = useState('online'); // 'online' or 'cod'
-  const [codCharge] = useState(99); // COD का extra charge
+  const [paymentMethod, setPaymentMethod] = useState('online');
+  const [codCharge] = useState(99);
   const [codProcessing, setCodProcessing] = useState(false);
   
   const [formData, setFormData] = useState({
@@ -87,9 +85,16 @@ const AddToCart = () => {
   const [isProcessing, setIsProcessing] = useState(false);
   const [processingMessage, setProcessingMessage] = useState('');
 
-  // Calculate totals
+  // User type detection
+  const storedUser = localStorage.getItem("userData");
+  const parsedUserData = storedUser ? JSON.parse(storedUser) : null;
+  const isWholesaler = parsedUserData?.type === "wholesalePartner";
+
+  // Calculate totals with user type based pricing
   const baseTotal = cartItems.reduce((acc, item) => {
-    const price = parseFloat(item.final_price || 0);
+    const price = isWholesaler 
+      ? parseFloat(item.retail_price || item.final_price || 0)
+      : parseFloat(item.final_price || 0);
     return acc + price * (item.quantity || 1);
   }, 0);
 
@@ -102,120 +107,30 @@ const AddToCart = () => {
     return emailRegex.test(email);
   }, []);
 
-  // Facebook Pixel Tracking Functions
-  const trackViewContent = (contentData) => {
-    if (typeof window !== 'undefined' && window.fbq) {
+  // ---------- FACEBOOK PIXEL - ONLY IMPORTANT EVENTS ----------
+  
+  // Track Cart View - ONLY ONCE when cart loads
+  const trackCartView = useCallback(() => {
+    if (window.fbq) {
       window.fbq('track', 'ViewContent', {
-        content_name: contentData.name,
-        content_ids: contentData.content_ids || [contentData.id],
-        content_type: contentData.type || 'product',
-        value: contentData.value || 0,
-        currency: contentData.currency || 'INR',
-        content_category: contentData.category,
-      });
-    }
-
-    // Server-side event send
-    sendServerEvent('ViewContent', contentData);
-  };
-
-  const trackPageView = () => {
-    if (typeof window !== 'undefined' && window.fbq) {
-      window.fbq('track', 'PageView');
-    }
-    
-    // Server-side event send
-    sendServerEvent('PageView', {
-      id: 'cart_page_view',
-      name: 'Shopping Cart Page',
-      value: finalTotal,
-      currency: 'INR',
-      category: 'Cart',
-      type: 'page',
-      item_count: cartItems.length,
-      total_value: finalTotal,
-    });
-  };
-
-  const trackAddToCart = (productData) => {
-    if (typeof window !== 'undefined' && window.fbq) {
-      window.fbq('track', 'AddToCart', {
-        content_ids: productData.content_ids || [productData.id],
-        content_name: productData.name,
-        content_type: productData.type || 'product',
-        value: productData.value || productData.price || 0,
-        currency: productData.currency || 'INR',
-        num_items: productData.quantity || 1,
-      });
-    }
-    sendServerEvent('AddToCart', productData);
-  };
-
-  const trackInitiateCheckout = (checkoutData) => {
-    if (typeof window !== 'undefined' && window.fbq) {
-      window.fbq('track', 'InitiateCheckout', {
-        value: checkoutData.value || finalTotal,
-        currency: checkoutData.currency || 'INR',
+        content_name: 'Shopping Cart',
+        content_ids: cartItems.map(item => item._id).filter(Boolean),
+        content_type: 'product',
+        value: Number(finalTotal || 0),
+        currency: 'INR',
         num_items: cartItems.length,
-        content_ids: cartItems.map(item => item._id),
-        content_type: 'product',
+      });
+      
+      console.log('✅ Facebook Pixel: Cart View tracked', {
+        item_count: cartItems.length,
+        value: finalTotal
       });
     }
     
-    sendServerEvent('InitiateCheckout', checkoutData);
-  };
-
-  const trackPurchase = (purchaseData) => {
-    if (typeof window !== 'undefined' && window.fbq) {
-      window.fbq('track', 'Purchase', {
-        value: purchaseData.value || finalTotal,
-        currency: purchaseData.currency || 'INR',
-        content_ids: purchaseData.contentIds || cartItems.map(item => item._id),
-        content_type: 'product',
-        num_items: purchaseData.numItems || cartItems.length,
-        order_id: purchaseData.orderId,
-      });
-    }
-    sendServerEvent('Purchase', purchaseData);
-  };
-
-  const trackRemoveFromCart = (productData) => {
-    trackViewContent({
-      id: `remove_from_cart_${productData.id}`,
-      name: `${productData.name} - Removed from Cart`,
-      value: productData.value || productData.price || 0,
-      currency: 'INR',
-      category: 'Cart Action',
-      type: 'remove_from_cart',
-      action: 'remove',
-    });
-  };
-
-  const trackClearCart = () => {
-    trackViewContent({
-      id: 'clear_cart_action',
-      name: 'Cart Cleared',
-      value: finalTotal,
-      currency: 'INR',
-      category: 'Cart Action',
-      type: 'clear_cart',
-      item_count: cartItems.length,
-      total_value: finalTotal,
-    });
-  };
-
-  // Initialize Facebook Pixel
-  useEffect(() => {
-    // Track PageView
-    if (!hasTrackedPageView) {
-      trackPageView();
-      setHasTrackedPageView(true);
-    }
-
-    // Track cart view
-    trackViewContent({
+    // Server-side event
+    sendServerEvent('ViewContent', {
       id: 'cart_view',
-      name: 'Cart Contents View',
+      name: 'Shopping Cart',
       value: finalTotal,
       currency: 'INR',
       category: 'Cart',
@@ -224,30 +139,209 @@ const AddToCart = () => {
       items: cartItems.map(item => ({
         id: item._id,
         name: item.name,
-        price: item.final_price,
-        quantity: item.quantity
-      })),
+        quantity: item.quantity,
+        price: isWholesaler ? item.retail_price || item.final_price : item.final_price
+      }))
     });
+  }, [cartItems, finalTotal, isWholesaler]);
 
-    // Track individual product views in cart
-    cartItems.forEach((item, index) => {
-      setTimeout(() => {
-        trackViewContent({
-          id: `cart_item_view_${item._id}`,
-          name: `${item.name} - In Cart`,
-          value: item.final_price,
-          currency: 'INR',
-          category: 'Cart Item',
-          type: 'cart_product_view',
-          quantity: item.quantity,
-        });
-      }, index * 300);
+  // Track InitiateCheckout
+  const trackInitiateCheckout = useCallback(() => {
+    if (window.fbq) {
+      window.fbq('track', 'InitiateCheckout', {
+        value: Number(finalTotal || 0),
+        currency: 'INR',
+        content_ids: cartItems.map(item => item._id).filter(Boolean),
+        content_type: 'product',
+        num_items: cartItems.length,
+      });
+      
+      console.log('✅ Facebook Pixel: InitiateCheckout tracked', {
+        value: finalTotal,
+        item_count: cartItems.length
+      });
+    }
+    
+    sendServerEvent('InitiateCheckout', {
+      id: 'checkout_initiated',
+      name: 'Checkout Initiated',
+      value: finalTotal,
+      currency: 'INR',
+      item_count: cartItems.length,
+      user_type: isAuthenticated ? 'registered' : 'guest',
+      customer_type: isWholesaler ? 'wholesaler' : 'retail',
+      payment_method: paymentMethod
     });
-  }, []);
+  }, [cartItems, finalTotal, isAuthenticated, isWholesaler, paymentMethod]);
+
+  // Track Purchase
+  const trackPurchase = useCallback((orderId, paymentMethodType) => {
+    if (window.fbq) {
+      window.fbq('track', 'Purchase', {
+        value: Number(finalTotal || 0),
+        currency: 'INR',
+        content_ids: cartItems.map(item => item._id).filter(Boolean),
+        content_type: 'product',
+        num_items: cartItems.length,
+        order_id: orderId,
+      });
+      
+      console.log('✅ Facebook Pixel: Purchase tracked', {
+        order_id: orderId,
+        value: finalTotal,
+        payment_method: paymentMethodType
+      });
+    }
+    
+    sendServerEvent('Purchase', {
+      id: `order_${orderId}`,
+      name: `Order #${orderId}`,
+      value: finalTotal,
+      currency: 'INR',
+      order_id: orderId,
+      item_count: cartItems.length,
+      items: cartItems.map(item => ({
+        id: item._id,
+        name: item.name,
+        quantity: item.quantity,
+        price: isWholesaler ? item.retail_price || item.final_price : item.final_price
+      })),
+      user_type: isAuthenticated ? 'registered' : 'guest',
+      payment_method: paymentMethodType,
+      customer_type: isWholesaler ? 'wholesaler' : 'retail',
+    });
+  }, [cartItems, finalTotal, isAuthenticated, isWholesaler]);
+
+  // Track Checkout Abandonment
+  const trackCheckoutAbandonment = useCallback(() => {
+    if (window.fbq) {
+      window.fbq('track', 'ViewContent', {
+        content_name: 'Checkout Abandoned',
+        value: Number(finalTotal || 0),
+        currency: 'INR',
+        content_ids: cartItems.map(item => item._id).filter(Boolean),
+        content_type: 'product',
+        num_items: cartItems.length,
+      });
+      
+      console.log('✅ Facebook Pixel: Checkout Abandonment tracked');
+    }
+    
+    sendServerEvent('ViewContent', {
+      id: 'checkout_abandoned',
+      name: 'Checkout Abandoned',
+      value: finalTotal,
+      currency: 'INR',
+      category: 'Cart Abandonment',
+      type: 'checkout_abandonment',
+      item_count: cartItems.length
+    });
+  }, [cartItems, finalTotal]);
+
+  // Track Payment Failed
+  const trackPaymentFailed = useCallback((error) => {
+    if (window.fbq) {
+      window.fbq('track', 'ViewContent', {
+        content_name: 'Payment Failed',
+        value: Number(finalTotal || 0),
+        currency: 'INR',
+        content_ids: cartItems.map(item => item._id).filter(Boolean),
+        content_type: 'product',
+      });
+      
+      console.log('✅ Facebook Pixel: Payment Failed tracked', error);
+    }
+    
+    sendServerEvent('ViewContent', {
+      id: 'payment_failed',
+      name: 'Payment Failed',
+      value: finalTotal,
+      currency: 'INR',
+      category: 'Payment Error',
+      type: 'payment_failure',
+      error_code: error.code,
+      error_description: error.description
+    });
+  }, [cartItems, finalTotal]);
+
+  // Track Add to Cart (from quantity update)
+  const trackAddToCart = useCallback((item, newQuantity, oldQuantity) => {
+    const price = isWholesaler 
+      ? item.retail_price || item.final_price 
+      : item.final_price;
+    
+    if (window.fbq) {
+      window.fbq('track', 'AddToCart', {
+        content_ids: [item._id].filter(Boolean),
+        content_name: item.name,
+        content_type: 'product',
+        value: Number(price * newQuantity || 0),
+        currency: 'INR',
+        num_items: newQuantity,
+      });
+    }
+    
+    sendServerEvent('AddToCart', {
+      id: item._id,
+      name: item.name,
+      price: price,
+      value: price * newQuantity,
+      quantity: newQuantity,
+      old_quantity: oldQuantity,
+      action: newQuantity > oldQuantity ? 'increase' : 'decrease'
+    });
+  }, [isWholesaler]);
+
+  // Track Remove from Cart
+  const trackRemoveFromCart = useCallback((item) => {
+    const price = isWholesaler 
+      ? item.retail_price || item.final_price 
+      : item.final_price;
+    
+    if (window.fbq) {
+      window.fbq('track', 'AddToCart', {
+        content_ids: [item._id].filter(Boolean),
+        content_name: `${item.name} - Removed`,
+        content_type: 'product',
+        value: 0,
+        currency: 'INR',
+      });
+    }
+    
+    sendServerEvent('ViewContent', {
+      id: `remove_${item._id}`,
+      name: `${item.name} - Removed from Cart`,
+      value: price * (item.quantity || 1),
+      currency: 'INR',
+      category: 'Cart Action',
+      type: 'remove_from_cart'
+    });
+  }, [isWholesaler]);
+
+  // Track Clear Cart
+  const trackClearCart = useCallback(() => {
+    sendServerEvent('ViewContent', {
+      id: 'clear_cart',
+      name: 'Cart Cleared',
+      value: finalTotal,
+      currency: 'INR',
+      category: 'Cart Action',
+      type: 'clear_cart',
+      item_count: cartItems.length
+    });
+  }, [cartItems.length, finalTotal]);
+
+  // ---------- EFFECTS ----------
+  
+  // ✅ ONLY ONE ViewContent event - Cart View (PageView हटा दिया)
+  useEffect(() => {
+    if (cartItems.length > 0) {
+      trackCartView();
+    }
+  }, []); // Sirf ek baar component mount par
 
   // Initialize form data from localStorage on component mount
   useEffect(() => {
-    // Authentication check logic
     const storedUserData = localStorage.getItem('userData');
     if (storedUserData) {
       setIsAuthenticated(true);
@@ -255,12 +349,10 @@ const AddToCart = () => {
       setIsAuthenticated(false);
     }
 
-    // Load saved data from localStorage
     const savedEmail = localStorage.getItem('guestEmail') || '';
     const savedPhone = localStorage.getItem('guestPhone') || '';
     const savedAddresses = JSON.parse(localStorage.getItem('guestAddresses') || '[]');
     
-    // Set initial form data
     setFormData(prev => ({
       ...prev,
       email: savedEmail || prev.email,
@@ -269,7 +361,6 @@ const AddToCart = () => {
 
     setAddresses(savedAddresses);
     
-    // Auto-select first address if available
     if (savedAddresses.length > 0 && !formData.selectedAddress) {
       const firstAddress = savedAddresses[0];
       const addressValue = typeof firstAddress === 'object' ? firstAddress.fullAddress : firstAddress;
@@ -289,81 +380,45 @@ const AddToCart = () => {
     if (newQuantity < 1) return;
     const updatedItem = cartItems.find((item) => item._id === itemId);
     if (updatedItem) {
+      const oldQuantity = updatedItem.quantity || 1;
       const updatedProduct = { ...updatedItem, quantity: newQuantity };
       dispatch(updateData(updatedProduct));
       toast.success('Item quantity updated!', { position: 'top-right', autoClose: 2000 });
       
-      // Track quantity change
-      trackAddToCart({
-        id: updatedItem._id,
-        name: updatedItem.name,
-        price: updatedItem.final_price,
-        value: updatedItem.final_price * newQuantity,
-        currency: 'INR',
-        category: 'Cart Update',
-        type: 'quantity_update',
-        quantity: newQuantity,
-        old_quantity: updatedItem.quantity,
-        action: newQuantity > updatedItem.quantity ? 'increase' : 'decrease',
-      });
+      // ✅ Track AddToCart on quantity change
+      if (newQuantity > oldQuantity) {
+        trackAddToCart(updatedItem, newQuantity, oldQuantity);
+      }
     }
   };
 
   const handleRemoveItem = (itemId) => {
     const removedItem = cartItems.find((item) => item._id === itemId);
     if (removedItem) {
-      trackRemoveFromCart({
-        id: removedItem._id,
-        name: removedItem.name,
-        price: removedItem.final_price,
-        value: removedItem.final_price * (removedItem.quantity || 1),
-        currency: 'INR',
-      });
+      trackRemoveFromCart(removedItem);
     }
     
     dispatch(deleteProduct(itemId));
     toast.info('Item removed from cart.', { position: 'top-right', autoClose: 2000 });
   };
 
-  // Handle email change - save to localStorage immediately
   const handleEmailChange = (e) => {
     const email = e.target.value;
     setFormData(prev => ({ ...prev, email }));
     
-    // Save to localStorage immediately (not just on checkout)
     if (email && isValidEmail(email)) {
       localStorage.setItem('guestEmail', email);
       toast.success('Email saved for checkout!', { position: 'top-right', autoClose: 1500 });
-      
-      // Track email update
-      trackViewContent({
-        id: 'email_updated_cart',
-        name: 'Email Updated in Cart',
-        value: 0,
-        category: 'User Information',
-        type: 'email_update',
-      });
     }
   };
 
-  // Handle phone change - save to localStorage immediately
   const handlePhoneChange = (e) => {
     const value = e.target.value.replace(/\D/g, '');
     if (value.length <= 10) {
       setFormData(prev => ({ ...prev, phone: value }));
       
-      // Save to localStorage immediately
       if (value.length === 10) {
         localStorage.setItem('guestPhone', value);
-        
-        // Track phone update
-        trackViewContent({
-          id: 'phone_updated_cart',
-          name: 'Phone Updated in Cart',
-          value: 0,
-          category: 'User Information',
-          type: 'phone_update',
-        });
       }
     }
   };
@@ -371,21 +426,18 @@ const AddToCart = () => {
   const handleAddAddress = async () => {
     setLoading(true);
     
-    // Validate email
     if (formData.email && !isValidEmail(formData.email)) {
       toast.error("Please enter a valid email address");
       setLoading(false);
       return;
     }
 
-    // Validate phone
     if (!formData.phone || formData.phone.length !== 10) {
       toast.error("Please enter a valid 10-digit phone number");
       setLoading(false);
       return;
     }
 
-    // Address object बनाएं
     const addressObject = {
       flat: formData.flat,
       landmark: formData.landmark,
@@ -397,18 +449,13 @@ const AddToCart = () => {
       fullAddress: `${formData.flat}, ${formData.landmark}, ${formData.city}, ${formData.state}, ${formData.country}`
     };
     
-    // localStorage से existing addresses निकालें
     const existingAddresses = JSON.parse(localStorage.getItem('guestAddresses') || '[]');
     const updatedAddresses = [...existingAddresses, addressObject];
     
-    // Save to localStorage
     localStorage.setItem('guestAddresses', JSON.stringify(updatedAddresses));
-    
-    // Also save email and phone separately for easy access
     localStorage.setItem('guestEmail', formData.email);
     localStorage.setItem('guestPhone', formData.phone);
     
-    // State update करें
     setAddresses(updatedAddresses);
     setFormData(prev => ({
       ...prev,
@@ -421,16 +468,6 @@ const AddToCart = () => {
     setShowModal(false);
     setLoading(false);
     toast.success("Address saved successfully!");
-    
-    // Track address addition
-    trackViewContent({
-      id: 'address_added_cart',
-      name: 'Address Added in Cart',
-      value: 0,
-      category: 'User Information',
-      type: 'address_add',
-      address_type: isAuthenticated ? 'registered_user' : 'guest_user',
-    });
   };
 
   // Fetch states
@@ -483,14 +520,12 @@ const AddToCart = () => {
   };
 
   const fetchData = useCallback(async () => {
-    // Guest user के लिए localStorage से data fetch करें
     const guestAddresses = JSON.parse(localStorage.getItem('guestAddresses') || '[]');
     const guestEmail = localStorage.getItem('guestEmail') || '';
     const guestPhone = localStorage.getItem('guestPhone') || '';
     
     setAddresses(guestAddresses);
     
-    // Auto-select first address if available
     if (guestAddresses.length > 0 && !formData.selectedAddress) {
       const firstAddress = guestAddresses[0];
       const addressValue = typeof firstAddress === 'object' ? firstAddress.fullAddress : firstAddress;
@@ -505,19 +540,16 @@ const AddToCart = () => {
       }));
     }
     
-    // If user is authenticated, fetch their data too
     if (isAuthenticated && userData?._id) {
       try {
         const response = await axiosInstance.get(`/admin/readAdmin/${userData._id}`);
         const userInfo = response?.data?.data;
 
-        // Set email in form data
         if (userInfo?.email) {
           setFormData(prev => ({ ...prev, email: userInfo.email }));
         }
 
         if (Array.isArray(userInfo?.address)) {
-          // Merge guest addresses with user addresses
           const mergedAddresses = [...guestAddresses, ...userInfo.address];
           setAddresses(mergedAddresses);
           if (mergedAddresses.length > 0 && !formData.selectedAddress) {
@@ -549,7 +581,6 @@ const AddToCart = () => {
     setCodProcessing(true);
 
     try {
-      // Form validation
       if (!formData.selectedAddress) {
         toast.warn('Please select an address before checkout.');
         setCodProcessing(false);
@@ -562,7 +593,6 @@ const AddToCart = () => {
         return;
       }
 
-      // Get email from form or localStorage
       const checkoutEmail = formData.email || localStorage.getItem('guestEmail') || '';
       
       if (!checkoutEmail || !isValidEmail(checkoutEmail)) {
@@ -571,11 +601,9 @@ const AddToCart = () => {
         return;
       }
 
-      // Get phone number
       let phoneNumber = formData.phone?.toString().trim();
 
       if (!phoneNumber) {
-        // Try to get from saved addresses
         const selectedAddressObj = addresses.find(addr => 
           typeof addr === 'object' ? addr.fullAddress === formData.selectedAddress : addr === formData.selectedAddress
         );
@@ -595,10 +623,11 @@ const AddToCart = () => {
         return;
       }
 
-      // Prepare order items
       const orderItems = cartItems.map((item) => {
         const qty = parseInt(item.quantity) || 1;
-        const price = parseFloat(item.final_price) || 0;
+        const price = isWholesaler 
+          ? parseFloat(item.retail_price || item.final_price || 0)
+          : parseFloat(item.final_price || 0);
 
         if (!item._id || !item.name || qty < 1 || price <= 0) {
           throw new Error(`Invalid item data for: ${item.name || 'Unknown item'}`);
@@ -608,14 +637,12 @@ const AddToCart = () => {
           productId: item._id,
           name: item.name.trim(),
           quantity: qty,
-          price: price // Unit price
+          price: price
         };
       });
 
-      // Create user ID
       const userId = isAuthenticated ? userData._id : `guest_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
 
-      // Prepare COD order payload
       const codPayload = {
         userId: userId,
         items: orderItems,
@@ -625,51 +652,34 @@ const AddToCart = () => {
         totalAmount: parseFloat(finalTotal.toFixed(2)),
         baseAmount: parseFloat(baseTotal.toFixed(2)),
         codCharge: codCharge,
-        isGuest: !isAuthenticated
+        isGuest: !isAuthenticated,
+        isWholesaler: isWholesaler
       };
 
       console.log("Creating COD order:", codPayload);
       
-      // Show processing loader
       setIsProcessing(true);
       setProcessingMessage("Creating your COD order...");
 
-      // API call to create COD order
       const response = await axiosInstance.post('/api/createCOD', codPayload);
 
       if (response.data.success) {
         console.log("✅ COD order created successfully:", response.data.orderId);
         
-        // Track Purchase event for COD
-        trackPurchase({
-          id: `order_${response.data.orderId}`,
-          name: `COD Order #${response.data.orderId}`,
-          value: finalTotal,
-          currency: 'INR',
-          contentIds: cartItems.map(item => item._id),
-          numItems: cartItems.length,
-          orderId: response.data.orderId,
-          user_type: isAuthenticated ? 'registered' : 'guest',
-          payment_method: 'cod'
-        });
+        // ✅ Track Purchase - COD
+        trackPurchase(response.data.orderId, 'cod');
         
         setProcessingMessage("Finalizing your order...");
         
-        // Clear cart
         dispatch(clearProducts());
         localStorage.removeItem('cartItems');
         
-        // Track cart clear after purchase
-        trackClearCart();
-        
-        // Clear guest addresses if guest user
         if (!isAuthenticated) {
           localStorage.removeItem('guestAddresses');
           localStorage.removeItem('guestEmail');
           localStorage.removeItem('guestPhone');
         }
         
-        // Show success for 2 seconds before redirecting
         toast.success(
           <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
             <CheckCircle size={20} />
@@ -685,7 +695,6 @@ const AddToCart = () => {
           }
         );
         
-        // Wait 2 seconds before navigating
         setTimeout(() => {
           setIsProcessing(false);
           setCodProcessing(false);
@@ -732,20 +741,10 @@ const AddToCart = () => {
     
     setCheckoutLoading(true);
 
-    // Track Initiate Checkout event
-    trackInitiateCheckout({
-      id: 'cart_checkout_initiated',
-      name: 'Checkout Initiated from Cart',
-      value: finalTotal,
-      currency: 'INR',
-      content_ids: cartItems.map(item => item._id),
-      item_count: cartItems.length,
-      user_type: isAuthenticated ? 'registered' : 'guest',
-      payment_method: 'online'
-    });
+    // ✅ Track InitiateCheckout
+    trackInitiateCheckout();
 
     try {
-      // Form validation
       if (!formData.selectedAddress) {
         toast.warn('Please select an address before checkout.');
         setCheckoutLoading(false);
@@ -758,7 +757,6 @@ const AddToCart = () => {
         return;
       }
 
-      // Get email from form or localStorage
       const checkoutEmail = formData.email || localStorage.getItem('guestEmail') || '';
       
       if (!checkoutEmail || !isValidEmail(checkoutEmail)) {
@@ -767,11 +765,9 @@ const AddToCart = () => {
         return;
       }
 
-      // Get phone number
       let phoneNumber = formData.phone?.toString().trim();
 
       if (!phoneNumber) {
-        // Try to get from saved addresses
         const selectedAddressObj = addresses.find(addr => 
           typeof addr === 'object' ? addr.fullAddress === formData.selectedAddress : addr === formData.selectedAddress
         );
@@ -791,10 +787,11 @@ const AddToCart = () => {
         return;
       }
 
-      // Prepare order items
       const orderItems = cartItems.map((item) => {
         const qty = parseInt(item.quantity) || 1;
-        const price = parseFloat(item.final_price) || 0;
+        const price = isWholesaler 
+          ? parseFloat(item.retail_price || item.final_price || 0)
+          : parseFloat(item.final_price || 0);
 
         if (!item._id || !item.name || qty < 1 || price <= 0) {
           throw new Error(`Invalid item data for: ${item.name || 'Unknown item'}`);
@@ -808,10 +805,8 @@ const AddToCart = () => {
         };
       });
 
-      // Create guest user ID if not logged in
       const userId = isAuthenticated ? userData._id : `guest_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
 
-      // Prepare order payload for Step 1
       const orderPayload = {
         userId: userId,
         items: orderItems,
@@ -819,13 +814,12 @@ const AddToCart = () => {
         phone: phoneNumber,
         email: checkoutEmail,
         totalAmount: parseFloat(finalTotal.toFixed(2)),
-        isGuest: !isAuthenticated
+        isGuest: !isAuthenticated,
+        isWholesaler: isWholesaler
       };
 
       console.log("Step 1: Creating Razorpay order...");
-      console.log("Order payload:", JSON.stringify(orderPayload, null, 2));
       
-      // Step 1: Create Razorpay Order
       const orderResponse = await axiosInstance.post('/api/createPaymentOrder', orderPayload);
 
       if (!orderResponse.data.success) {
@@ -839,7 +833,6 @@ const AddToCart = () => {
       const { order: razorpayOrder } = orderResponse.data;
       console.log("✅ Razorpay order created:", razorpayOrder.id);
 
-      // Load Razorpay SDK
       const razorpayLoaded = await loadRazorpayScript();
       if (!razorpayLoaded) {
         toast.error('Payment system failed to load. Please refresh the page.');
@@ -847,7 +840,6 @@ const AddToCart = () => {
         return;
       }
 
-      // Configure Razorpay options
       const options = {
         key: "rzp_live_RsAhVxy2ldrBIl", 
         amount: razorpayOrder.amount,
@@ -858,23 +850,20 @@ const AddToCart = () => {
         handler: async function (response) {
           console.log("✅ Payment successful, response:", response);
           
-          // Show processing loader
           setIsProcessing(true);
           setProcessingMessage("Verifying your payment...");
           setPaymentProcessing(true);
           
           try {
-            // Step 2: Verify payment and create order
             console.log("Step 2: Verifying payment and creating order...");
             
             const verifyPayload = {
               razorpay_order_id: response.razorpay_order_id,
               razorpay_payment_id: response.razorpay_payment_id,
               razorpay_signature: response.razorpay_signature,
-              ...orderPayload // Include all order details
+              ...orderPayload
             };
 
-            // Update loader message
             setProcessingMessage("Creating your order...");
             
             const verifyResponse = await axiosInstance.post('/api/verifyPayment', verifyPayload);
@@ -882,37 +871,20 @@ const AddToCart = () => {
             if (verifyResponse.data.success) {
               console.log("✅ Order created successfully:", verifyResponse.data.orderId);
               
-              // Track Purchase event
-              trackPurchase({
-                id: `order_${verifyResponse.data.orderId}`,
-                name: `Order #${verifyResponse.data.orderId}`,
-                value: finalTotal,
-                currency: 'INR',
-                contentIds: cartItems.map(item => item._id),
-                numItems: cartItems.length,
-                orderId: verifyResponse.data.orderId,
-                user_type: isAuthenticated ? 'registered' : 'guest',
-                payment_method: 'online'
-              });
+              // ✅ Track Purchase - Online
+              trackPurchase(verifyResponse.data.orderId, 'online');
               
-              // Update loader for final step
               setProcessingMessage("Finalizing your order...");
               
-              // Clear cart
               dispatch(clearProducts());
               localStorage.removeItem('cartItems');
               
-              // Track cart clear after purchase
-              trackClearCart();
-              
-              // Clear guest addresses if guest user
               if (!isAuthenticated) {
                 localStorage.removeItem('guestAddresses');
                 localStorage.removeItem('guestEmail');
                 localStorage.removeItem('guestPhone');
               }
               
-              // Show success for 2 seconds before redirecting
               toast.success(
                 <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                   <CheckCircle size={20} />
@@ -928,9 +900,7 @@ const AddToCart = () => {
                 }
               );
               
-              // Wait 2 seconds before navigating (for better UX)
               setTimeout(() => {
-                // Hide loader and navigate
                 setIsProcessing(false);
                 navigate(`/success`, {
                   state: {
@@ -967,27 +937,16 @@ const AddToCart = () => {
             console.log("Payment modal closed by user");
             if (!paymentProcessing) {
               setCheckoutLoading(false);
-              // Track checkout abandonment
-              trackViewContent({
-                id: 'checkout_abandoned',
-                name: 'Checkout Abandoned',
-                value: finalTotal,
-                currency: 'INR',
-                category: 'Cart Abandonment',
-                type: 'checkout_abandonment',
-                item_count: cartItems.length,
-                total_value: finalTotal,
-              });
+              // ✅ Track Checkout Abandonment
+              trackCheckoutAbandonment();
             }
           }
         }
       };
 
-      // Open Razorpay checkout
       console.log("Opening Razorpay checkout...");
       const rzp = new window.Razorpay(options);
       
-      // Razorpay modal के close होने पर
       rzp.on('modal.closed', function() {
         console.log("Razorpay modal closed");
         if (!paymentProcessing) {
@@ -997,7 +956,6 @@ const AddToCart = () => {
       
       rzp.open();
 
-      // Handle payment errors
       rzp.on('payment.failed', function (response) {
         console.error("❌ Payment failed:", response.error);
         setIsProcessing(false);
@@ -1005,22 +963,12 @@ const AddToCart = () => {
         setCheckoutLoading(false);
         setPaymentProcessing(false);
         
-        // Track payment failure
-        trackViewContent({
-          id: 'payment_failed',
-          name: 'Payment Failed',
-          value: finalTotal,
-          currency: 'INR',
-          category: 'Payment Error',
-          type: 'payment_failure',
-          error_code: response.error.code,
-          error_description: response.error.description,
-        });
+        // ✅ Track Payment Failed
+        trackPaymentFailed(response.error);
       });
       
       console.log("Razorpay Order ID received:", razorpayOrder.id);
       console.log("Razorpay Order Amount:", razorpayOrder.amount);
-      console.log("Razorpay Key being used:", options.key);
 
     } catch (error) {
       console.error('=== CHECKOUT ERROR ===');
@@ -1042,17 +990,6 @@ const AddToCart = () => {
       setIsProcessing(false);
       setCheckoutLoading(false);
       setPaymentProcessing(false);
-      
-      // Track checkout error
-      trackViewContent({
-        id: 'checkout_error',
-        name: 'Checkout Error',
-        value: finalTotal,
-        currency: 'INR',
-        category: 'Checkout Error',
-        type: 'checkout_error',
-        error_message: errorMessage,
-      });
     }
   };
 
@@ -1069,6 +1006,41 @@ const AddToCart = () => {
       await handleCODCheckout();
     } else {
       await handleOnlineCheckout();
+    }
+  };
+
+  // Handle payment method change
+  const handlePaymentMethodChange = (method) => {
+    setPaymentMethod(method);
+    // ✅ Only 1 event for payment method selection
+    if (window.fbq) {
+      window.fbq('track', 'ViewContent', {
+        content_name: `${method === 'online' ? 'Online' : 'COD'} Payment Selected`,
+        value: 0,
+        currency: 'INR',
+      });
+    }
+  };
+
+  // Handle address selection
+  const handleAddressSelect = (address, email, phone) => {
+    setFormData(prev => ({ 
+      ...prev, 
+      selectedAddress: address,
+      email: email || prev.email,
+      phone: phone || prev.phone
+    }));
+    
+    if (email) localStorage.setItem('guestEmail', email);
+    if (phone) localStorage.setItem('guestPhone', phone);
+    
+    // ✅ Only 1 event for address selection
+    if (window.fbq) {
+      window.fbq('track', 'ViewContent', {
+        content_name: 'Delivery Address Selected',
+        value: 0,
+        currency: 'INR',
+      });
     }
   };
 
@@ -1106,28 +1078,9 @@ const AddToCart = () => {
   const renderLoginPrompt = () => {
     if (!isAuthenticated) {
       return (
-        <div 
-          className="login-prompt"
-          onClick={() => trackViewContent({
-            id: 'guest_cart_view',
-            name: 'Guest User in Cart',
-            value: finalTotal,
-            currency: 'INR',
-            category: 'User Type',
-            type: 'guest_user',
-          })}
-        >
+        <div className="login-prompt">
           <p>You are browsing as a guest. 
-            <button onClick={() => {
-              trackViewContent({
-                id: 'login_prompt_click_cart',
-                name: 'Login Prompt Clicked in Cart',
-                value: 0,
-                category: 'User Action',
-                type: 'login_prompt_click',
-              });
-              navigate('/login');
-            }} className="login-link">Login</button> 
+            <button onClick={() => navigate('/login')} className="login-link">Login</button> 
             for order tracking and faster checkout.
           </p>
         </div>
@@ -1143,14 +1096,6 @@ const AddToCart = () => {
         <li 
           key={index} 
           className={`address-card ${formData.selectedAddress === addr ? 'selected' : ''}`}
-          onClick={() => trackViewContent({
-            id: `address_selected_${index}`,
-            name: 'Address Selected',
-            value: 0,
-            category: 'Checkout Process',
-            type: 'address_selection',
-            address_type: 'text',
-          })}
         >
           <label>
             <input
@@ -1158,35 +1103,17 @@ const AddToCart = () => {
               name="selectedAddress"
               value={addr}
               checked={formData.selectedAddress === addr}
-              onChange={() => {
-                setFormData(prev => ({ ...prev, selectedAddress: addr }));
-                trackViewContent({
-                  id: `address_radio_${index}`,
-                  name: 'Address Radio Selected',
-                  value: 0,
-                  category: 'Checkout Process',
-                  type: 'address_selection',
-                });
-              }}
+              onChange={() => handleAddressSelect(addr, '', '')}
             />
             <span className='text_20'>{addr}</span>
           </label>
         </li>
       );
     } else {
-      // For object type addresses (guest users)
       return (
         <li 
           key={index} 
           className={`address-card ${formData.selectedAddress === addr.fullAddress ? 'selected' : ''}`}
-          onClick={() => trackViewContent({
-            id: `address_selected_object_${index}`,
-            name: 'Address Object Selected',
-            value: 0,
-            category: 'Checkout Process',
-            type: 'address_selection',
-            address_type: 'object',
-          })}
         >
           <label>
             <input
@@ -1194,30 +1121,11 @@ const AddToCart = () => {
               name="selectedAddress"
               value={addr.fullAddress}
               checked={formData.selectedAddress === addr.fullAddress}
-              onChange={() => {
-                setFormData(prev => ({ 
-                  ...prev, 
-                  selectedAddress: addr.fullAddress,
-                  email: addr.email || prev.email,
-                  phone: addr.phone || prev.phone
-                }));
-                
-                // Save email and phone to localStorage immediately
-                if (addr.email) {
-                  localStorage.setItem('guestEmail', addr.email);
-                }
-                if (addr.phone) {
-                  localStorage.setItem('guestPhone', addr.phone);
-                }
-                
-                trackViewContent({
-                  id: `address_radio_object_${index}`,
-                  name: 'Address Radio Object Selected',
-                  value: 0,
-                  category: 'Checkout Process',
-                  type: 'address_selection',
-                });
-              }}
+              onChange={() => handleAddressSelect(
+                addr.fullAddress,
+                addr.email || '',
+                addr.phone || ''
+              )}
             />
             <div className="address-details">
               <span className='text_20'>{addr.fullAddress}</span>
@@ -1231,30 +1139,10 @@ const AddToCart = () => {
   };
 
   const handleBackButtonClick = () => {
-    // Track back to shopping button click
-    trackViewContent({
-      id: 'back_to_shopping_cart',
-      name: 'Back to Shopping from Cart',
-      value: finalTotal,
-      currency: 'INR',
-      category: 'Navigation',
-      type: 'cart_exit',
-      item_count: cartItems.length,
-    });
     navigate(-1);
   };
 
   const handleContinueShoppingClick = () => {
-    // Track continue shopping button click
-    trackViewContent({
-      id: 'continue_shopping_cart',
-      name: 'Continue Shopping from Cart',
-      value: finalTotal,
-      currency: 'INR',
-      category: 'Navigation',
-      type: 'continue_shopping',
-      item_count: cartItems.length,
-    });
     navigate("/fever");
   };
 
@@ -1279,34 +1167,20 @@ const AddToCart = () => {
 
         <div className="container">
           <div className="cart-content">
+            {/* Left Column - Cart Items + Order Summary */}
             <div className="cart-items-section">
+              {/* Cart Items Section */}
               <div className="section-header">
-                <h2
-                  onClick={() => trackViewContent({
-                    id: 'cart_section_header',
-                    name: 'Cart Section Header Clicked',
-                    value: 0,
-                    category: 'User Interaction',
-                    type: 'section_header_click',
-                  })}
-                >
+                <h2>
                   Your Items ({cartItems.length})
+                  {isWholesaler && (
+                    <span className="wholesale-tag-cart">Wholesale</span>
+                  )}
                 </h2>
                 {cartItems.length > 0 && (
                   <button
                     className="clear-cart-btn"
                     onClick={() => {
-                      // Track clear cart click
-                      trackViewContent({
-                        id: 'clear_cart_click',
-                        name: 'Clear Cart Button Clicked',
-                        value: finalTotal,
-                        currency: 'INR',
-                        category: 'Cart Action',
-                        type: 'clear_cart_click',
-                        item_count: cartItems.length,
-                      });
-                      
                       dispatch(clearProducts());
                       toast.info('Cart cleared.', {
                         position: 'top-right',
@@ -1321,16 +1195,7 @@ const AddToCart = () => {
               </div>
 
               {cartItems.length === 0 ? (
-                <div 
-                  className="empty-cart"
-                  onClick={() => trackViewContent({
-                    id: 'empty_cart_view',
-                    name: 'Empty Cart View',
-                    value: 0,
-                    category: 'Cart State',
-                    type: 'empty_cart',
-                  })}
-                >
+                <div className="empty-cart">
                   <div className="empty-cart-icon">
                     <ShoppingBag size={64} />
                   </div>
@@ -1340,305 +1205,285 @@ const AddToCart = () => {
                 </div>
               ) : (
                 <div className="cart-items">
-                  {cartItems.map((item) => (
-                    <div 
-                      key={item._id} 
-                      className="cart-item"
-                      onClick={() => trackViewContent({
-                        id: `cart_item_click_${item._id}`,
-                        name: `${item.name} - Cart Item Clicked`,
-                        value: item.final_price,
-                        currency: 'INR',
-                        category: 'Cart Item',
-                        type: 'cart_item_interaction',
-                      })}
-                    >
-                      <Link to={`/ProductPage/${item._id}`} className="item-image">
-                        <img src={JoinUrl(API_URL, item.media[0]?.url)} alt={item.name} />
-                      </Link>
+                  {cartItems.map((item) => {
+                    const itemPrice = isWholesaler 
+                      ? parseFloat(item.retail_price || item.final_price || 0)
+                      : parseFloat(item.final_price || 0);
+                    
+                    return (
+                      <div key={item._id} className="cart-item">
+                        <Link to={`/ProductPage/${item._id}`} className="item-image">
+                          <img src={JoinUrl(API_URL, item.media[0]?.url)} alt={item.name} />
+                        </Link>
 
-                      <div className="item-details">
-                        <h3 className="item-name">{item.name}</h3>
-                        <p className="item-description">{item.quantity} Pack</p>
+                        <div className="item-details">
+                          <h3 className="item-name">{item.name}</h3>
+                          <p className="item-description">{item.quantity} Pack</p>
 
-                        <div className="item-pricing">
-                          <span className="current-price">
-                            ₹{parseFloat(item.final_price || 0).toFixed(2)}
-                          </span>
-                          <span className="discount">
-                            {Math.round((item.discount))}% OFF
-                          </span>
+                          <div className="item-pricing">
+                            <span className="current-price">
+                              ₹{itemPrice.toFixed(2)}
+                              {isWholesaler && (
+                                <span className="wholesale-tag-cart-item">Wholesale</span>
+                              )}
+                            </span>
+                            <span className="discount">
+                              {Math.round((item.discount))}% OFF
+                            </span>
+                          </div>
+                        </div>
+
+                        <div className="item-actions">
+                          <div className="quantity-controls">
+                            <button
+                              className="quantity-btn"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                handleQuantityChange(item._id, (item.quantity || 1) - 1);
+                              }}
+                              disabled={(item.quantity || 1) <= 1}
+                            >
+                              <span>-</span>
+                            </button>
+                            <span className="quantity">{item.quantity || 1}</span>
+                            <button
+                              className="quantity-btn"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                handleQuantityChange(item._id, (item.quantity || 1) + 1);
+                              }}
+                            >
+                              <span>+</span>
+                            </button>
+                          </div>
+                          <button className="remove-btn" onClick={(e) => {
+                            e.stopPropagation();
+                            handleRemoveItem(item._id);
+                          }}>
+                            <Trash2 size={18} />
+                          </button>
                         </div>
                       </div>
+                    );
+                  })}
+                </div>
+              )}
 
-                      <div className="item-actions">
-                        <div className="quantity-controls">
-                          <button
-                            className="quantity-btn"
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              handleQuantityChange(item._id, (item.quantity || 1) - 1);
-                            }}
-                            disabled={(item.quantity || 1) <= 1}
-                          >
-                            <span>-</span>
-                          </button>
-                          <span className="quantity">{item.quantity || 1}</span>
-                          <button
-                            className="quantity-btn"
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              handleQuantityChange(item._id, (item.quantity || 1) + 1);
-                            }}
-                          >
-                            <span>+</span>
-                          </button>
+              {/* Order Summary - Below Cart Items */}
+              {cartItems.length > 0 && (
+                <div className="order-summary-inline">
+                  <div className="summary-card">
+                    <h3 className="summary-title">
+                      Order Summary
+                    </h3>
+
+                    {!isAuthenticated && (
+                      <div className="guest-notice">
+                        <p>🎯 <strong>Guest Checkout Available!</strong> Enter your details below to proceed without login.</p>
+                      </div>
+                    )}
+
+                    {isWholesaler && (
+                      <div className="wholesaler-note-cart">
+                        <p>📦 You are viewing <strong>wholesale prices</strong>. Payment will be processed at wholesale rates.</p>
+                      </div>
+                    )}
+
+                    <button
+                      className="enhanced-add-address-btn"
+                      onClick={() => setShowModal(true)}
+                    >
+                      ➕ {addresses.length > 0 ? 'Add Another Address' : 'Add Address'}
+                    </button>
+
+                    <div className='my_10'>
+                      {addresses.length > 0 ? (
+                        <div className="saved-addresses">
+                          <h4 className="section-subtitle">📍 Saved Addresses</h4>
+                          <ul className="address-list">
+                            {addresses.map((addr, index) => renderAddressItem(addr, index))}
+                          </ul>
                         </div>
-                        <button className="remove-btn" onClick={(e) => {
-                          e.stopPropagation();
-                          handleRemoveItem(item._id);
-                        }}>
-                          <Trash2 size={18} />
-                        </button>
+                      ) : (
+                        <p className="no-address-text">
+                          No address saved yet. Please add your delivery address.
+                        </p>
+                      )}
+                    </div>
+
+                    {/* Payment Method Selection */}
+                    <div className="payment-method-section">
+                      <h4 className="section-subtitle">💳 Payment Method</h4>
+                      <div className="payment-methods">
+                        <div className="payment-option">
+                          <label className={`payment-method-card ${paymentMethod === 'online' ? 'selected' : ''}`}>
+                            <input
+                              type="radio"
+                              name="paymentMethod"
+                              value="online"
+                              checked={paymentMethod === 'online'}
+                              onChange={(e) => handlePaymentMethodChange(e.target.value)}
+                            />
+                            <div className="payment-method-content">
+                              <div className="payment-method-header">
+                                <span className="payment-icon"><CreditCard size={20} /></span>
+                                <span className="payment-title">Online Payment</span>
+                              </div>
+                              <p className="payment-description">
+                                Pay securely with Razorpay
+                              </p>
+                            </div>
+                          </label>
+                        </div>
+                        
+                        {/* <div className="payment-option">
+                          <label className={`payment-method-card ${paymentMethod === 'cod' ? 'selected' : ''}`}>
+                            <input
+                              type="radio"
+                              name="paymentMethod"
+                              value="cod"
+                              checked={paymentMethod === 'cod'}
+                              onChange={(e) => handlePaymentMethodChange(e.target.value)}
+                            />
+                            <div className="payment-method-content">
+                              <div className="payment-method-header">
+                                <span className="payment-icon"><Wallet size={20} /></span>
+                                <span className="payment-title">Cash on Delivery</span>
+                              </div>
+                              <p className="payment-description">
+                                Pay when you receive your order
+                                <span className="cod-charge">+ ₹{codCharge} COD charge</span>
+                              </p>
+                            </div>
+                          </label>
+                        </div> */}
                       </div>
                     </div>
-                  ))}
+
+                    <div className="summary-details">
+                      <div className="summary-row">
+                        <span>Subtotal ({cartItems.length} items)</span>
+                        <span>₹{baseTotal.toFixed(2)}</span>
+                      </div>
+                      
+                      {paymentMethod === 'cod' && (
+                        <div className="summary-row cod-charge-row">
+                          <span>COD Charge</span>
+                          <span>+ ₹{codCharge.toFixed(2)}</span>
+                        </div>
+                      )}
+                      
+                      <div className="summary-row">
+                        <span>Shipping</span>
+                        <span className="free-shipping">FREE</span>
+                      </div>
+                      <div className="summary-row">
+                        <span>Tax</span>
+                        <span>₹0.00</span>
+                      </div>
+                      <div className="summary-row discount-row">
+                        <span>Discount</span>
+                        <span>-₹0.00</span>
+                      </div>
+                    </div>
+
+                    <div className="summary-divider"></div>
+                    <div className="summary-total">
+                      <span>Total</span>
+                      <span>₹{finalTotal.toFixed(2)}</span>
+                    </div>
+
+                    {paymentMethod === 'cod' && (
+                      <div className="cod-note">
+                        <p>💡 <strong>Note:</strong> You'll pay ₹{finalTotal.toFixed(2)} (including ₹{codCharge} COD charge) when your order is delivered.</p>
+                      </div>
+                    )}
+
+                    <button
+                      className={`checkout-btn ${paymentMethod === 'cod' ? 'cod-btn' : ''}`}
+                      onClick={handleCheckout}
+                      disabled={
+                        !formData.selectedAddress || 
+                        checkoutLoading || 
+                        paymentProcessing || 
+                        isProcessing ||
+                        codProcessing ||
+                        !formData.email ||
+                        !isValidEmail(formData.email) ||
+                        !formData.phone ||
+                        formData.phone.length !== 10
+                      }
+                    >
+                      {checkoutLoading ? (
+                        <span>Creating Order...</span>
+                      ) : paymentProcessing || isProcessing ? (
+                        <span>Processing Payment...</span>
+                      ) : codProcessing ? (
+                        <span>Creating COD Order...</span>
+                      ) : (
+                        <>
+                          {paymentMethod === 'cod' 
+                            ? `Place COD Order (₹${finalTotal.toFixed(2)})`
+                            : isAuthenticated 
+                              ? 'Proceed to Payment' 
+                              : 'Proceed as Guest'
+                          }
+                          <ArrowLeft size={18} style={{ transform: 'rotate(180deg)' }} />
+                        </>
+                      )}
+                    </button>
+
+                    {!isAuthenticated && (!formData.email || !isValidEmail(formData.email) || !formData.phone || formData.phone.length !== 10) && (
+                      <div className="email-warning">
+                        ⚠️ Email address and phone number are required for order confirmation
+                      </div>
+                    )}
+
+                    {!isAuthenticated && (
+                      <div className="guest-benefits">
+                        <p className="login-suggestion">
+                          <button onClick={() => navigate('/login')} className="login-suggestion-btn">
+                            Login
+                          </button> for order tracking and faster checkout next time.
+                        </p>
+                      </div>
+                    )}
+                  </div>
                 </div>
               )}
             </div>
 
+            {/* Right Column - Additional Info / Offers / Help */}
             {cartItems.length > 0 && (
-              <div className="order-summary">
-                <div className="summary-card">
-                  <h3 
-                    className="summary-title"
-                    onClick={() => trackViewContent({
-                      id: 'order_summary_click',
-                      name: 'Order Summary Clicked',
-                      value: finalTotal,
-                      currency: 'INR',
-                      category: 'Order Summary',
-                      type: 'order_summary_interaction',
-                    })}
-                  >
-                    Order Summary
-                  </h3>
+              <div className="cart-info-section">
+                <div className="info-card">
+                  <h4>📦 Delivery Information</h4>
+                  <ul className="info-list">
+                    <li>🚚 Free shipping on all orders</li>
+                    <li>⏱️ Estimated delivery: 3-5 business days</li>
+                    <li>🔄 Easy 7-day returns</li>
+                    <li>✅ 100% genuine products</li>
+                  </ul>
+                </div>
 
-                  {!isAuthenticated && (
-                    <div 
-                      className="guest-notice"
-                      onClick={() => trackViewContent({
-                        id: 'guest_notice_cart',
-                        name: 'Guest Notice Viewed',
-                        value: 0,
-                        category: 'User Type',
-                        type: 'guest_notice',
-                      })}
-                    >
-                      <p>🎯 <strong>Guest Checkout Available!</strong> Enter your details below to proceed without login.</p>
-                    </div>
-                  )}
-
-                  <button
-                    className="enhanced-add-address-btn"
-                    onClick={() => {
-                      setShowModal(true);
-                      // Track add address button click
-                      trackViewContent({
-                        id: 'add_address_button_click',
-                        name: 'Add Address Button Clicked',
-                        value: 0,
-                        category: 'Checkout Process',
-                        type: 'add_address_click',
-                      });
-                    }}
-                  >
-                    ➕ {addresses.length > 0 ? 'Add Another Address' : 'Add Address'}
-                  </button>
-
-                  <div className='my_10'>
-                    {addresses.length > 0 ? (
-                      <div className="saved-addresses">
-                        <h4 className="section-subtitle">📍 Saved Addresses</h4>
-                        <ul className="address-list">
-                          {addresses.map((addr, index) => renderAddressItem(addr, index))}
-                        </ul>
-                      </div>
-                    ) : (
-                      <p className="no-address-text">
-                        No address saved yet. Please add your delivery address.
-                      </p>
-                    )}
+                <div className="info-card">
+                  <h4>🛡️ Secure Checkout</h4>
+                  <p>Your payment information is encrypted and secure. We never store your card details.</p>
+                  <div className="security-badges">
+                    <span className="badge">🔒 SSL Secure</span>
+                    <span className="badge">🛡️ 256-bit Encryption</span>
+                    <span className="badge">✓ PCI Compliant</span>
                   </div>
+                </div>
 
-                  {/* Payment Method Selection */}
-                  <div className="payment-method-section">
-                    <h4 className="section-subtitle">💳 Payment Method</h4>
-                    <div className="payment-methods">
-                      <div className="payment-option">
-                        <label className={`payment-method-card ${paymentMethod === 'online' ? 'selected' : ''}`}>
-                          <input
-                            type="radio"
-                            name="paymentMethod"
-                            value="online"
-                            checked={paymentMethod === 'online'}
-                            onChange={(e) => {
-                              setPaymentMethod(e.target.value);
-                              trackViewContent({
-                                id: 'payment_method_online',
-                                name: 'Online Payment Selected',
-                                value: 0,
-                                category: 'Payment',
-                                type: 'payment_method_selection',
-                                method: 'online'
-                              });
-                            }}
-                          />
-                          <div className="payment-method-content">
-                            <div className="payment-method-header">
-                              <span className="payment-icon"><CreditCard size={20} /></span>
-                              <span className="payment-title">Online Payment</span>
-                            </div>
-                            <p className="payment-description">
-                              Pay securely with Razorpay
-                            </p>
-                          </div>
-                        </label>
-                      </div>
-                      
-                      <div className="payment-option">
-                        <label className={`payment-method-card ${paymentMethod === 'cod' ? 'selected' : ''}`}>
-                          <input
-                            type="radio"
-                            name="paymentMethod"
-                            value="cod"
-                            checked={paymentMethod === 'cod'}
-                            onChange={(e) => {
-                              setPaymentMethod(e.target.value);
-                              trackViewContent({
-                                id: 'payment_method_cod',
-                                name: 'COD Payment Selected',
-                                value: 0,
-                                category: 'Payment',
-                                type: 'payment_method_selection',
-                                method: 'cod'
-                              });
-                            }}
-                          />
-                          <div className="payment-method-content">
-                            <div className="payment-method-header">
-                              <span className="payment-icon"><Wallet size={20} /></span>
-                              <span className="payment-title">Cash on Delivery</span>
-                            </div>
-                            <p className="payment-description">
-                              Pay when you receive your order
-                              <span className="cod-charge">+ ₹{codCharge} COD charge</span>
-                            </p>
-                          </div>
-                        </label>
-                      </div>
-                    </div>
-                  </div>
-
-                  <div className="summary-details">
-                    <div className="summary-row">
-                      <span>Subtotal ({cartItems.length} items)</span>
-                      <span>₹{baseTotal.toFixed(2)}</span>
-                    </div>
-                    
-                    {/* COD charge display */}
-                    {paymentMethod === 'cod' && (
-                      <div className="summary-row cod-charge-row">
-                        <span>COD Charge</span>
-                        <span>+ ₹{codCharge.toFixed(2)}</span>
-                      </div>
-                    )}
-                    
-                    <div className="summary-row">
-                      <span>Shipping</span>
-                      <span className="free-shipping">FREE</span>
-                    </div>
-                    <div className="summary-row">
-                      <span>Tax</span>
-                      <span>₹0.00</span>
-                    </div>
-                    <div className="summary-row discount-row">
-                      <span>Discount</span>
-                      <span>-₹0.00</span>
-                    </div>
-                  </div>
-
-                  <div className="summary-divider"></div>
-                  <div className="summary-total">
-                    <span>Total</span>
-                    <span>₹{finalTotal.toFixed(2)}</span>
-                  </div>
-
-                  {paymentMethod === 'cod' && (
-                    <div className="cod-note">
-                      <p>💡 <strong>Note:</strong> You'll pay ₹{finalTotal.toFixed(2)} (including ₹{codCharge} COD charge) when your order is delivered.</p>
-                    </div>
-                  )}
-
-                  <button
-                    className={`checkout-btn ${paymentMethod === 'cod' ? 'cod-btn' : ''}`}
-                    onClick={handleCheckout}
-                    disabled={
-                      !formData.selectedAddress || 
-                      checkoutLoading || 
-                      paymentProcessing || 
-                      isProcessing ||
-                      codProcessing ||
-                      !formData.email ||
-                      !isValidEmail(formData.email) ||
-                      !formData.phone ||
-                      formData.phone.length !== 10
-                    }
-                  >
-                    {checkoutLoading ? (
-                      <span>Creating Order...</span>
-                    ) : paymentProcessing || isProcessing ? (
-                      <span>Processing Payment...</span>
-                    ) : codProcessing ? (
-                      <span>Creating COD Order...</span>
-                    ) : (
-                      <>
-                        {paymentMethod === 'cod' 
-                          ? `Place COD Order (₹${finalTotal.toFixed(2)})`
-                          : isAuthenticated 
-                            ? 'Proceed to Payment' 
-                            : 'Proceed as Guest'
-                        }
-                        <ArrowLeft size={18} style={{ transform: 'rotate(180deg)' }} />
-                      </>
-                    )}
-                  </button>
-
-                  {!isAuthenticated && (!formData.email || !isValidEmail(formData.email) || !formData.phone || formData.phone.length !== 10) && (
-                    <div className="email-warning">
-                      ⚠️ Email address and phone number are required for order confirmation
-                    </div>
-                  )}
-
-                  {!isAuthenticated && (
-                    <div className="guest-benefits">
-                      <p className="login-suggestion">
-                        <button onClick={() => {
-                          trackViewContent({
-                            id: 'login_suggestion_click_cart',
-                            name: 'Login Suggestion Clicked in Cart',
-                            value: 0,
-                            category: 'User Action',
-                            type: 'login_suggestion_click',
-                          });
-                          navigate('/login');
-                        }} className="login-suggestion-btn">
-                          Login
-                        </button> for order tracking and faster checkout next time.
-                      </p>
-                    </div>
-                  )}
-
+                <div className="info-card">
+                  <h4>📞 Need Help?</h4>
+                  <p>Contact our customer support</p>
+                  <p className="support-contact">
+                    📧 support@drbsk.com<br />
+                    📱 +91 98765 43210
+                  </p>
+                  <p className="support-timings">Mon - Sat: 9:00 AM - 6:00 PM</p>
                 </div>
               </div>
             )}
@@ -1646,28 +1491,43 @@ const AddToCart = () => {
         </div>
       </div>
 
+      {/* Address Modal */}
       <Dialog
         open={showModal}
         onClose={() => {
           setShowModal(false);
-          // Track address modal close
-          trackViewContent({
-            id: 'address_modal_closed',
-            name: 'Address Modal Closed',
-            value: 0,
-            category: 'User Interaction',
-            type: 'modal_close',
-            action: 'address_modal',
-          });
         }}
         fullWidth
         maxWidth="sm"
         sx={{
+          '& .MuiDialog-container': {
+            alignItems: 'center',
+            justifyContent: 'center',
+            padding: { xs: '20px', sm: '24px' },
+          },
           '& .MuiDialog-paper': {
-            borderRadius: '12px',
-            overflow: 'hidden',
-            boxShadow: '0 10px 40px rgba(0,0,0,0.1)',
-          }
+            borderRadius: '20px',
+            margin: { xs: '0', sm: '32px' },
+            maxHeight: { xs: 'calc(100vh - 40px)', sm: '90vh' },
+            width: { xs: 'calc(100% - 40px)', sm: '600px' },
+            animation: 'slideDown 0.3s ease-out',
+            position: 'relative',
+            bottom: 'auto',
+            left: 'auto',
+            right: 'auto',
+            top: 'auto',
+            boxShadow: '0 10px 40px rgba(0,0,0,0.2)',
+          },
+          '@keyframes slideDown': {
+            from: {
+              opacity: 0,
+              transform: 'translateY(-30px)',
+            },
+            to: {
+              opacity: 1,
+              transform: 'translateY(0)',
+            },
+          },
         }}
       >
         <DialogTitle 
@@ -1813,15 +1673,6 @@ const AddToCart = () => {
                   value={formData.state}
                   onChange={(e) => {
                     setFormData({ ...formData, state: e.target.value, city: '' });
-                    // Track state selection
-                    trackViewContent({
-                      id: 'state_selected_address',
-                      name: 'State Selected in Address',
-                      value: 0,
-                      category: 'Address Form',
-                      type: 'state_selection',
-                      state: e.target.value,
-                    });
                   }}
                   className="custom-select"
                   style={{
@@ -1860,15 +1711,6 @@ const AddToCart = () => {
                   value={formData.city}
                   onChange={(e) => {
                     setFormData({ ...formData, city: e.target.value });
-                    // Track city selection
-                    trackViewContent({
-                      id: 'city_selected_address',
-                      name: 'City Selected in Address',
-                      value: 0,
-                      category: 'Address Form',
-                      type: 'city_selection',
-                      city: e.target.value,
-                    });
                   }}
                   className="custom-select"
                   style={{
@@ -2033,50 +1875,81 @@ const AddToCart = () => {
           )}
         </DialogContent>
         
-        <DialogActions sx={{ 
-          px: 3, 
-          pb: 3,
-          pt: 2,
-          gap: '12px',
-          background: 'linear-gradient(to bottom, #f8f9fa 0%, #ffffff 100%)',
-          borderTop: '1px solid #e0e0e0'
-        }}>
+        <DialogActions
+          sx={{
+            px: { xs: 2, sm: 3 },
+            pb: { xs: 2, sm: 3 },
+            pt: { xs: 1.5, sm: 2 },
+            gap: { xs: 1.5, sm: 2 },
+            background: 'linear-gradient(to bottom, #f8f9fa 0%, #ffffff 100%)',
+            borderTop: '1px solid #e0e0e0',
+            display: 'flex !important',
+            flexDirection: { xs: 'column', sm: 'row' },
+            justifyContent: 'flex-end',
+            alignItems: 'stretch',
+            width: '100%',
+            margin: 0,
+            boxSizing: 'border-box',
+            position: 'relative !important',
+            bottom: 'auto !important',
+            left: 'auto !important',
+            right: 'auto !important',
+            zIndex: 1300,
+            flexShrink: 0,
+            visibility: 'visible !important',
+            opacity: '1 !important',
+            '&.MuiDialogActions-root': {
+              display: 'flex !important',
+              visibility: 'visible !important',
+              opacity: '1 !important',
+              padding: {
+                xs: '16px 20px !important',
+                sm: '24px 32px !important'
+              }
+            }
+          }}
+        >
+          {/* Cancel Button */}
           <button
             onClick={() => {
               setShowModal(false);
-              // Track cancel button click
-              trackViewContent({
-                id: 'address_modal_cancel',
-                name: 'Address Modal Cancel Button',
-                value: 0,
-                category: 'User Action',
-                type: 'modal_cancel',
-              });
             }}
             style={{
-              padding: '10px 24px',
-              borderRadius: '8px',
-              border: '1px solid #ddd',
-              backgroundColor: 'white',
-              color: '#666',
-              fontSize: '0.875rem',
-              fontWeight: 500,
+              width: '100%',
+              padding: '14px 24px',
+              borderRadius: '12px',
+              border: '1.5px solid #e2e8f0',
+              backgroundColor: '#ffffff',
+              color: '#1e293b',
+              fontSize: '16px',
+              fontWeight: 600,
               cursor: 'pointer',
-              transition: 'all 0.3s ease',
-              minWidth: '100px'
+              transition: 'all 0.2s ease',
+              boxSizing: 'border-box',
+              display: 'block',
+              visibility: 'visible',
+              opacity: 1,
+              position: 'relative',
+              zIndex: 1301,
+              margin: 0,
+              lineHeight: 1.5,
+              letterSpacing: '0.3px',
+              boxShadow: '0 1px 2px rgba(0,0,0,0.05)',
+              WebkitTapHighlightColor: 'transparent',
             }}
             onMouseOver={(e) => {
-              e.currentTarget.style.backgroundColor = '#f5f5f5';
-              e.currentTarget.style.borderColor = '#999';
+              e.currentTarget.style.backgroundColor = '#f8fafc';
+              e.currentTarget.style.borderColor = '#94a3b8';
             }}
             onMouseOut={(e) => {
-              e.currentTarget.style.backgroundColor = 'white';
-              e.currentTarget.style.borderColor = '#ddd';
+              e.currentTarget.style.backgroundColor = '#ffffff';
+              e.currentTarget.style.borderColor = '#e2e8f0';
             }}
           >
             Cancel
           </button>
-          
+
+          {/* Save Button */}
           <button
             onClick={handleAddAddress}
             disabled={
@@ -2090,56 +1963,68 @@ const AddToCart = () => {
               formData.phone.length !== 10
             }
             style={{
-              padding: '10px 24px',
-              borderRadius: '8px',
+              width: '100%',
+              padding: '14px 24px',
+              borderRadius: '12px',
               border: 'none',
               background: 'linear-gradient(135deg, #1976d2 0%, #0d47a1 100%)',
               color: 'white',
-              fontSize: '0.875rem',
-              fontWeight: 600,
+              fontSize: '16px',
+              fontWeight: 700,
               cursor: 'pointer',
-              transition: 'all 0.3s ease',
-              minWidth: '140px',
-              boxShadow: '0 2px 8px rgba(25, 118, 210, 0.2)',
-              opacity: (loading || 
+              transition: 'all 0.2s ease',
+              boxShadow: '0 4px 12px rgba(25, 118, 210, 0.25)',
+              opacity: (
+                loading || 
                 !formData.email || 
                 !isValidEmail(formData.email) ||
                 !formData.flat || 
                 !formData.landmark || 
                 !formData.city || 
                 !formData.state || 
-                formData.phone.length !== 10) ? 0.6 : 1,
-              pointerEvents: (loading || 
+                formData.phone.length !== 10
+              ) ? 0.5 : 1,
+              pointerEvents: (
+                loading || 
                 !formData.email || 
                 !isValidEmail(formData.email) ||
                 !formData.flat || 
                 !formData.landmark || 
                 !formData.city || 
                 !formData.state || 
-                formData.phone.length !== 10) ? 'none' : 'auto'
-            }}
-            onMouseOver={(e) => {
-              if (!e.currentTarget.disabled) {
-                e.currentTarget.style.transform = 'translateY(-1px)';
-                e.currentTarget.style.boxShadow = '0 4px 12px rgba(25, 118, 210, 0.3)';
-              }
-            }}
-            onMouseOut={(e) => {
-              e.currentTarget.style.transform = 'translateY(0)';
-              e.currentTarget.style.boxShadow = '0 2px 8px rgba(25, 118, 210, 0.2)';
+                formData.phone.length !== 10
+              ) ? 'none' : 'auto',
+              display: 'block !important',
+              visibility: 'visible !important',
+              position: 'relative',
+              zIndex: 1301,
+              margin: 0,
+              lineHeight: 1.5,
+              letterSpacing: '0.5px',
+              WebkitTapHighlightColor: 'transparent',
+              minHeight: '52px',
+              height: 'auto',
             }}
           >
             {loading ? (
-              <span style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                <div style={{
-                  width: '16px',
-                  height: '16px',
-                  border: '2px solid rgba(255,255,255,0.3)',
-                  borderTop: '2px solid white',
-                  borderRadius: '50%',
-                  animation: 'spin 1s linear infinite'
-                }} />
-                Saving...
+              <span style={{ 
+                display: 'flex', 
+                alignItems: 'center', 
+                gap: '10px', 
+                justifyContent: 'center',
+                width: '100%'
+              }}>
+                <div
+                  style={{
+                    width: '18px',
+                    height: '18px',
+                    border: '2.5px solid rgba(255,255,255,0.3)',
+                    borderTop: '2.5px solid white',
+                    borderRadius: '50%',
+                    animation: 'spin 0.8s linear infinite'
+                  }}
+                />
+                <span>Saving...</span>
               </span>
             ) : isAuthenticated ? (
               'Add Address'
@@ -2149,7 +2034,7 @@ const AddToCart = () => {
           </button>
         </DialogActions>
       </Dialog>
-       <Footer />
+      <Footer />
     </>
   );
 };

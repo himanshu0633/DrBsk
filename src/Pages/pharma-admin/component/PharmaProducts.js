@@ -55,6 +55,18 @@ const ProductImage = styled(Avatar)(({ theme }) => ({
   marginRight: theme.spacing(2),
 }));
 
+// Helper function to safely extract value from object or primitive
+const getFieldValue = (field) => {
+  if (field === null || field === undefined) {
+    return 'N/A';
+  }
+  if (typeof field === 'object') {
+    // Try to get common property names for variant/pricing objects
+    return field.label || field.name || field.value || JSON.stringify(field);
+  }
+  return field;
+};
+
 const PharmaProducts = () => {
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -84,6 +96,7 @@ const PharmaProducts = () => {
     setLoading(true);
     try {
       const response = await axiosInstance.get('/user/allproducts');
+      console.log('Product data structure:', response.data[0]); // For debugging
       setProducts(response.data);
     } catch (error) {
       console.error("Error fetching data:", error);
@@ -156,7 +169,6 @@ const PharmaProducts = () => {
                   <TableCell sx={{ color: 'white', fontWeight: 'bold' }}>Name</TableCell>
                   <TableCell sx={{ color: 'white', fontWeight: 'bold' }}>Category</TableCell>
                   <TableCell sx={{ color: 'white', fontWeight: 'bold' }}>Quantity</TableCell>
-                
                   <TableCell sx={{ color: 'white', fontWeight: 'bold' }}>Actions</TableCell>
                 </TableRow>
               </TableHead>
@@ -166,7 +178,6 @@ const PharmaProducts = () => {
                     <TableCell>
                       {product.media && product.media.length > 0 ? (
                         <ProductImage
-                          // src={`${API_URL}${product.media[0].url}`}
                           src={JoinUrl(API_URL, product.media[0].url)}
                           alt={product.name}
                           variant="rounded"
@@ -184,20 +195,18 @@ const PharmaProducts = () => {
                       </Typography>
                     </TableCell>
                     <TableCell>
-                      <Typography>{product.category}</Typography>
+                      <Typography>
+                        {getFieldValue(product.category)}
+                      </Typography>
                       <Typography variant="body2" color="textSecondary">
-                        {product.sub_category}
+                        {getFieldValue(product.sub_category)}
                       </Typography>
                     </TableCell>
-                   
                     <TableCell>
-                      <Typography
-                        fontWeight="medium"
-                      >
-                        {product.quantity}
+                      <Typography fontWeight="medium">
+                        {getFieldValue(product.quantity)}
                       </Typography>
                     </TableCell>
-                    
                     <TableCell>
                       <IconButton
                         color="info"
@@ -273,7 +282,6 @@ const PharmaProducts = () => {
                 <Box sx={{ display: 'flex', justifyContent: 'center' }}>
                   {selectedProduct.media && selectedProduct.media.length > 0 ? (
                     <Avatar
-                      // src={`${API_URL}${selectedProduct.media[0].url}`}
                       src={JoinUrl(API_URL, selectedProduct.media[0].url)}
                       alt={selectedProduct.name}
                       sx={{ width: 200, height: 200 }}
@@ -302,69 +310,80 @@ const PharmaProducts = () => {
                 <Grid container spacing={2}>
                   <Grid item xs={6}>
                     <Typography variant="subtitle2">Category:</Typography>
-                    <Typography>{selectedProduct.category}</Typography>
+                    <Typography>
+                      {getFieldValue(selectedProduct.category)}
+                    </Typography>
                   </Grid>
                   <Grid item xs={6}>
                     <Typography variant="subtitle2">Sub-category:</Typography>
-                    <Typography>{selectedProduct.sub_category}</Typography>
+                    <Typography>
+                      {getFieldValue(selectedProduct.sub_category)}
+                    </Typography>
                   </Grid>
                   <Grid item xs={6}>
                     <Typography variant="subtitle2">Retail Price:</Typography>
-                    <Typography>₹{selectedProduct.retail_price}</Typography>
+                    <Typography>₹{selectedProduct.retail_price || 'N/A'}</Typography>
                   </Grid>
                   <Grid item xs={6}>
                     <Typography variant="subtitle2">Consumer Price:</Typography>
-                    <Typography>₹{selectedProduct.consumer_price}</Typography>
+                    <Typography>₹{selectedProduct.consumer_price || 'N/A'}</Typography>
                   </Grid>
                   <Grid item xs={6}>
                     <Typography variant="subtitle2">MRP:</Typography>
-                    <Typography>₹{selectedProduct.mrp}</Typography>
+                    <Typography>₹{selectedProduct.mrp || 'N/A'}</Typography>
                   </Grid>
                   <Grid item xs={6}>
                     <Typography variant="subtitle2">Discount:</Typography>
-                    <Typography>{selectedProduct.discount}%</Typography>
+                    <Typography>{selectedProduct.discount || 0}%</Typography>
                   </Grid>
                   <Grid item xs={6}>
                     <Typography variant="subtitle2">GST:</Typography>
-                    <Typography>{selectedProduct.gst}%</Typography>
+                    <Typography>{selectedProduct.gst || 0}%</Typography>
                   </Grid>
                   <Grid item xs={6}>
                     <Typography variant="subtitle2">Stock:</Typography>
-                    {/* <Typography>{selectedProduct.stock}</Typography> */}
-                    <Typography>{selectedProduct.stock || "N/A"}</Typography>
+                    <Typography>{selectedProduct.stock || getFieldValue(selectedProduct.quantity) || "N/A"}</Typography>
                   </Grid>
                   <Grid item xs={6}>
                     <Typography variant="subtitle2">Quantity:</Typography>
                     <Typography
-                      color={selectedProduct.quantity > 0 ? 'success.main' : 'error.main'}
+                      color={
+                        (typeof selectedProduct.quantity === 'object' 
+                          ? selectedProduct.quantity.value 
+                          : selectedProduct.quantity) > 0 
+                          ? 'success.main' 
+                          : 'error.main'
+                      }
                     >
-                      {selectedProduct.quantity}
+                      {getFieldValue(selectedProduct.quantity)}
                     </Typography>
                   </Grid>
                   <Grid item xs={6}>
                     <Typography variant="subtitle2">Prescription:</Typography>
-                    <Typography>{selectedProduct.prescription}</Typography>
+                    <Typography>
+                      {getFieldValue(selectedProduct.prescription_required || selectedProduct.prescription)}
+                    </Typography>
                   </Grid>
                   <Grid item xs={12}>
                     <Typography variant="subtitle2">Benefits:</Typography>
-                    <Typography>{selectedProduct.benefits}</Typography>
+                    <Typography>{selectedProduct.benefits || 'N/A'}</Typography>
                   </Grid>
                   <Grid item xs={12}>
                     <Typography variant="subtitle2">Dosage:</Typography>
-                    <Typography>{selectedProduct.dosage}</Typography>
+                    <Typography>{selectedProduct.dosage || 'N/A'}</Typography>
                   </Grid>
                   <Grid item xs={12}>
                     <Typography variant="subtitle2">Side Effects:</Typography>
-                    <Typography>{selectedProduct.side_effects}</Typography>
+                    <Typography>{selectedProduct.side_effects || 'N/A'}</Typography>
                   </Grid>
                   <Grid item xs={12}>
                     <Typography variant="subtitle2">Suitable For:</Typography>
-                    <Typography>{selectedProduct.suitable_for}</Typography>
+                    <Typography>{selectedProduct.suitable_for || 'N/A'}</Typography>
                   </Grid>
                   <Grid item xs={12}>
                     <Typography variant="subtitle2">Expires On:</Typography>
                     <Typography>
-                      {selectedProduct.expires_on}
+                      {selectedProduct.expires_on || 'N/A'}
                     </Typography>
                   </Grid>
                 </Grid>

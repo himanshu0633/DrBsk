@@ -126,13 +126,13 @@ const WholesalePartnerForm = () => {
   // Inline styles
   const styles = {
     formGroup: { marginBottom: '15px' },
-    label: { display: 'block', marginBottom: '5px', fontWeight: 'bold' },
+    label: { display: 'block', marginBottom: '5px', fontWeight: 'bold', color: 'white' },
     input: { width: '100%', padding: '8px', boxSizing: 'border-box', border: '1px solid #000' },
     select: { width: '100%', padding: '8px', boxSizing: 'border-box', border: '1px solid #000', marginBottom: '15px' },
     button: { padding: '10px 20px', backgroundColor: '#007bff', color: '#fff', border: 'none', cursor: 'pointer', marginTop: '10px' },
     error: { color: 'red', fontSize: '0.9em', marginTop: '5px' },
     container: { maxWidth: '600px', margin: '0 auto', padding: '20px' },
-    heading: { textAlign: 'center', marginBottom: '20px' }
+    heading: { textAlign: 'center', marginBottom: '20px', color: 'white'}
   };
 
   return (

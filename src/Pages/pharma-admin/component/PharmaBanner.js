@@ -97,6 +97,7 @@ const PharmaBanner = () => {
     const handleCloseModal = () => {
         setSelectedImage(null);
     };
+    
     const handleDeleteBanner = async (id) => {
         if (window.confirm("Are you sure you want to delete this banner?")) {
             try {
@@ -166,9 +167,9 @@ const PharmaBanner = () => {
                         <Table>
                             <TableHead sx={{ backgroundColor: '#68171b' }}>
                                 <TableRow>
-                                    <TableCell><strong>Banner Type</strong></TableCell>
-                                    <TableCell><strong>Image</strong></TableCell>
-                                    <TableCell><strong>Actions</strong></TableCell>
+                                    <TableCell sx={{ color: 'white' }}><strong>Banner Type</strong></TableCell>
+                                    <TableCell sx={{ color: 'white' }}><strong>Image</strong></TableCell>
+                                    <TableCell sx={{ color: 'white' }}><strong>Actions</strong></TableCell>
                                 </TableRow>
                             </TableHead>
                             <TableBody>
@@ -204,7 +205,6 @@ const PharmaBanner = () => {
                                         </TableRow>
                                     );
                                 })}
-
                             </TableBody>
                         </Table>
                         <TablePagination
@@ -225,9 +225,7 @@ const PharmaBanner = () => {
                 </Box>
             )}
 
-
-
-            {/* Add Banner Modal */}
+            {/* Add Banner Modal - Perfectly Centered */}
             <Modal
                 open={showModal}
                 onClose={() => setShowModal(false)}
@@ -236,15 +234,54 @@ const PharmaBanner = () => {
                 BackdropProps={{ timeout: 500 }}
             >
                 <Fade in={showModal}>
-                    <Box className="modal-content center_modal">
-                        <h3>Add New Banner</h3>
+                    <Box
+                        sx={{
+                            position: 'absolute',
+                            top: '50%',
+                            left: '50%',
+                            transform: 'translate(-50%, -50%)',
+                            width: 450,
+                            bgcolor: 'background.paper',
+                            borderRadius: 3,
+                            boxShadow: 24,
+                            p: 4,
+                            outline: 'none',
+                        }}
+                    >
+                        <Typography 
+                            variant="h5" 
+                            component="h2" 
+                            sx={{ 
+                                mb: 3, 
+                                fontWeight: 600,
+                                color: '#1a1a1a',
+                                borderBottom: '2px solid #f0f0f0',
+                                pb: 2
+                            }}
+                        >
+                            Add New Banner
+                        </Typography>
+                        
                         <form onSubmit={handleBannerSubmit}>
                             <select
                                 name="banner_type"
                                 value={formData.banner_type}
                                 onChange={handleInputChange}
                                 required
-                                className="selectCss"
+                                style={{
+                                    width: '100%',
+                                    padding: '12px 16px',
+                                    marginBottom: '20px',
+                                    border: '1px solid #e0e0e0',
+                                    borderRadius: '8px',
+                                    fontSize: '15px',
+                                    backgroundColor: '#fafafa',
+                                    outline: 'none',
+                                    transition: 'border-color 0.2s',
+                                    cursor: 'pointer'
+                                }}
+                                onFocus={(e) => e.target.style.borderColor = '#1976d2'}
+                                onBlur={(e) => e.target.style.borderColor = '#e0e0e0'}
                             >
                                 <option value="">Select Banner Type</option>
                                 {bannerList.map(item => (
@@ -254,18 +291,67 @@ const PharmaBanner = () => {
                                 ))}
                             </select>
 
-                            <input
-                                type="file"
-                                name="image"
-                                accept="image/*"
-                                onChange={handleInputChange}
-                                required
-                            />
+                            <Box sx={{ mb: 3 }}>
+                                <Typography variant="body2" sx={{ mb: 1, color: '#666', fontWeight: 500 }}>
+                                    Upload Image
+                                </Typography>
+                                <input
+                                    type="file"
+                                    name="image"
+                                    accept="image/*"
+                                    onChange={handleInputChange}
+                                    required
+                                    style={{
+                                        width: '100%',
+                                        padding: '10px 0',
+                                        fontSize: '14px',
+                                        color: '#666'
+                                    }}
+                                />
+                                <Typography variant="caption" sx={{ color: '#999', mt: 0.5, display: 'block' }}>
+                                    Supported formats: JPG, PNG, GIF (Max size: 5MB)
+                                </Typography>
+                            </Box>
 
-                            <div className="modal-actions">
-                                <button type="submit" className="btn-save">Save</button>
-                                <button type="button" className="btn-cancel" onClick={() => setShowModal(false)}>Cancel</button>
-                            </div>
+                            <Box sx={{ 
+                                display: 'flex', 
+                                justifyContent: 'flex-end', 
+                                gap: 2, 
+                                mt: 4,
+                                borderTop: '1px solid #f0f0f0',
+                                pt: 3
+                            }}>
+                                <Button
+                                    type="button"
+                                    variant="outlined"
+                                    onClick={() => {
+                                        setShowModal(false);
+                                        setFormData({ image: '', banner_type: '' });
+                                    }}
+                                    sx={{
+                                        color: '#666',
+                                        borderColor: '#ddd',
+                                        '&:hover': {
+                                            borderColor: '#999',
+                                            backgroundColor: '#f5f5f5'
+                                        }
+                                    }}
+                                >
+                                    Cancel
+                                </Button>
+                                <Button
+                                    type="submit"
+                                    variant="contained"
+                                    sx={{
+                                        backgroundColor: '#1976d2',
+                                        '&:hover': {
+                                            backgroundColor: '#1565c0'
+                                        }
+                                    }}
+                                >
+                                    Save Banner
+                                </Button>
+                            </Box>
                         </form>
                     </Box>
                 </Fade>
@@ -297,6 +383,9 @@ const PharmaBanner = () => {
                                 right: -40,
                                 backgroundColor: 'rgba(0,0,0,0.6)',
                                 color: '#fff',
+                                '&:hover': {
+                                    backgroundColor: 'rgba(0,0,0,0.8)',
+                                }
                             }}
                         >
                             <CloseIcon />
@@ -308,7 +397,7 @@ const PharmaBanner = () => {
                                 maxHeight: '90vh',
                                 maxWidth: '90vw',
                                 borderRadius: 12,
-                                boxShadow: '0 0 10px rgba(0,0,0,0.5)',
+                                boxShadow: '0 10px 30px rgba(0,0,0,0.3)',
                             }}
                         />
                     </Box>
@@ -319,8 +408,3 @@ const PharmaBanner = () => {
 };
 
 export default PharmaBanner;
-
-
-
-
-

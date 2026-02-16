@@ -74,7 +74,7 @@ const EditProfile = () => {
         profileImage,
       };
 
-      const response = await axiosInstance.put(`/admin/updateAdmin/${userId}`, updatedData);
+      const response = await axiosInstance.put(`/admin/update/${userId}`, updatedData);
 
       if (response.status === 200 || response.status === 201) {
         console.log("Profile updated:", response.data);
@@ -138,7 +138,7 @@ const EditProfile = () => {
             <div className="profile-card">
               <h2 className="profile-title">Edit Profile</h2>
 
-              <div className="profile-picture-section">
+              {/* <div className="profile-picture-section">
                 <div className="profile-picture-container">
                   {profileImage ? (
                     <img src={JoinUrl(profileImage)} alt="Profile" className="profile-picture" />
@@ -156,7 +156,7 @@ const EditProfile = () => {
                     </svg>
                   </label>
                 </div>
-              </div>
+              </div> */}
 
               <form onSubmit={handleSubmit} className="profile-form">
                 <div className="form-grid">

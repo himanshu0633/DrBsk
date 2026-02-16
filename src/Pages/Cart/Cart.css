@@ -255,7 +255,7 @@ body {
   background: transparent;
   outline: none;
   font-weight: 500;
-  color: var(--davaindia-text);
+  color: black;
 }
 
 .davaindia-form-control::placeholder {
@@ -703,6 +703,6 @@ body {
   }
   
   .davaindia-form-control {
-    color: #e2e8f0;
+    color: black;
   }
 }
