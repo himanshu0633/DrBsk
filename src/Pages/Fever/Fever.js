@@ -13,9 +13,11 @@ import JoinUrl from "../../JoinUrl";
 
 const PAGE_SIZE = 20;
 
+// Helper function to parse quantity variants - FIXED version
 const parseQuantityVariants = (raw) => {
   try {
     let arr = [];
+    
     if (Array.isArray(raw)) {
       if (raw.length > 0) {
         // Handle nested array structure [[{...}]]
@@ -50,18 +52,73 @@ const parseQuantityVariants = (raw) => {
     if (!Array.isArray(arr)) return [];
     
     return arr.map((v, i) => ({
-      ...v,
+      _key: v._id || `v-${i}`,
+      label: v.label ?? "",
       mrp: v.mrp ? parseFloat(v.mrp) : null,
       discount: v.discount ? parseFloat(v.discount) : null,
       gst: v.gst ? parseFloat(v.gst) : null,
       retail_price: v.retail_price ? parseFloat(v.retail_price) : null,
       final_price: v.final_price ? parseFloat(v.final_price) : null,
+      consumer_price: v.consumer_price ? parseFloat(v.consumer_price) : null,
       in_stock: v.in_stock ? String(v.in_stock).toLowerCase() === "yes" : false,
     }));
   } catch (error) {
     console.error("Error parsing quantity variants:", error);
     return [];
   }
+};
+
+// Helper function to pick best variant (in-stock or first)
+const pickBestVariant = (quantityArr) => {
+  if (!quantityArr) return null;
+  
+  let variants = [];
+  
+  // Parse if needed
+  if (typeof quantityArr === "string") {
+    try {
+      const parsed = JSON.parse(quantityArr);
+      if (Array.isArray(parsed)) {
+        variants = parsed;
+      }
+    } catch {
+      return null;
+    }
+  } else if (Array.isArray(quantityArr)) {
+    variants = quantityArr;
+  }
+  
+  // Handle nested arrays
+  if (variants.length > 0 && Array.isArray(variants[0])) {
+    variants = variants.flat();
+  }
+  
+  if (!variants.length) return null;
+  
+  // Find in-stock variant
+  const inStockVariant = variants.find((v) => 
+    v.in_stock && String(v.in_stock).toLowerCase() === "yes"
+  );
+  
+  return inStockVariant || variants[0];
+};
+
+// Helper to get display price based on user type
+const getDisplayPrice = (product, variant, isWholesaler) => {
+  if (!product) return 0;
+  
+  if (isWholesaler) {
+    // Wholesaler: use retail_price
+    return variant?.retail_price ?? product.retail_price ?? 0;
+  } else {
+    // Regular user: use consumer_price or final_price
+    return variant?.consumer_price ?? variant?.final_price ?? product.consumer_price ?? product.price ?? 0;
+  }
+};
+
+// Helper to get MRP for comparison
+const getMrpPrice = (product, variant) => {
+  return variant?.mrp ?? product.mrp ?? product.retail_price ?? null;
 };
 
 const EMPTY_ARR = [];
@@ -147,71 +204,31 @@ const Fever = () => {
           )}`
         );
 
-        const toNum = (v) => {
-          const n = parseFloat(v);
-          return Number.isFinite(n) ? n : 0;
-        };
-
-        const pickVariation = (q) => {
-  if (!q) return null;
-  
-  let variants = [];
-  
-  // Handle nested array structure
-  if (Array.isArray(q)) {
-    if (q.length > 0 && Array.isArray(q[0])) {
-      // Nested array: [[{...}]]
-      variants = q.flat();
-    } else if (q.length > 0 && typeof q[0] === "object") {
-      // Array of objects: [{...}]
-      variants = q;
-    }
-  } else if (typeof q === "string") {
-    try {
-      const parsed = JSON.parse(q);
-      if (Array.isArray(parsed)) {
-        if (parsed.length > 0 && Array.isArray(parsed[0])) {
-          variants = parsed.flat();
-        } else {
-          variants = parsed;
-        }
-      }
-    } catch {
-      return null;
-    }
-  }
-  
-  if (!variants.length) return null;
-  
-  return variants.find((v) => 
-    v.in_stock && String(v.in_stock).toLowerCase() === "yes"
-  ) || variants[0];
-};
-
         const fetched = data.map((p) => {
-          let retail = toNum(p.retail_price);
-          let consumer = toNum(p.consumer_price || p.mrp);
-
-          if (!retail) {
-            const v = pickVariation(p.quantity);
-            if (v) {
-              if (toNum(v.retail_price)) retail = toNum(v.retail_price);
-              const vConsumer = toNum(
-                v.final_price || v.mrp || v.consumer_price
-              );
-              if (vConsumer) consumer = vConsumer;
-            }
-          }
-
-          const discount = retail > 0 ? Math.max(0, retail - consumer) : 0;
+          // Parse variants
+          const variants = parseQuantityVariants(p.quantity);
+          const bestVariant = variants.length > 0 ? variants[0] : null;
+          
+          // Get prices based on user type - store both for later use
+          const wholesalePrice = bestVariant?.retail_price ?? p.retail_price ?? 0;
+          const consumerPrice = bestVariant?.consumer_price ?? bestVariant?.final_price ?? p.consumer_price ?? p.price ?? 0;
+          const mrpPrice = bestVariant?.mrp ?? p.mrp ?? p.retail_price ?? null;
+          
+          // Calculate discount for display
+          const discount = mrpPrice && mrpPrice > consumerPrice ? mrpPrice - consumerPrice : 0;
 
           return {
             ...p,
-            price: consumer,
-            originalPrice: retail,
-            discount,
-            retail_price: retail,
-            consumer_price: consumer,
+            // Store parsed variants
+            parsedVariants: variants,
+            bestVariant: bestVariant,
+            // Store both price types
+            wholesale_price: wholesalePrice,
+            consumer_price: consumerPrice,
+            // For backward compatibility
+            price: isWholesaler ? wholesalePrice : consumerPrice,
+            originalPrice: mrpPrice,
+            discount: discount,
           };
         });
 
@@ -220,6 +237,7 @@ const Fever = () => {
         fetchAllProducts();
       }
     } catch (error) {
+      console.error("Error fetching products by subcategory:", error);
       toast.error("Failed to load products");
       fetchAllProducts();
     }
@@ -232,58 +250,37 @@ const Fever = () => {
     try {
       const { data } = await axiosInstance.get(`/user/allproducts`);
 
-      const toNum = (v) => {
-        const n = parseFloat(v);
-        return Number.isFinite(n) ? n : 0;
-      };
-
-      const pickVariation = (q) => {
-        if (!q) return null;
-        let arr = q;
-        if (typeof q === "string") {
-          try {
-            arr = JSON.parse(q);
-          } catch {
-            return null;
-          }
-        }
-        if (!Array.isArray(arr) || arr.length === 0) return null;
-        return (
-          arr.find(
-            (v) => String(v.in_stock || "").toLowerCase() === "yes"
-          ) || arr[0]
-        );
-      };
-
       const fetched = data.map((p) => {
-        let retail = toNum(p.retail_price);
-        let consumer = toNum(p.consumer_price || p.mrp);
-
-        if (!retail) {
-          const v = pickVariation(p.quantity);
-          if (v) {
-            if (toNum(v.retail_price)) retail = toNum(v.retail_price);
-            const vConsumer = toNum(
-              v.final_price || v.mrp || v.consumer_price
-            );
-            if (vConsumer) consumer = vConsumer;
-          }
-        }
-
-        const discount = retail > 0 ? Math.max(0, retail - consumer) : 0;
+        // Parse variants
+        const variants = parseQuantityVariants(p.quantity);
+        const bestVariant = variants.length > 0 ? variants[0] : null;
+        
+        // Get prices based on user type - store both for later use
+        const wholesalePrice = bestVariant?.retail_price ?? p.retail_price ?? 0;
+        const consumerPrice = bestVariant?.consumer_price ?? bestVariant?.final_price ?? p.consumer_price ?? p.price ?? 0;
+        const mrpPrice = bestVariant?.mrp ?? p.mrp ?? p.retail_price ?? null;
+        
+        // Calculate discount for display
+        const discount = mrpPrice && mrpPrice > consumerPrice ? mrpPrice - consumerPrice : 0;
 
         return {
           ...p,
-          price: consumer,
-          originalPrice: retail,
-          discount,
-          retail_price: retail,
-          consumer_price: consumer,
+          // Store parsed variants
+          parsedVariants: variants,
+          bestVariant: bestVariant,
+          // Store both price types
+          wholesale_price: wholesalePrice,
+          consumer_price: consumerPrice,
+          // For backward compatibility
+          price: isWholesaler ? wholesalePrice : consumerPrice,
+          originalPrice: mrpPrice,
+          discount: discount,
         };
       });
 
       setAllProducts(fetched);
     } catch (error) {
+      console.error("Error fetching all products:", error);
       toast.error("Failed to load products");
     }
     setLoading(false);
@@ -311,8 +308,8 @@ const Fever = () => {
     const filtered = allProducts.filter((product) => {
       // Use appropriate price based on user type
       const price = isWholesaler 
-        ? parseFloat(product.retail_price) || 0 
-        : parseFloat(product.price) || 0;
+        ? parseFloat(product.wholesale_price) || 0 
+        : parseFloat(product.consumer_price) || 0;
       const discount = parseFloat(product.discount) || 0;
 
       const matchesCategory = categoryId
@@ -333,15 +330,15 @@ const Fever = () => {
     switch (sortOption) {
       case "price-low":
         filtered.sort((a, b) => {
-          const priceA = isWholesaler ? a.retail_price : a.price;
-          const priceB = isWholesaler ? b.retail_price : b.price;
+          const priceA = isWholesaler ? a.wholesale_price : a.consumer_price;
+          const priceB = isWholesaler ? b.wholesale_price : b.consumer_price;
           return priceA - priceB;
         });
         break;
       case "price-high":
         filtered.sort((a, b) => {
-          const priceA = isWholesaler ? a.retail_price : a.price;
-          const priceB = isWholesaler ? b.retail_price : b.price;
+          const priceA = isWholesaler ? a.wholesale_price : a.consumer_price;
+          const priceB = isWholesaler ? b.wholesale_price : b.consumer_price;
           return priceB - priceA;
         });
         break;
@@ -371,30 +368,6 @@ const Fever = () => {
     return products.slice(start, start + PAGE_SIZE);
   }, [products, currentPage]);
 
-  const pickBestVariant = (quantityArr) => {
-  if (!quantityArr) return null;
-  
-  let variants = [];
-  
-  // Handle the nested array structure
-  if (Array.isArray(quantityArr)) {
-    if (quantityArr.length > 0 && Array.isArray(quantityArr[0])) {
-      // Nested array case: [[{...}]]
-      variants = quantityArr.flat();
-    } else if (quantityArr.length > 0 && typeof quantityArr[0] === "object") {
-      // Already array of objects: [{...}]
-      variants = quantityArr;
-    }
-  }
-  
-  if (!variants.length) return null;
-  
-  // Find in-stock variant or return first
-  return variants.find((v) => 
-    v.in_stock && String(v.in_stock).toLowerCase() === "yes"
-  ) || variants[0];
-};
-
   const getQuantity = useCallback(
     (id) => {
       return cartItems.find((i) => i._id === id)?.quantity || 0;
@@ -403,19 +376,19 @@ const Fever = () => {
   );
 
   const handleAddToCart = (product) => {
-    const quantityVariant = pickBestVariant(product.quantity);
+    // Use best variant or first variant
+    const bestVariant = product.bestVariant || (product.parsedVariants && product.parsedVariants[0]) || null;
 
     // Determine price based on user type
     const finalPrice = isWholesaler
-      ? Number(quantityVariant?.retail_price ?? product.retail_price ?? product.price ?? 0)
-      : Number(quantityVariant?.consumer_price ?? quantityVariant?.final_price ?? product.consumer_price ?? product.price ?? 0);
+      ? Number(bestVariant?.retail_price ?? product.wholesale_price ?? 0)
+      : Number(bestVariant?.consumer_price ?? bestVariant?.final_price ?? product.consumer_price ?? 0);
 
     const mrpPrice = isWholesaler
       ? null // Wholesaler doesn't need MRP
-      : Number(quantityVariant?.mrp ?? product.retail_price ?? finalPrice);
+      : Number(bestVariant?.mrp ?? product.originalPrice ?? finalPrice);
 
     // ---------- Facebook Pixel: AddToCart Event ----------
-    // Same click पर 1 बार fire होगा
     if (window.fbq) {
       window.fbq("track", "AddToCart", {
         content_name: product?.name || product?.title || "Product",
@@ -431,8 +404,6 @@ const Fever = () => {
         value: finalPrice,
         quantity: 1
       });
-    } else {
-      console.log("⚠️ Facebook Pixel not available for AddToCart");
     }
 
     dispatch(
@@ -441,6 +412,7 @@ const Fever = () => {
         quantity: 1,
         price: finalPrice,
         originalPrice: mrpPrice,
+        selectedVariant: bestVariant, // Store selected variant
       })
     );
 
@@ -453,16 +425,18 @@ const Fever = () => {
     const currentQty = item?.quantity || 0;
 
     if (product) {
-      const quantityVariant = pickBestVariant(product.quantity);
+      const bestVariant = product.bestVariant || (product.parsedVariants && product.parsedVariants[0]) || null;
+      
       const finalPrice = isWholesaler
-        ? Number(quantityVariant?.retail_price ?? product.retail_price ?? product.price ?? 0)
-        : Number(quantityVariant?.consumer_price ?? quantityVariant?.final_price ?? product.consumer_price ?? product.price ?? 0);
+        ? Number(bestVariant?.retail_price ?? product.wholesale_price ?? 0)
+        : Number(bestVariant?.consumer_price ?? bestVariant?.final_price ?? product.consumer_price ?? 0);
 
       dispatch(
         addData({
           ...product,
           quantity: currentQty + 1,
           price: finalPrice,
+          selectedVariant: bestVariant,
         })
       );
     }
@@ -670,14 +644,13 @@ const Fever = () => {
                           <tbody>
                             {paginatedProducts.map((product) => {
                               const quantity = getQuantity(product._id);
-                              const quantityVariant = pickBestVariant(product.quantity);
-                              const wholesalePrice = quantityVariant?.retail_price ?? product.retail_price ?? 0;
+                              const wholesalePrice = product.wholesale_price || 0;
 
                               return (
                                 <tr key={product._id}>
                                   <td>
                                     <img
-                                      src={JoinUrl(API_URL, product.media[0]?.url)}
+                                      src={JoinUrl(API_URL, product.media?.[0]?.url)}
                                       alt={product.name}
                                       className="table-product-image"
                                       loading="lazy"
@@ -692,7 +665,7 @@ const Fever = () => {
                                       {product.name}
                                     </span>
                                   </td>
-                                  <td>{product.description}</td>
+                                  <td>{product.description || "—"}</td>
                                   <td>
                                     <div className="product-price">
                                       <span className="wholesale-price">₹{wholesalePrice}</span>
@@ -707,7 +680,7 @@ const Fever = () => {
                                       </div>
                                     ) : (
                                       <button
-                                        onClick={() => handleGoToProductPage(product)}
+                                        onClick={() => handleAddToCart(product)}
                                         className="add-to-cart-btn"
                                       >
                                         🛒 Add to Cart
@@ -726,22 +699,22 @@ const Fever = () => {
                     <>
                       <div className="products-container">
                         {paginatedProducts.map((product) => {
-                          const quantityVariant = pickBestVariant(product.quantity);
-                          const retailPrice = quantityVariant?.consumer_price ?? quantityVariant?.final_price ?? product.consumer_price ?? 0;
-                          const mrpPrice = quantityVariant?.mrp ?? product.retail_price ?? null;
+                          const consumerPrice = product.consumer_price || 0;
+                          const mrpPrice = product.originalPrice;
                           const quantity = getQuantity(product._id);
+                          const hasDiscount = mrpPrice && mrpPrice > consumerPrice;
 
                           return (
                             <div key={product._id} className="product-card">
                               <div className="product-card-link" onClick={() => handleGoToProductPage(product)}>
-                                {product.discount > 0 && (
+                                {hasDiscount && (
                                   <div className="product-badge">
-                                    <span className="discount-badge">Save ₹{Math.floor(product.discount)}</span>
+                                    <span className="discount-badge">Save ₹{Math.floor(mrpPrice - consumerPrice)}</span>
                                   </div>
                                 )}
                                 <div className="product-image">
                                   <img 
-                                    src={JoinUrl(API_URL, product.media[0]?.url)} 
+                                    src={JoinUrl(API_URL, product.media?.[0]?.url)} 
                                     alt={product.name} 
                                     loading="lazy" 
                                   />
@@ -756,8 +729,8 @@ const Fever = () => {
                                   </p>
                                 </div>
                                 <div className="product-price ms-2">
-                                  <span>₹{retailPrice}</span>
-                                  {mrpPrice && mrpPrice > retailPrice && (
+                                  <span>₹{consumerPrice}</span>
+                                  {hasDiscount && (
                                     <span className="original-price">₹{mrpPrice}</span>
                                   )}
                                 </div>
@@ -772,7 +745,7 @@ const Fever = () => {
                                   </div>
                                 ) : (
                                   <button
-                                    onClick={() => handleGoToProductPage(product)}
+                                    onClick={() => handleAddToCart(product)}
                                     className="add-to-cart-btn"
                                     disabled={product.stock === "no"}
                                   >
