@@ -128,7 +128,7 @@ const ProductPage = () => {
   const isWholesaler = userData?.type === "wholesalePartner";
 
   // ---------- Facebook Pixel: ViewContent Event ----------
-  // Product load होने के बाद फायर करें
+  // Product load होने के बाद फायर करें - ✅ CORRECT
   useEffect(() => {
     if (!product) return;
 
@@ -294,7 +294,7 @@ const ProductPage = () => {
       : toNum(selectedVariant.final_price ?? product.consumer_price ?? 0, 0);
 
     // ---------- Facebook Pixel: AddToCart Event ----------
-    // Same click पर 1 बार fire होगा
+    // Same click पर 1 बार fire होगा - ✅ CORRECT
     if (window.fbq) {
       window.fbq("track", "AddToCart", {
         content_name: product?.name || product?.title || "Product",
@@ -556,7 +556,53 @@ const ProductPage = () => {
                 </div>
               </div>
 
-       
+              {/* ✅ VARIANT SELECTOR - ADD THIS BACK */}
+              <div className="variant-section">
+                <div className="variant-header mb-1">Select Quantity</div>
+                <div className="variant-grid" role="listbox" aria-label="Variants">
+                  {variants.length > 0 ? (
+                    variants.map((v, i) => {
+                      const selected = i === selectedVariantIndex;
+                      const displayPrice = isWholesaler 
+                        ? v.retail_price ?? product?.retail_price ?? 0
+                        : v.final_price ?? product?.consumer_price ?? 0;
+                      
+                      return (
+                        <button
+                          type="button"
+                          key={v._key || i}
+                          role="option"
+                          aria-selected={selected}
+                          className={`variant-card ${selected ? "selected" : ""} ${
+                            v.in_stock ? "" : "disabled"
+                          }`}
+                          onClick={() => v.in_stock && handleSelectVariant(i)}
+                          title={v.in_stock ? "Select variant" : "Out of stock"}
+                        >
+                          <div className="variant-card__row">
+                            <div className="variant-card__label">{v.label || "—"}</div>
+                            {selected && (
+                              <div className="variant-card__check">
+                                <Check size={16} />
+                              </div>
+                            )}
+                          </div>
+                          <div className="variant-card__price">
+                            <span className="variant-card__price--current">
+                              {money(displayPrice)}
+                            </span>
+                            {isWholesaler && (
+                              <div className="wholesale-tag">Wholesale</div>
+                            )}
+                          </div>
+                        </button>
+                      );
+                    })
+                  ) : (
+                    <div className="variant-empty">No variant data available</div>
+                  )}
+                </div>
+              </div>
 
               {/* Stock banner */}
               <div className={`stock-status ${product.stock ? "bg-green" : "bg-red"}`}>

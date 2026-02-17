@@ -536,6 +536,24 @@
     box-shadow: 0 4px 12px rgba(104, 23, 27, 0.2);
 }
 
+.shop-now-btn{
+    padding: 14px 32px;
+    background: #68171b;
+    color: white;
+    border: none;
+    border-radius: 10px;
+    font-size: 16px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s ease;  
+}
+
+.shop-now-btn:hover{
+      background: #8a1f24;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(104, 23, 27, 0.2);
+}
+
 /* ============================================
    WHATSAPP MODAL STYLES
    ============================================ */

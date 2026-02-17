@@ -13,7 +13,7 @@ import { Dialog, DialogTitle, DialogContent, DialogActions, TextField, InputAdor
 import JoinUrl from '../JoinUrl';
 
 /** ---------- Facebook Pixel Functions ---------- */
-// Server-side event function
+// Server-side event function (Conversions API)
 const sendServerEvent = async (eventName, data) => {
   try {
     const eventData = {
@@ -59,7 +59,6 @@ const AddToCart = () => {
   const [cities, setCities] = useState([]);
   const [checkoutLoading, setCheckoutLoading] = useState(false);
   const [paymentProcessing, setPaymentProcessing] = useState(false);
-  const [hasTrackedPageView, setHasTrackedPageView] = useState(false);
   
   // Payment method states
   const [paymentMethod, setPaymentMethod] = useState('online');
@@ -108,113 +107,30 @@ const AddToCart = () => {
     return emailRegex.test(email);
   }, []);
 
-  // Facebook Pixel Tracking Functions
-  const trackViewContent = (contentData) => {
-    if (typeof window !== 'undefined' && window.fbq) {
+  // ---------- FACEBOOK PIXEL - ONLY IMPORTANT EVENTS ----------
+  
+  // Track Cart View - ONLY ONCE when cart loads
+  const trackCartView = useCallback(() => {
+    if (window.fbq) {
       window.fbq('track', 'ViewContent', {
-        content_name: contentData.name,
-        content_ids: contentData.content_ids || [contentData.id],
-        content_type: contentData.type || 'product',
-        value: contentData.value || 0,
-        currency: contentData.currency || 'INR',
-        content_category: contentData.category,
-      });
-    }
-    sendServerEvent('ViewContent', contentData);
-  };
-
-  const trackPageView = () => {
-    if (typeof window !== 'undefined' && window.fbq) {
-      window.fbq('track', 'PageView');
-    }
-    sendServerEvent('PageView', {
-      id: 'cart_page_view',
-      name: 'Shopping Cart Page',
-      value: finalTotal,
-      currency: 'INR',
-      category: 'Cart',
-      type: 'page',
-      item_count: cartItems.length,
-      total_value: finalTotal,
-    });
-  };
-
-  const trackAddToCart = (productData) => {
-    if (typeof window !== 'undefined' && window.fbq) {
-      window.fbq('track', 'AddToCart', {
-        content_ids: productData.content_ids || [productData.id],
-        content_name: productData.name,
-        content_type: productData.type || 'product',
-        value: productData.value || productData.price || 0,
-        currency: productData.currency || 'INR',
-        num_items: productData.quantity || 1,
-      });
-    }
-    sendServerEvent('AddToCart', productData);
-  };
-
-  const trackInitiateCheckout = (checkoutData) => {
-    if (typeof window !== 'undefined' && window.fbq) {
-      window.fbq('track', 'InitiateCheckout', {
-        value: checkoutData.value || finalTotal,
-        currency: checkoutData.currency || 'INR',
+        content_name: 'Shopping Cart',
+        content_ids: cartItems.map(item => item._id).filter(Boolean),
+        content_type: 'product',
+        value: Number(finalTotal || 0),
+        currency: 'INR',
         num_items: cartItems.length,
-        content_ids: cartItems.map(item => item._id),
-        content_type: 'product',
+      });
+      
+      console.log('✅ Facebook Pixel: Cart View tracked', {
+        item_count: cartItems.length,
+        value: finalTotal
       });
     }
-    sendServerEvent('InitiateCheckout', checkoutData);
-  };
-
-  const trackPurchase = (purchaseData) => {
-    if (typeof window !== 'undefined' && window.fbq) {
-      window.fbq('track', 'Purchase', {
-        value: purchaseData.value || finalTotal,
-        currency: purchaseData.currency || 'INR',
-        content_ids: purchaseData.contentIds || cartItems.map(item => item._id),
-        content_type: 'product',
-        num_items: purchaseData.numItems || cartItems.length,
-        order_id: purchaseData.orderId,
-      });
-    }
-    sendServerEvent('Purchase', purchaseData);
-  };
-
-  const trackRemoveFromCart = (productData) => {
-    trackViewContent({
-      id: `remove_from_cart_${productData.id}`,
-      name: `${productData.name} - Removed from Cart`,
-      value: productData.value || productData.price || 0,
-      currency: 'INR',
-      category: 'Cart Action',
-      type: 'remove_from_cart',
-      action: 'remove',
-    });
-  };
-
-  const trackClearCart = () => {
-    trackViewContent({
-      id: 'clear_cart_action',
-      name: 'Cart Cleared',
-      value: finalTotal,
-      currency: 'INR',
-      category: 'Cart Action',
-      type: 'clear_cart',
-      item_count: cartItems.length,
-      total_value: finalTotal,
-    });
-  };
-
-  // Initialize Facebook Pixel
-  useEffect(() => {
-    if (!hasTrackedPageView) {
-      trackPageView();
-      setHasTrackedPageView(true);
-    }
-
-    trackViewContent({
+    
+    // Server-side event
+    sendServerEvent('ViewContent', {
       id: 'cart_view',
-      name: 'Cart Contents View',
+      name: 'Shopping Cart',
       value: finalTotal,
       currency: 'INR',
       category: 'Cart',
@@ -223,25 +139,206 @@ const AddToCart = () => {
       items: cartItems.map(item => ({
         id: item._id,
         name: item.name,
-        price: isWholesaler ? item.retail_price || item.final_price : item.final_price,
-        quantity: item.quantity
-      })),
+        quantity: item.quantity,
+        price: isWholesaler ? item.retail_price || item.final_price : item.final_price
+      }))
     });
+  }, [cartItems, finalTotal, isWholesaler]);
 
-    cartItems.forEach((item, index) => {
-      setTimeout(() => {
-        trackViewContent({
-          id: `cart_item_view_${item._id}`,
-          name: `${item.name} - In Cart`,
-          value: isWholesaler ? item.retail_price || item.final_price : item.final_price,
-          currency: 'INR',
-          category: 'Cart Item',
-          type: 'cart_product_view',
-          quantity: item.quantity,
-        });
-      }, index * 300);
+  // Track InitiateCheckout
+  const trackInitiateCheckout = useCallback(() => {
+    if (window.fbq) {
+      window.fbq('track', 'InitiateCheckout', {
+        value: Number(finalTotal || 0),
+        currency: 'INR',
+        content_ids: cartItems.map(item => item._id).filter(Boolean),
+        content_type: 'product',
+        num_items: cartItems.length,
+      });
+      
+      console.log('✅ Facebook Pixel: InitiateCheckout tracked', {
+        value: finalTotal,
+        item_count: cartItems.length
+      });
+    }
+    
+    sendServerEvent('InitiateCheckout', {
+      id: 'checkout_initiated',
+      name: 'Checkout Initiated',
+      value: finalTotal,
+      currency: 'INR',
+      item_count: cartItems.length,
+      user_type: isAuthenticated ? 'registered' : 'guest',
+      customer_type: isWholesaler ? 'wholesaler' : 'retail',
+      payment_method: paymentMethod
     });
-  }, []);
+  }, [cartItems, finalTotal, isAuthenticated, isWholesaler, paymentMethod]);
+
+  // Track Purchase
+  const trackPurchase = useCallback((orderId, paymentMethodType) => {
+    if (window.fbq) {
+      window.fbq('track', 'Purchase', {
+        value: Number(finalTotal || 0),
+        currency: 'INR',
+        content_ids: cartItems.map(item => item._id).filter(Boolean),
+        content_type: 'product',
+        num_items: cartItems.length,
+        order_id: orderId,
+      });
+      
+      console.log('✅ Facebook Pixel: Purchase tracked', {
+        order_id: orderId,
+        value: finalTotal,
+        payment_method: paymentMethodType
+      });
+    }
+    
+    sendServerEvent('Purchase', {
+      id: `order_${orderId}`,
+      name: `Order #${orderId}`,
+      value: finalTotal,
+      currency: 'INR',
+      order_id: orderId,
+      item_count: cartItems.length,
+      items: cartItems.map(item => ({
+        id: item._id,
+        name: item.name,
+        quantity: item.quantity,
+        price: isWholesaler ? item.retail_price || item.final_price : item.final_price
+      })),
+      user_type: isAuthenticated ? 'registered' : 'guest',
+      payment_method: paymentMethodType,
+      customer_type: isWholesaler ? 'wholesaler' : 'retail',
+    });
+  }, [cartItems, finalTotal, isAuthenticated, isWholesaler]);
+
+  // Track Checkout Abandonment
+  const trackCheckoutAbandonment = useCallback(() => {
+    if (window.fbq) {
+      window.fbq('track', 'ViewContent', {
+        content_name: 'Checkout Abandoned',
+        value: Number(finalTotal || 0),
+        currency: 'INR',
+        content_ids: cartItems.map(item => item._id).filter(Boolean),
+        content_type: 'product',
+        num_items: cartItems.length,
+      });
+      
+      console.log('✅ Facebook Pixel: Checkout Abandonment tracked');
+    }
+    
+    sendServerEvent('ViewContent', {
+      id: 'checkout_abandoned',
+      name: 'Checkout Abandoned',
+      value: finalTotal,
+      currency: 'INR',
+      category: 'Cart Abandonment',
+      type: 'checkout_abandonment',
+      item_count: cartItems.length
+    });
+  }, [cartItems, finalTotal]);
+
+  // Track Payment Failed
+  const trackPaymentFailed = useCallback((error) => {
+    if (window.fbq) {
+      window.fbq('track', 'ViewContent', {
+        content_name: 'Payment Failed',
+        value: Number(finalTotal || 0),
+        currency: 'INR',
+        content_ids: cartItems.map(item => item._id).filter(Boolean),
+        content_type: 'product',
+      });
+      
+      console.log('✅ Facebook Pixel: Payment Failed tracked', error);
+    }
+    
+    sendServerEvent('ViewContent', {
+      id: 'payment_failed',
+      name: 'Payment Failed',
+      value: finalTotal,
+      currency: 'INR',
+      category: 'Payment Error',
+      type: 'payment_failure',
+      error_code: error.code,
+      error_description: error.description
+    });
+  }, [cartItems, finalTotal]);
+
+  // Track Add to Cart (from quantity update)
+  const trackAddToCart = useCallback((item, newQuantity, oldQuantity) => {
+    const price = isWholesaler 
+      ? item.retail_price || item.final_price 
+      : item.final_price;
+    
+    if (window.fbq) {
+      window.fbq('track', 'AddToCart', {
+        content_ids: [item._id].filter(Boolean),
+        content_name: item.name,
+        content_type: 'product',
+        value: Number(price * newQuantity || 0),
+        currency: 'INR',
+        num_items: newQuantity,
+      });
+    }
+    
+    sendServerEvent('AddToCart', {
+      id: item._id,
+      name: item.name,
+      price: price,
+      value: price * newQuantity,
+      quantity: newQuantity,
+      old_quantity: oldQuantity,
+      action: newQuantity > oldQuantity ? 'increase' : 'decrease'
+    });
+  }, [isWholesaler]);
+
+  // Track Remove from Cart
+  const trackRemoveFromCart = useCallback((item) => {
+    const price = isWholesaler 
+      ? item.retail_price || item.final_price 
+      : item.final_price;
+    
+    if (window.fbq) {
+      window.fbq('track', 'AddToCart', {
+        content_ids: [item._id].filter(Boolean),
+        content_name: `${item.name} - Removed`,
+        content_type: 'product',
+        value: 0,
+        currency: 'INR',
+      });
+    }
+    
+    sendServerEvent('ViewContent', {
+      id: `remove_${item._id}`,
+      name: `${item.name} - Removed from Cart`,
+      value: price * (item.quantity || 1),
+      currency: 'INR',
+      category: 'Cart Action',
+      type: 'remove_from_cart'
+    });
+  }, [isWholesaler]);
+
+  // Track Clear Cart
+  const trackClearCart = useCallback(() => {
+    sendServerEvent('ViewContent', {
+      id: 'clear_cart',
+      name: 'Cart Cleared',
+      value: finalTotal,
+      currency: 'INR',
+      category: 'Cart Action',
+      type: 'clear_cart',
+      item_count: cartItems.length
+    });
+  }, [cartItems.length, finalTotal]);
+
+  // ---------- EFFECTS ----------
+  
+  // ✅ ONLY ONE ViewContent event - Cart View (PageView हटा दिया)
+  useEffect(() => {
+    if (cartItems.length > 0) {
+      trackCartView();
+    }
+  }, []); // Sirf ek baar component mount par
 
   // Initialize form data from localStorage on component mount
   useEffect(() => {
@@ -283,45 +380,22 @@ const AddToCart = () => {
     if (newQuantity < 1) return;
     const updatedItem = cartItems.find((item) => item._id === itemId);
     if (updatedItem) {
+      const oldQuantity = updatedItem.quantity || 1;
       const updatedProduct = { ...updatedItem, quantity: newQuantity };
       dispatch(updateData(updatedProduct));
       toast.success('Item quantity updated!', { position: 'top-right', autoClose: 2000 });
       
-      const itemPrice = isWholesaler 
-        ? updatedItem.retail_price || updatedItem.final_price 
-        : updatedItem.final_price;
-      
-      trackAddToCart({
-        id: updatedItem._id,
-        name: updatedItem.name,
-        price: itemPrice,
-        value: itemPrice * newQuantity,
-        currency: 'INR',
-        category: 'Cart Update',
-        type: 'quantity_update',
-        quantity: newQuantity,
-        old_quantity: updatedItem.quantity,
-        action: newQuantity > updatedItem.quantity ? 'increase' : 'decrease',
-        user_type: isWholesaler ? 'wholesaler' : 'retail',
-      });
+      // ✅ Track AddToCart on quantity change
+      if (newQuantity > oldQuantity) {
+        trackAddToCart(updatedItem, newQuantity, oldQuantity);
+      }
     }
   };
 
   const handleRemoveItem = (itemId) => {
     const removedItem = cartItems.find((item) => item._id === itemId);
     if (removedItem) {
-      const itemPrice = isWholesaler 
-        ? removedItem.retail_price || removedItem.final_price 
-        : removedItem.final_price;
-      
-      trackRemoveFromCart({
-        id: removedItem._id,
-        name: removedItem.name,
-        price: itemPrice,
-        value: itemPrice * (removedItem.quantity || 1),
-        currency: 'INR',
-        user_type: isWholesaler ? 'wholesaler' : 'retail',
-      });
+      trackRemoveFromCart(removedItem);
     }
     
     dispatch(deleteProduct(itemId));
@@ -335,15 +409,6 @@ const AddToCart = () => {
     if (email && isValidEmail(email)) {
       localStorage.setItem('guestEmail', email);
       toast.success('Email saved for checkout!', { position: 'top-right', autoClose: 1500 });
-      
-      trackViewContent({
-        id: 'email_updated_cart',
-        name: 'Email Updated in Cart',
-        value: 0,
-        category: 'User Information',
-        type: 'email_update',
-        user_type: isWholesaler ? 'wholesaler' : 'retail',
-      });
     }
   };
 
@@ -354,15 +419,6 @@ const AddToCart = () => {
       
       if (value.length === 10) {
         localStorage.setItem('guestPhone', value);
-        
-        trackViewContent({
-          id: 'phone_updated_cart',
-          name: 'Phone Updated in Cart',
-          value: 0,
-          category: 'User Information',
-          type: 'phone_update',
-          user_type: isWholesaler ? 'wholesaler' : 'retail',
-        });
       }
     }
   };
@@ -412,16 +468,6 @@ const AddToCart = () => {
     setShowModal(false);
     setLoading(false);
     toast.success("Address saved successfully!");
-    
-    trackViewContent({
-      id: 'address_added_cart',
-      name: 'Address Added in Cart',
-      value: 0,
-      category: 'User Information',
-      type: 'address_add',
-      address_type: isAuthenticated ? 'registered_user' : 'guest_user',
-      user_type: isWholesaler ? 'wholesaler' : 'retail',
-    });
   };
 
   // Fetch states
@@ -620,25 +666,13 @@ const AddToCart = () => {
       if (response.data.success) {
         console.log("✅ COD order created successfully:", response.data.orderId);
         
-        trackPurchase({
-          id: `order_${response.data.orderId}`,
-          name: `COD Order #${response.data.orderId}`,
-          value: finalTotal,
-          currency: 'INR',
-          contentIds: cartItems.map(item => item._id),
-          numItems: cartItems.length,
-          orderId: response.data.orderId,
-          user_type: isAuthenticated ? 'registered' : 'guest',
-          payment_method: 'cod',
-          customer_type: isWholesaler ? 'wholesaler' : 'retail',
-        });
+        // ✅ Track Purchase - COD
+        trackPurchase(response.data.orderId, 'cod');
         
         setProcessingMessage("Finalizing your order...");
         
         dispatch(clearProducts());
         localStorage.removeItem('cartItems');
-        
-        trackClearCart();
         
         if (!isAuthenticated) {
           localStorage.removeItem('guestAddresses');
@@ -707,17 +741,8 @@ const AddToCart = () => {
     
     setCheckoutLoading(true);
 
-    trackInitiateCheckout({
-      id: 'cart_checkout_initiated',
-      name: 'Checkout Initiated from Cart',
-      value: finalTotal,
-      currency: 'INR',
-      content_ids: cartItems.map(item => item._id),
-      item_count: cartItems.length,
-      user_type: isAuthenticated ? 'registered' : 'guest',
-      payment_method: 'online',
-      customer_type: isWholesaler ? 'wholesaler' : 'retail',
-    });
+    // ✅ Track InitiateCheckout
+    trackInitiateCheckout();
 
     try {
       if (!formData.selectedAddress) {
@@ -794,7 +819,6 @@ const AddToCart = () => {
       };
 
       console.log("Step 1: Creating Razorpay order...");
-      console.log("Order payload:", JSON.stringify(orderPayload, null, 2));
       
       const orderResponse = await axiosInstance.post('/api/createPaymentOrder', orderPayload);
 
@@ -847,25 +871,13 @@ const AddToCart = () => {
             if (verifyResponse.data.success) {
               console.log("✅ Order created successfully:", verifyResponse.data.orderId);
               
-              trackPurchase({
-                id: `order_${verifyResponse.data.orderId}`,
-                name: `Order #${verifyResponse.data.orderId}`,
-                value: finalTotal,
-                currency: 'INR',
-                contentIds: cartItems.map(item => item._id),
-                numItems: cartItems.length,
-                orderId: verifyResponse.data.orderId,
-                user_type: isAuthenticated ? 'registered' : 'guest',
-                payment_method: 'online',
-                customer_type: isWholesaler ? 'wholesaler' : 'retail',
-              });
+              // ✅ Track Purchase - Online
+              trackPurchase(verifyResponse.data.orderId, 'online');
               
               setProcessingMessage("Finalizing your order...");
               
               dispatch(clearProducts());
               localStorage.removeItem('cartItems');
-              
-              trackClearCart();
               
               if (!isAuthenticated) {
                 localStorage.removeItem('guestAddresses');
@@ -925,17 +937,8 @@ const AddToCart = () => {
             console.log("Payment modal closed by user");
             if (!paymentProcessing) {
               setCheckoutLoading(false);
-              trackViewContent({
-                id: 'checkout_abandoned',
-                name: 'Checkout Abandoned',
-                value: finalTotal,
-                currency: 'INR',
-                category: 'Cart Abandonment',
-                type: 'checkout_abandonment',
-                item_count: cartItems.length,
-                total_value: finalTotal,
-                customer_type: isWholesaler ? 'wholesaler' : 'retail',
-              });
+              // ✅ Track Checkout Abandonment
+              trackCheckoutAbandonment();
             }
           }
         }
@@ -960,17 +963,8 @@ const AddToCart = () => {
         setCheckoutLoading(false);
         setPaymentProcessing(false);
         
-        trackViewContent({
-          id: 'payment_failed',
-          name: 'Payment Failed',
-          value: finalTotal,
-          currency: 'INR',
-          category: 'Payment Error',
-          type: 'payment_failure',
-          error_code: response.error.code,
-          error_description: response.error.description,
-          customer_type: isWholesaler ? 'wholesaler' : 'retail',
-        });
+        // ✅ Track Payment Failed
+        trackPaymentFailed(response.error);
       });
       
       console.log("Razorpay Order ID received:", razorpayOrder.id);
@@ -996,17 +990,6 @@ const AddToCart = () => {
       setIsProcessing(false);
       setCheckoutLoading(false);
       setPaymentProcessing(false);
-      
-      trackViewContent({
-        id: 'checkout_error',
-        name: 'Checkout Error',
-        value: finalTotal,
-        currency: 'INR',
-        category: 'Checkout Error',
-        type: 'checkout_error',
-        error_message: errorMessage,
-        customer_type: isWholesaler ? 'wholesaler' : 'retail',
-      });
     }
   };
 
@@ -1023,6 +1006,41 @@ const AddToCart = () => {
       await handleCODCheckout();
     } else {
       await handleOnlineCheckout();
+    }
+  };
+
+  // Handle payment method change
+  const handlePaymentMethodChange = (method) => {
+    setPaymentMethod(method);
+    // ✅ Only 1 event for payment method selection
+    if (window.fbq) {
+      window.fbq('track', 'ViewContent', {
+        content_name: `${method === 'online' ? 'Online' : 'COD'} Payment Selected`,
+        value: 0,
+        currency: 'INR',
+      });
+    }
+  };
+
+  // Handle address selection
+  const handleAddressSelect = (address, email, phone) => {
+    setFormData(prev => ({ 
+      ...prev, 
+      selectedAddress: address,
+      email: email || prev.email,
+      phone: phone || prev.phone
+    }));
+    
+    if (email) localStorage.setItem('guestEmail', email);
+    if (phone) localStorage.setItem('guestPhone', phone);
+    
+    // ✅ Only 1 event for address selection
+    if (window.fbq) {
+      window.fbq('track', 'ViewContent', {
+        content_name: 'Delivery Address Selected',
+        value: 0,
+        currency: 'INR',
+      });
     }
   };
 
@@ -1060,30 +1078,9 @@ const AddToCart = () => {
   const renderLoginPrompt = () => {
     if (!isAuthenticated) {
       return (
-        <div 
-          className="login-prompt"
-          onClick={() => trackViewContent({
-            id: 'guest_cart_view',
-            name: 'Guest User in Cart',
-            value: finalTotal,
-            currency: 'INR',
-            category: 'User Type',
-            type: 'guest_user',
-            customer_type: isWholesaler ? 'wholesaler' : 'retail',
-          })}
-        >
+        <div className="login-prompt">
           <p>You are browsing as a guest. 
-            <button onClick={() => {
-              trackViewContent({
-                id: 'login_prompt_click_cart',
-                name: 'Login Prompt Clicked in Cart',
-                value: 0,
-                category: 'User Action',
-                type: 'login_prompt_click',
-                customer_type: isWholesaler ? 'wholesaler' : 'retail',
-              });
-              navigate('/login');
-            }} className="login-link">Login</button> 
+            <button onClick={() => navigate('/login')} className="login-link">Login</button> 
             for order tracking and faster checkout.
           </p>
         </div>
@@ -1099,15 +1096,6 @@ const AddToCart = () => {
         <li 
           key={index} 
           className={`address-card ${formData.selectedAddress === addr ? 'selected' : ''}`}
-          onClick={() => trackViewContent({
-            id: `address_selected_${index}`,
-            name: 'Address Selected',
-            value: 0,
-            category: 'Checkout Process',
-            type: 'address_selection',
-            address_type: 'text',
-            customer_type: isWholesaler ? 'wholesaler' : 'retail',
-          })}
         >
           <label>
             <input
@@ -1115,17 +1103,7 @@ const AddToCart = () => {
               name="selectedAddress"
               value={addr}
               checked={formData.selectedAddress === addr}
-              onChange={() => {
-                setFormData(prev => ({ ...prev, selectedAddress: addr }));
-                trackViewContent({
-                  id: `address_radio_${index}`,
-                  name: 'Address Radio Selected',
-                  value: 0,
-                  category: 'Checkout Process',
-                  type: 'address_selection',
-                  customer_type: isWholesaler ? 'wholesaler' : 'retail',
-                });
-              }}
+              onChange={() => handleAddressSelect(addr, '', '')}
             />
             <span className='text_20'>{addr}</span>
           </label>
@@ -1136,15 +1114,6 @@ const AddToCart = () => {
         <li 
           key={index} 
           className={`address-card ${formData.selectedAddress === addr.fullAddress ? 'selected' : ''}`}
-          onClick={() => trackViewContent({
-            id: `address_selected_object_${index}`,
-            name: 'Address Object Selected',
-            value: 0,
-            category: 'Checkout Process',
-            type: 'address_selection',
-            address_type: 'object',
-            customer_type: isWholesaler ? 'wholesaler' : 'retail',
-          })}
         >
           <label>
             <input
@@ -1152,30 +1121,11 @@ const AddToCart = () => {
               name="selectedAddress"
               value={addr.fullAddress}
               checked={formData.selectedAddress === addr.fullAddress}
-              onChange={() => {
-                setFormData(prev => ({ 
-                  ...prev, 
-                  selectedAddress: addr.fullAddress,
-                  email: addr.email || prev.email,
-                  phone: addr.phone || prev.phone
-                }));
-                
-                if (addr.email) {
-                  localStorage.setItem('guestEmail', addr.email);
-                }
-                if (addr.phone) {
-                  localStorage.setItem('guestPhone', addr.phone);
-                }
-                
-                trackViewContent({
-                  id: `address_radio_object_${index}`,
-                  name: 'Address Radio Object Selected',
-                  value: 0,
-                  category: 'Checkout Process',
-                  type: 'address_selection',
-                  customer_type: isWholesaler ? 'wholesaler' : 'retail',
-                });
-              }}
+              onChange={() => handleAddressSelect(
+                addr.fullAddress,
+                addr.email || '',
+                addr.phone || ''
+              )}
             />
             <div className="address-details">
               <span className='text_20'>{addr.fullAddress}</span>
@@ -1189,30 +1139,10 @@ const AddToCart = () => {
   };
 
   const handleBackButtonClick = () => {
-    trackViewContent({
-      id: 'back_to_shopping_cart',
-      name: 'Back to Shopping from Cart',
-      value: finalTotal,
-      currency: 'INR',
-      category: 'Navigation',
-      type: 'cart_exit',
-      item_count: cartItems.length,
-      customer_type: isWholesaler ? 'wholesaler' : 'retail',
-    });
     navigate(-1);
   };
 
   const handleContinueShoppingClick = () => {
-    trackViewContent({
-      id: 'continue_shopping_cart',
-      name: 'Continue Shopping from Cart',
-      value: finalTotal,
-      currency: 'INR',
-      category: 'Navigation',
-      type: 'continue_shopping',
-      item_count: cartItems.length,
-      customer_type: isWholesaler ? 'wholesaler' : 'retail',
-    });
     navigate("/fever");
   };
 
@@ -1237,20 +1167,11 @@ const AddToCart = () => {
 
         <div className="container">
           <div className="cart-content">
-            {/* Left Column - Cart Items + Order Summary ek ke niche ek */}
+            {/* Left Column - Cart Items + Order Summary */}
             <div className="cart-items-section">
               {/* Cart Items Section */}
               <div className="section-header">
-                <h2
-                  onClick={() => trackViewContent({
-                    id: 'cart_section_header',
-                    name: 'Cart Section Header Clicked',
-                    value: 0,
-                    category: 'User Interaction',
-                    type: 'section_header_click',
-                    customer_type: isWholesaler ? 'wholesaler' : 'retail',
-                  })}
-                >
+                <h2>
                   Your Items ({cartItems.length})
                   {isWholesaler && (
                     <span className="wholesale-tag-cart">Wholesale</span>
@@ -1260,17 +1181,6 @@ const AddToCart = () => {
                   <button
                     className="clear-cart-btn"
                     onClick={() => {
-                      trackViewContent({
-                        id: 'clear_cart_click',
-                        name: 'Clear Cart Button Clicked',
-                        value: finalTotal,
-                        currency: 'INR',
-                        category: 'Cart Action',
-                        type: 'clear_cart_click',
-                        item_count: cartItems.length,
-                        customer_type: isWholesaler ? 'wholesaler' : 'retail',
-                      });
-                      
                       dispatch(clearProducts());
                       toast.info('Cart cleared.', {
                         position: 'top-right',
@@ -1285,17 +1195,7 @@ const AddToCart = () => {
               </div>
 
               {cartItems.length === 0 ? (
-                <div 
-                  className="empty-cart"
-                  onClick={() => trackViewContent({
-                    id: 'empty_cart_view',
-                    name: 'Empty Cart View',
-                    value: 0,
-                    category: 'Cart State',
-                    type: 'empty_cart',
-                    customer_type: isWholesaler ? 'wholesaler' : 'retail',
-                  })}
-                >
+                <div className="empty-cart">
                   <div className="empty-cart-icon">
                     <ShoppingBag size={64} />
                   </div>
@@ -1311,19 +1211,7 @@ const AddToCart = () => {
                       : parseFloat(item.final_price || 0);
                     
                     return (
-                      <div 
-                        key={item._id} 
-                        className="cart-item"
-                        onClick={() => trackViewContent({
-                          id: `cart_item_click_${item._id}`,
-                          name: `${item.name} - Cart Item Clicked`,
-                          value: itemPrice,
-                          currency: 'INR',
-                          category: 'Cart Item',
-                          type: 'cart_item_interaction',
-                          customer_type: isWholesaler ? 'wholesaler' : 'retail',
-                        })}
-                      >
+                      <div key={item._id} className="cart-item">
                         <Link to={`/ProductPage/${item._id}`} className="item-image">
                           <img src={JoinUrl(API_URL, item.media[0]?.url)} alt={item.name} />
                         </Link>
@@ -1381,37 +1269,16 @@ const AddToCart = () => {
                 </div>
               )}
 
-              {/* Order Summary - Now BELOW Cart Items */}
+              {/* Order Summary - Below Cart Items */}
               {cartItems.length > 0 && (
                 <div className="order-summary-inline">
                   <div className="summary-card">
-                    <h3 
-                      className="summary-title"
-                      onClick={() => trackViewContent({
-                        id: 'order_summary_click',
-                        name: 'Order Summary Clicked',
-                        value: finalTotal,
-                        currency: 'INR',
-                        category: 'Order Summary',
-                        type: 'order_summary_interaction',
-                        customer_type: isWholesaler ? 'wholesaler' : 'retail',
-                      })}
-                    >
+                    <h3 className="summary-title">
                       Order Summary
                     </h3>
 
                     {!isAuthenticated && (
-                      <div 
-                        className="guest-notice"
-                        onClick={() => trackViewContent({
-                          id: 'guest_notice_cart',
-                          name: 'Guest Notice Viewed',
-                          value: 0,
-                          category: 'User Type',
-                          type: 'guest_notice',
-                          customer_type: isWholesaler ? 'wholesaler' : 'retail',
-                        })}
-                      >
+                      <div className="guest-notice">
                         <p>🎯 <strong>Guest Checkout Available!</strong> Enter your details below to proceed without login.</p>
                       </div>
                     )}
@@ -1424,17 +1291,7 @@ const AddToCart = () => {
 
                     <button
                       className="enhanced-add-address-btn"
-                      onClick={() => {
-                        setShowModal(true);
-                        trackViewContent({
-                          id: 'add_address_button_click',
-                          name: 'Add Address Button Clicked',
-                          value: 0,
-                          category: 'Checkout Process',
-                          type: 'add_address_click',
-                          customer_type: isWholesaler ? 'wholesaler' : 'retail',
-                        });
-                      }}
+                      onClick={() => setShowModal(true)}
                     >
                       ➕ {addresses.length > 0 ? 'Add Another Address' : 'Add Address'}
                     </button>
@@ -1465,18 +1322,7 @@ const AddToCart = () => {
                               name="paymentMethod"
                               value="online"
                               checked={paymentMethod === 'online'}
-                              onChange={(e) => {
-                                setPaymentMethod(e.target.value);
-                                trackViewContent({
-                                  id: 'payment_method_online',
-                                  name: 'Online Payment Selected',
-                                  value: 0,
-                                  category: 'Payment',
-                                  type: 'payment_method_selection',
-                                  method: 'online',
-                                  customer_type: isWholesaler ? 'wholesaler' : 'retail',
-                                });
-                              }}
+                              onChange={(e) => handlePaymentMethodChange(e.target.value)}
                             />
                             <div className="payment-method-content">
                               <div className="payment-method-header">
@@ -1497,18 +1343,7 @@ const AddToCart = () => {
                               name="paymentMethod"
                               value="cod"
                               checked={paymentMethod === 'cod'}
-                              onChange={(e) => {
-                                setPaymentMethod(e.target.value);
-                                trackViewContent({
-                                  id: 'payment_method_cod',
-                                  name: 'COD Payment Selected',
-                                  value: 0,
-                                  category: 'Payment',
-                                  type: 'payment_method_selection',
-                                  method: 'cod',
-                                  customer_type: isWholesaler ? 'wholesaler' : 'retail',
-                                });
-                              }}
+                              onChange={(e) => handlePaymentMethodChange(e.target.value)}
                             />
                             <div className="payment-method-content">
                               <div className="payment-method-header">
@@ -1607,17 +1442,7 @@ const AddToCart = () => {
                     {!isAuthenticated && (
                       <div className="guest-benefits">
                         <p className="login-suggestion">
-                          <button onClick={() => {
-                            trackViewContent({
-                              id: 'login_suggestion_click_cart',
-                              name: 'Login Suggestion Clicked in Cart',
-                              value: 0,
-                              category: 'User Action',
-                              type: 'login_suggestion_click',
-                              customer_type: isWholesaler ? 'wholesaler' : 'retail',
-                            });
-                            navigate('/login');
-                          }} className="login-suggestion-btn">
+                          <button onClick={() => navigate('/login')} className="login-suggestion-btn">
                             Login
                           </button> for order tracking and faster checkout next time.
                         </p>
@@ -1667,584 +1492,548 @@ const AddToCart = () => {
       </div>
 
       {/* Address Modal */}
-      {/* Address Modal - FIXED: Now opens from top/center, not bottom */}
-<Dialog
-  open={showModal}
-  onClose={() => {
-    setShowModal(false);
-    trackViewContent({
-      id: 'address_modal_closed',
-      name: 'Address Modal Closed',
-      value: 0,
-      category: 'User Interaction',
-      type: 'modal_close',
-      action: 'address_modal',
-      customer_type: isWholesaler ? 'wholesaler' : 'retail',
-    });
-  }}
-  fullWidth
-  maxWidth="sm"
-  sx={{
-    '& .MuiDialog-container': {
-      alignItems: 'center',
-      justifyContent: 'center',
-      padding: { xs: '20px', sm: '24px' },
-    },
-    '& .MuiDialog-paper': {
-      borderRadius: '20px',
-      margin: { xs: '0', sm: '32px' },
-      maxHeight: { xs: 'calc(100vh - 40px)', sm: '90vh' },
-      width: { xs: 'calc(100% - 40px)', sm: '600px' },
-      animation: 'slideDown 0.3s ease-out',
-      position: 'relative',
-      bottom: 'auto',
-      left: 'auto',
-      right: 'auto',
-      top: 'auto',
-      boxShadow: '0 10px 40px rgba(0,0,0,0.2)',
-    },
-    '@keyframes slideDown': {
-      from: {
-        opacity: 0,
-        transform: 'translateY(-30px)',
-      },
-      to: {
-        opacity: 1,
-        transform: 'translateY(0)',
-      },
-    },
-  }}
->
-  <DialogTitle 
-    sx={{ 
-      fontWeight: 700, 
-      fontSize: '1.25rem',
-      pb: 2,
-      background: 'linear-gradient(135deg, #1976d2 0%, #0d47a1 100%)',
-      color: 'white',
-      px: 3,
-      py: 2.5,
-      position: 'relative',
-      '&:after': {
-        content: '""',
-        position: 'absolute',
-        bottom: 0,
-        left: '5%',
-        width: '90%',
-        height: '1px',
-        background: 'rgba(255,255,255,0.2)'
-      }
-    }}
-  >
-    {isAuthenticated ? 'Add New Address' : 'Add Delivery Address'}
-    <div style={{ 
-      fontSize: '0.875rem', 
-      fontWeight: 400, 
-      opacity: 0.9,
-      marginTop: '4px'
-    }}>
-      Please fill in all required fields
-    </div>
-  </DialogTitle>
-  
-  <DialogContent sx={{ 
-    pt: 3, 
-    pb: 1,
-    px: 3,
-    '& .form-grid': {
-      display: 'grid',
-      gridTemplateColumns: 'repeat(12, 1fr)',
-      gap: '16px',
-      marginBottom: '16px'
-    },
-    '& .form-field': {
-      marginBottom: '20px'
-    }
-  }}>
-    <div className="form-grid">
-      {/* Email Field */}
-      <div className="form-field" style={{ gridColumn: 'span 12' ,paddingTop: '10px'}}>
-        <TextField
-          label="Email Address"
-          fullWidth
-          variant="outlined"
-          size="medium"
-          type="email"
-          value={formData.email}
-          onChange={handleEmailChange}
-          helperText={
-            formData.email && !isValidEmail(formData.email) 
-              ? "Please enter a valid email address" 
-              : "Required for order confirmation and updates"
-          }
-          required
-          error={formData.email && !isValidEmail(formData.email)}
-          InputLabelProps={{ shrink: true }}
-          sx={{
-            '& .MuiOutlinedInput-root': {
-              borderRadius: '8px',
-              transition: 'all 0.3s ease',
-              '&:hover': {
-                '& .MuiOutlinedInput-notchedOutline': {
-                  borderColor: '#1976d2',
-                }
-              }
+      <Dialog
+        open={showModal}
+        onClose={() => {
+          setShowModal(false);
+        }}
+        fullWidth
+        maxWidth="sm"
+        sx={{
+          '& .MuiDialog-container': {
+            alignItems: 'center',
+            justifyContent: 'center',
+            padding: { xs: '20px', sm: '24px' },
+          },
+          '& .MuiDialog-paper': {
+            borderRadius: '20px',
+            margin: { xs: '0', sm: '32px' },
+            maxHeight: { xs: 'calc(100vh - 40px)', sm: '90vh' },
+            width: { xs: 'calc(100% - 40px)', sm: '600px' },
+            animation: 'slideDown 0.3s ease-out',
+            position: 'relative',
+            bottom: 'auto',
+            left: 'auto',
+            right: 'auto',
+            top: 'auto',
+            boxShadow: '0 10px 40px rgba(0,0,0,0.2)',
+          },
+          '@keyframes slideDown': {
+            from: {
+              opacity: 0,
+              transform: 'translateY(-30px)',
             },
-            '& .MuiFormHelperText-root': {
-              marginLeft: '4px',
-              fontSize: '0.75rem'
+            to: {
+              opacity: 1,
+              transform: 'translateY(0)',
+            },
+          },
+        }}
+      >
+        <DialogTitle 
+          sx={{ 
+            fontWeight: 700, 
+            fontSize: '1.25rem',
+            pb: 2,
+            background: 'linear-gradient(135deg, #1976d2 0%, #0d47a1 100%)',
+            color: 'white',
+            px: 3,
+            py: 2.5,
+            position: 'relative',
+            '&:after': {
+              content: '""',
+              position: 'absolute',
+              bottom: 0,
+              left: '5%',
+              width: '90%',
+              height: '1px',
+              background: 'rgba(255,255,255,0.2)'
             }
           }}
-        />
-      </div>
-
-      {/* Address Fields */}
-      <div className="form-field" style={{ gridColumn: 'span 6' }}>
-        <TextField
-          label="Flat / House No."
-          fullWidth
-          variant="outlined"
-          size="medium"
-          value={formData.flat}
-          onChange={(e) => setFormData({ ...formData, flat: e.target.value })}
-          required
-          InputLabelProps={{ shrink: true }}
-          sx={{
-            '& .MuiOutlinedInput-root': {
-              borderRadius: '8px',
-              transition: 'all 0.3s ease',
-              '&:hover': {
-                '& .MuiOutlinedInput-notchedOutline': {
-                  borderColor: '#1976d2',
+        >
+          {isAuthenticated ? 'Add New Address' : 'Add Delivery Address'}
+          <div style={{ 
+            fontSize: '0.875rem', 
+            fontWeight: 400, 
+            opacity: 0.9,
+            marginTop: '4px'
+          }}>
+            Please fill in all required fields
+          </div>
+        </DialogTitle>
+        
+        <DialogContent sx={{ 
+          pt: 3, 
+          pb: 1,
+          px: 3,
+          '& .form-grid': {
+            display: 'grid',
+            gridTemplateColumns: 'repeat(12, 1fr)',
+            gap: '16px',
+            marginBottom: '16px'
+          },
+          '& .form-field': {
+            marginBottom: '20px'
+          }
+        }}>
+          <div className="form-grid">
+            {/* Email Field */}
+            <div className="form-field" style={{ gridColumn: 'span 12' ,paddingTop: '10px'}}>
+              <TextField
+                label="Email Address"
+                fullWidth
+                variant="outlined"
+                size="medium"
+                type="email"
+                value={formData.email}
+                onChange={handleEmailChange}
+                helperText={
+                  formData.email && !isValidEmail(formData.email) 
+                    ? "Please enter a valid email address" 
+                    : "Required for order confirmation and updates"
                 }
-              }
-            }
-          }}
-        />
-      </div>
-      
-      <div className="form-field" style={{ gridColumn: 'span 6' }}>
-        <TextField
-          label="Landmark"
-          fullWidth
-          variant="outlined"
-          size="medium"
-          value={formData.landmark}
-          onChange={(e) => setFormData({ ...formData, landmark: e.target.value })}
-          required
-          InputLabelProps={{ shrink: true }}
-          sx={{
-            '& .MuiOutlinedInput-root': {
-              borderRadius: '8px',
-              transition: 'all 0.3s ease',
-              '&:hover': {
-                '& .MuiOutlinedInput-notchedOutline': {
-                  borderColor: '#1976d2',
+                required
+                error={formData.email && !isValidEmail(formData.email)}
+                InputLabelProps={{ shrink: true }}
+                sx={{
+                  '& .MuiOutlinedInput-root': {
+                    borderRadius: '8px',
+                    transition: 'all 0.3s ease',
+                    '&:hover': {
+                      '& .MuiOutlinedInput-notchedOutline': {
+                        borderColor: '#1976d2',
+                      }
+                    }
+                  },
+                  '& .MuiFormHelperText-root': {
+                    marginLeft: '4px',
+                    fontSize: '0.75rem'
+                  }
+                }}
+              />
+            </div>
+
+            {/* Address Fields */}
+            <div className="form-field" style={{ gridColumn: 'span 6' }}>
+              <TextField
+                label="Flat / House No."
+                fullWidth
+                variant="outlined"
+                size="medium"
+                value={formData.flat}
+                onChange={(e) => setFormData({ ...formData, flat: e.target.value })}
+                required
+                InputLabelProps={{ shrink: true }}
+                sx={{
+                  '& .MuiOutlinedInput-root': {
+                    borderRadius: '8px',
+                    transition: 'all 0.3s ease',
+                    '&:hover': {
+                      '& .MuiOutlinedInput-notchedOutline': {
+                        borderColor: '#1976d2',
+                      }
+                    }
+                  }
+                }}
+              />
+            </div>
+            
+            <div className="form-field" style={{ gridColumn: 'span 6' }}>
+              <TextField
+                label="Landmark"
+                fullWidth
+                variant="outlined"
+                size="medium"
+                value={formData.landmark}
+                onChange={(e) => setFormData({ ...formData, landmark: e.target.value })}
+                required
+                InputLabelProps={{ shrink: true }}
+                sx={{
+                  '& .MuiOutlinedInput-root': {
+                    borderRadius: '8px',
+                    transition: 'all 0.3s ease',
+                    '&:hover': {
+                      '& .MuiOutlinedInput-notchedOutline': {
+                        borderColor: '#1976d2',
+                      }
+                    }
+                  }
+                }}
+              />
+            </div>
+
+            {/* State Dropdown */}
+            <div className="form-field" style={{ gridColumn: 'span 6' }}>
+              <div className="custom-select-container">
+                <label className="custom-label">
+                  State <span className="required-star">*</span>
+                </label>
+                <select
+                  name="state"
+                  value={formData.state}
+                  onChange={(e) => {
+                    setFormData({ ...formData, state: e.target.value, city: '' });
+                  }}
+                  className="custom-select"
+                  style={{
+                    width: '100%',
+                    padding: '14px 12px',
+                    borderRadius: '8px',
+                    border: formData.state ? '2px solid #1976d2' : '1px solid #ddd',
+                    fontSize: '0.875rem',
+                    backgroundColor: 'white',
+                    cursor: 'pointer',
+                    transition: 'all 0.3s ease',
+                    appearance: 'none',
+                    backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24' fill='none' stroke='%23666' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E")`,
+                    backgroundRepeat: 'no-repeat',
+                    backgroundPosition: 'right 10px center',
+                    backgroundSize: '16px'
+                  }}
+                  required
+                >
+                  <option value="">Select State</option>
+                  {states.map((state) => (
+                    <option key={state} value={state}>{state}</option>
+                  ))}
+                </select>
+              </div>
+            </div>
+
+            {/* City Dropdown */}
+            <div className="form-field" style={{ gridColumn: 'span 6' }}>
+              <div className="custom-select-container">
+                <label className="custom-label">
+                  City <span className="required-star">*</span>
+                </label>
+                <select
+                  name="city"
+                  value={formData.city}
+                  onChange={(e) => {
+                    setFormData({ ...formData, city: e.target.value });
+                  }}
+                  className="custom-select"
+                  style={{
+                    width: '100%',
+                    padding: '14px 12px',
+                    borderRadius: '8px',
+                    border: formData.city ? '2px solid #1976d2' : '1px solid #ddd',
+                    fontSize: '0.875rem',
+                    backgroundColor: !formData.state ? '#f5f5f5' : 'white',
+                    cursor: formData.state ? 'pointer' : 'not-allowed',
+                    transition: 'all 0.3s ease',
+                    appearance: 'none',
+                    backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24' fill='none' stroke='%23666' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E")`,
+                    backgroundRepeat: 'no-repeat',
+                    backgroundPosition: 'right 10px center',
+                    backgroundSize: '16px',
+                    opacity: !formData.state ? 0.6 : 1
+                  }}
+                  disabled={!formData.state}
+                  required
+                >
+                  <option value="">Select City</option>
+                  {cities.map((city) => (
+                    <option key={city} value={city}>{city}</option>
+                  ))}
+                </select>
+                {!formData.state && (
+                  <div style={{
+                    fontSize: '0.75rem',
+                    color: '#666',
+                    marginTop: '4px',
+                    marginLeft: '4px'
+                  }}>
+                    Please select state first
+                  </div>
+                )}
+              </div>
+            </div>
+
+            {/* Country Field */}
+            <div className="form-field" style={{ gridColumn: 'span 6' }}>
+              <TextField
+                label="Country"
+                fullWidth
+                variant="outlined"
+                size="medium"
+                value="India"
+                disabled
+                InputLabelProps={{ shrink: true }}
+                sx={{
+                  '& .MuiOutlinedInput-root': {
+                    borderRadius: '8px',
+                    backgroundColor: '#f8f9fa',
+                    '&.Mui-disabled': {
+                      backgroundColor: '#f8f9fa'
+                    }
+                  }
+                }}
+              />
+            </div>
+
+            {/* Phone Field */}
+            <div className="form-field" style={{ gridColumn: 'span 6' }}>
+              <TextField
+                label="Phone Number"
+                fullWidth
+                variant="outlined"
+                size="medium"
+                value={formData.phone}
+                onChange={handlePhoneChange}
+                required
+                InputLabelProps={{ shrink: true }}
+                InputProps={{
+                  startAdornment: (
+                    <InputAdornment 
+                      position="start" 
+                      sx={{ 
+                        mr: 1,
+                        color: '#666',
+                        fontWeight: 500,
+                        fontSize: '0.875rem'
+                      }}
+                    >
+                      +91
+                    </InputAdornment>
+                  ),
+                }}
+                helperText={
+                  formData.phone.length > 0 && formData.phone.length !== 10 
+                    ? "Phone number must be exactly 10 digits" 
+                    : "Required for delivery updates"
                 }
-              }
-            }
-          }}
-        />
-      </div>
+                error={formData.phone.length > 0 && formData.phone.length !== 10}
+                sx={{
+                  '& .MuiOutlinedInput-root': {
+                    borderRadius: '8px',
+                    transition: 'all 0.3s ease',
+                    '&:hover': {
+                      '& .MuiOutlinedInput-notchedOutline': {
+                        borderColor: '#1976d2',
+                      }
+                    }
+                  },
+                  '& .MuiFormHelperText-root': {
+                    marginLeft: '4px',
+                    fontSize: '0.75rem'
+                  }
+                }}
+              />
+            </div>
+          </div>
 
-      {/* State Dropdown */}
-      <div className="form-field" style={{ gridColumn: 'span 6' }}>
-        <div className="custom-select-container">
-          <label className="custom-label">
-            State <span className="required-star">*</span>
-          </label>
-          <select
-            name="state"
-            value={formData.state}
-            onChange={(e) => {
-              setFormData({ ...formData, state: e.target.value, city: '' });
-              trackViewContent({
-                id: 'state_selected_address',
-                name: 'State Selected in Address',
-                value: 0,
-                category: 'Address Form',
-                type: 'state_selection',
-                state: e.target.value,
-                customer_type: isWholesaler ? 'wholesaler' : 'retail',
-              });
-            }}
-            className="custom-select"
-            style={{
-              width: '100%',
-              padding: '14px 12px',
-              borderRadius: '8px',
-              border: formData.state ? '2px solid #1976d2' : '1px solid #ddd',
-              fontSize: '0.875rem',
-              backgroundColor: 'white',
-              cursor: 'pointer',
-              transition: 'all 0.3s ease',
-              appearance: 'none',
-              backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24' fill='none' stroke='%23666' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E")`,
-              backgroundRepeat: 'no-repeat',
-              backgroundPosition: 'right 10px center',
-              backgroundSize: '16px'
-            }}
-            required
-          >
-            <option value="">Select State</option>
-            {states.map((state) => (
-              <option key={state} value={state}>{state}</option>
-            ))}
-          </select>
-        </div>
-      </div>
-
-      {/* City Dropdown */}
-      <div className="form-field" style={{ gridColumn: 'span 6' }}>
-        <div className="custom-select-container">
-          <label className="custom-label">
-            City <span className="required-star">*</span>
-          </label>
-          <select
-            name="city"
-            value={formData.city}
-            onChange={(e) => {
-              setFormData({ ...formData, city: e.target.value });
-              trackViewContent({
-                id: 'city_selected_address',
-                name: 'City Selected in Address',
-                value: 0,
-                category: 'Address Form',
-                type: 'city_selection',
-                city: e.target.value,
-                customer_type: isWholesaler ? 'wholesaler' : 'retail',
-              });
-            }}
-            className="custom-select"
-            style={{
-              width: '100%',
-              padding: '14px 12px',
-              borderRadius: '8px',
-              border: formData.city ? '2px solid #1976d2' : '1px solid #ddd',
-              fontSize: '0.875rem',
-              backgroundColor: !formData.state ? '#f5f5f5' : 'white',
-              cursor: formData.state ? 'pointer' : 'not-allowed',
-              transition: 'all 0.3s ease',
-              appearance: 'none',
-              backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24' fill='none' stroke='%23666' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E")`,
-              backgroundRepeat: 'no-repeat',
-              backgroundPosition: 'right 10px center',
-              backgroundSize: '16px',
-              opacity: !formData.state ? 0.6 : 1
-            }}
-            disabled={!formData.state}
-            required
-          >
-            <option value="">Select City</option>
-            {cities.map((city) => (
-              <option key={city} value={city}>{city}</option>
-            ))}
-          </select>
-          {!formData.state && (
-            <div style={{
-              fontSize: '0.75rem',
-              color: '#666',
-              marginTop: '4px',
-              marginLeft: '4px'
+          {/* Required Note */}
+          <div style={{ 
+            display: 'flex', 
+            alignItems: 'center', 
+            gap: '4px',
+            marginTop: '4px',
+            marginBottom: '16px'
+          }}>
+            <span style={{ 
+              color: '#d32f2f',
+              fontWeight: 700,
+              fontSize: '1.2rem',
+              lineHeight: 1
             }}>
-              Please select state first
+              *
+            </span>
+            <span style={{ 
+              fontSize: '0.75rem',
+              color: '#666'
+            }}>
+              Required fields
+            </span>
+          </div>
+
+          {/* Guest Info Note */}
+          {!isAuthenticated && (
+            <div style={{ 
+              fontSize: '0.875rem', 
+              color: '#0c5460',
+              backgroundColor: '#d1ecf1',
+              padding: '12px 16px',
+              borderRadius: '8px',
+              marginTop: '8px',
+              border: '1px solid #bee5eb',
+              display: 'flex',
+              alignItems: 'center',
+              gap: '8px'
+            }}>
+              <span style={{
+                fontSize: '1.2rem',
+                color: '#0c5460'
+              }}>
+                ⓘ
+              </span>
+              <span>
+                Your address will be saved locally for this session only. 
+                <strong> Sign up</strong> to save addresses permanently.
+              </span>
             </div>
           )}
-        </div>
-      </div>
-
-      {/* Country Field */}
-      <div className="form-field" style={{ gridColumn: 'span 6' }}>
-        <TextField
-          label="Country"
-          fullWidth
-          variant="outlined"
-          size="medium"
-          value="India"
-          disabled
-          InputLabelProps={{ shrink: true }}
+        </DialogContent>
+        
+        <DialogActions
           sx={{
-            '& .MuiOutlinedInput-root': {
-              borderRadius: '8px',
-              backgroundColor: '#f8f9fa',
-              '&.Mui-disabled': {
-                backgroundColor: '#f8f9fa'
+            px: { xs: 2, sm: 3 },
+            pb: { xs: 2, sm: 3 },
+            pt: { xs: 1.5, sm: 2 },
+            gap: { xs: 1.5, sm: 2 },
+            background: 'linear-gradient(to bottom, #f8f9fa 0%, #ffffff 100%)',
+            borderTop: '1px solid #e0e0e0',
+            display: 'flex !important',
+            flexDirection: { xs: 'column', sm: 'row' },
+            justifyContent: 'flex-end',
+            alignItems: 'stretch',
+            width: '100%',
+            margin: 0,
+            boxSizing: 'border-box',
+            position: 'relative !important',
+            bottom: 'auto !important',
+            left: 'auto !important',
+            right: 'auto !important',
+            zIndex: 1300,
+            flexShrink: 0,
+            visibility: 'visible !important',
+            opacity: '1 !important',
+            '&.MuiDialogActions-root': {
+              display: 'flex !important',
+              visibility: 'visible !important',
+              opacity: '1 !important',
+              padding: {
+                xs: '16px 20px !important',
+                sm: '24px 32px !important'
               }
             }
           }}
-        />
-      </div>
-
-      {/* Phone Field */}
-      <div className="form-field" style={{ gridColumn: 'span 6' }}>
-        <TextField
-          label="Phone Number"
-          fullWidth
-          variant="outlined"
-          size="medium"
-          value={formData.phone}
-          onChange={handlePhoneChange}
-          required
-          InputLabelProps={{ shrink: true }}
-          InputProps={{
-            startAdornment: (
-              <InputAdornment 
-                position="start" 
-                sx={{ 
-                  mr: 1,
-                  color: '#666',
-                  fontWeight: 500,
-                  fontSize: '0.875rem'
-                }}
-              >
-                +91
-              </InputAdornment>
-            ),
-          }}
-          helperText={
-            formData.phone.length > 0 && formData.phone.length !== 10 
-              ? "Phone number must be exactly 10 digits" 
-              : "Required for delivery updates"
-          }
-          error={formData.phone.length > 0 && formData.phone.length !== 10}
-          sx={{
-            '& .MuiOutlinedInput-root': {
-              borderRadius: '8px',
-              transition: 'all 0.3s ease',
-              '&:hover': {
-                '& .MuiOutlinedInput-notchedOutline': {
-                  borderColor: '#1976d2',
-                }
-              }
-            },
-            '& .MuiFormHelperText-root': {
-              marginLeft: '4px',
-              fontSize: '0.75rem'
-            }
-          }}
-        />
-      </div>
-    </div>
-
-    {/* Required Note */}
-    <div style={{ 
-      display: 'flex', 
-      alignItems: 'center', 
-      gap: '4px',
-      marginTop: '4px',
-      marginBottom: '16px'
-    }}>
-      <span style={{ 
-        color: '#d32f2f',
-        fontWeight: 700,
-        fontSize: '1.2rem',
-        lineHeight: 1
-      }}>
-        *
-      </span>
-      <span style={{ 
-        fontSize: '0.75rem',
-        color: '#666'
-      }}>
-        Required fields
-      </span>
-    </div>
-
-    {/* Guest Info Note */}
-    {!isAuthenticated && (
-      <div style={{ 
-        fontSize: '0.875rem', 
-        color: '#0c5460',
-        backgroundColor: '#d1ecf1',
-        padding: '12px 16px',
-        borderRadius: '8px',
-        marginTop: '8px',
-        border: '1px solid #bee5eb',
-        display: 'flex',
-        alignItems: 'center',
-        gap: '8px'
-      }}>
-        <span style={{
-          fontSize: '1.2rem',
-          color: '#0c5460'
-        }}>
-          ⓘ
-        </span>
-        <span>
-          Your address will be saved locally for this session only. 
-          <strong> Sign up</strong> to save addresses permanently.
-        </span>
-      </div>
-    )}
-  </DialogContent>
-  
-  <DialogActions
-    sx={{
-      px: { xs: 2, sm: 3 },
-      pb: { xs: 2, sm: 3 },
-      pt: { xs: 1.5, sm: 2 },
-      gap: { xs: 1.5, sm: 2 },
-      background: 'linear-gradient(to bottom, #f8f9fa 0%, #ffffff 100%)',
-      borderTop: '1px solid #e0e0e0',
-      display: 'flex !important',
-      flexDirection: { xs: 'column', sm: 'row' },
-      justifyContent: 'flex-end',
-      alignItems: 'stretch',
-      width: '100%',
-      margin: 0,
-      boxSizing: 'border-box',
-      position: 'relative !important', /* CHANGED: fixed -> relative */
-      bottom: 'auto !important',
-      left: 'auto !important',
-      right: 'auto !important',
-      zIndex: 1300,
-      flexShrink: 0,
-      visibility: 'visible !important',
-      opacity: '1 !important',
-      '&.MuiDialogActions-root': {
-        display: 'flex !important',
-        visibility: 'visible !important',
-        opacity: '1 !important',
-        padding: {
-          xs: '16px 20px !important',
-          sm: '24px 32px !important'
-        }
-      }
-    }}
-  >
-    {/* Cancel Button */}
-    <button
-      onClick={() => {
-        setShowModal(false);
-        trackViewContent({
-          id: 'address_modal_cancel',
-          name: 'Address Modal Cancel Button',
-          value: 0,
-          category: 'User Action',
-          type: 'modal_cancel',
-          customer_type: isWholesaler ? 'wholesaler' : 'retail',
-        });
-      }}
-      style={{
-        width: '100%',
-        padding: '14px 24px',
-        borderRadius: '12px',
-        border: '1.5px solid #e2e8f0',
-        backgroundColor: '#ffffff',
-        color: '#1e293b',
-        fontSize: '16px',
-        fontWeight: 600,
-        cursor: 'pointer',
-        transition: 'all 0.2s ease',
-        boxSizing: 'border-box',
-        display: 'block',
-        visibility: 'visible',
-        opacity: 1,
-        position: 'relative',
-        zIndex: 1301,
-        margin: 0,
-        lineHeight: 1.5,
-        letterSpacing: '0.3px',
-        boxShadow: '0 1px 2px rgba(0,0,0,0.05)',
-        WebkitTapHighlightColor: 'transparent',
-      }}
-      onMouseOver={(e) => {
-        e.currentTarget.style.backgroundColor = '#f8fafc';
-        e.currentTarget.style.borderColor = '#94a3b8';
-      }}
-      onMouseOut={(e) => {
-        e.currentTarget.style.backgroundColor = '#ffffff';
-        e.currentTarget.style.borderColor = '#e2e8f0';
-      }}
-    >
-      Cancel
-    </button>
-
-    {/* Save Button */}
-    <button
-      onClick={handleAddAddress}
-      disabled={
-        loading || 
-        !formData.email || 
-        !isValidEmail(formData.email) ||
-        !formData.flat || 
-        !formData.landmark || 
-        !formData.city || 
-        !formData.state || 
-        formData.phone.length !== 10
-      }
-      style={{
-        width: '100%',
-        padding: '14px 24px',
-        borderRadius: '12px',
-        border: 'none',
-        background: 'linear-gradient(135deg, #1976d2 0%, #0d47a1 100%)',
-        color: 'white',
-        fontSize: '16px',
-        fontWeight: 700,
-        cursor: 'pointer',
-        transition: 'all 0.2s ease',
-        boxShadow: '0 4px 12px rgba(25, 118, 210, 0.25)',
-        opacity: (
-          loading || 
-          !formData.email || 
-          !isValidEmail(formData.email) ||
-          !formData.flat || 
-          !formData.landmark || 
-          !formData.city || 
-          !formData.state || 
-          formData.phone.length !== 10
-        ) ? 0.5 : 1,
-        pointerEvents: (
-          loading || 
-          !formData.email || 
-          !isValidEmail(formData.email) ||
-          !formData.flat || 
-          !formData.landmark || 
-          !formData.city || 
-          !formData.state || 
-          formData.phone.length !== 10
-        ) ? 'none' : 'auto',
-        display: 'block !important',
-        visibility: 'visible !important',
-        position: 'relative',
-        zIndex: 1301,
-        margin: 0,
-        lineHeight: 1.5,
-        letterSpacing: '0.5px',
-        WebkitTapHighlightColor: 'transparent',
-        minHeight: '52px',
-        height: 'auto',
-      }}
-    >
-      {loading ? (
-        <span style={{ 
-          display: 'flex', 
-          alignItems: 'center', 
-          gap: '10px', 
-          justifyContent: 'center',
-          width: '100%'
-        }}>
-          <div
-            style={{
-              width: '18px',
-              height: '18px',
-              border: '2.5px solid rgba(255,255,255,0.3)',
-              borderTop: '2.5px solid white',
-              borderRadius: '50%',
-              animation: 'spin 0.8s linear infinite'
+        >
+          {/* Cancel Button */}
+          <button
+            onClick={() => {
+              setShowModal(false);
             }}
-          />
-          <span>Saving...</span>
-        </span>
-      ) : isAuthenticated ? (
-        'Add Address'
-      ) : (
-        'Save Address'
-      )}
-    </button>
-  </DialogActions>
-</Dialog>
+            style={{
+              width: '100%',
+              padding: '14px 24px',
+              borderRadius: '12px',
+              border: '1.5px solid #e2e8f0',
+              backgroundColor: '#ffffff',
+              color: '#1e293b',
+              fontSize: '16px',
+              fontWeight: 600,
+              cursor: 'pointer',
+              transition: 'all 0.2s ease',
+              boxSizing: 'border-box',
+              display: 'block',
+              visibility: 'visible',
+              opacity: 1,
+              position: 'relative',
+              zIndex: 1301,
+              margin: 0,
+              lineHeight: 1.5,
+              letterSpacing: '0.3px',
+              boxShadow: '0 1px 2px rgba(0,0,0,0.05)',
+              WebkitTapHighlightColor: 'transparent',
+            }}
+            onMouseOver={(e) => {
+              e.currentTarget.style.backgroundColor = '#f8fafc';
+              e.currentTarget.style.borderColor = '#94a3b8';
+            }}
+            onMouseOut={(e) => {
+              e.currentTarget.style.backgroundColor = '#ffffff';
+              e.currentTarget.style.borderColor = '#e2e8f0';
+            }}
+          >
+            Cancel
+          </button>
+
+          {/* Save Button */}
+          <button
+            onClick={handleAddAddress}
+            disabled={
+              loading || 
+              !formData.email || 
+              !isValidEmail(formData.email) ||
+              !formData.flat || 
+              !formData.landmark || 
+              !formData.city || 
+              !formData.state || 
+              formData.phone.length !== 10
+            }
+            style={{
+              width: '100%',
+              padding: '14px 24px',
+              borderRadius: '12px',
+              border: 'none',
+              background: 'linear-gradient(135deg, #1976d2 0%, #0d47a1 100%)',
+              color: 'white',
+              fontSize: '16px',
+              fontWeight: 700,
+              cursor: 'pointer',
+              transition: 'all 0.2s ease',
+              boxShadow: '0 4px 12px rgba(25, 118, 210, 0.25)',
+              opacity: (
+                loading || 
+                !formData.email || 
+                !isValidEmail(formData.email) ||
+                !formData.flat || 
+                !formData.landmark || 
+                !formData.city || 
+                !formData.state || 
+                formData.phone.length !== 10
+              ) ? 0.5 : 1,
+              pointerEvents: (
+                loading || 
+                !formData.email || 
+                !isValidEmail(formData.email) ||
+                !formData.flat || 
+                !formData.landmark || 
+                !formData.city || 
+                !formData.state || 
+                formData.phone.length !== 10
+              ) ? 'none' : 'auto',
+              display: 'block !important',
+              visibility: 'visible !important',
+              position: 'relative',
+              zIndex: 1301,
+              margin: 0,
+              lineHeight: 1.5,
+              letterSpacing: '0.5px',
+              WebkitTapHighlightColor: 'transparent',
+              minHeight: '52px',
+              height: 'auto',
+            }}
+          >
+            {loading ? (
+              <span style={{ 
+                display: 'flex', 
+                alignItems: 'center', 
+                gap: '10px', 
+                justifyContent: 'center',
+                width: '100%'
+              }}>
+                <div
+                  style={{
+                    width: '18px',
+                    height: '18px',
+                    border: '2.5px solid rgba(255,255,255,0.3)',
+                    borderTop: '2.5px solid white',
+                    borderRadius: '50%',
+                    animation: 'spin 0.8s linear infinite'
+                  }}
+                />
+                <span>Saving...</span>
+              </span>
+            ) : isAuthenticated ? (
+              'Add Address'
+            ) : (
+              'Save Address'
+            )}
+          </button>
+        </DialogActions>
+      </Dialog>
       <Footer />
     </>
   );

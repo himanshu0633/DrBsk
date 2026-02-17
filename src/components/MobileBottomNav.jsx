@@ -16,16 +16,24 @@ import {
 } from "@mui/icons-material";
 import { useNavigate } from "react-router-dom";
 import { useSelector } from "react-redux";
+import { useLocation } from "react-router-dom";
+
 
 export const MobileBottomNav = () => {
     const [value, setValue] = React.useState(0);
     const theme = useTheme();
-    const isMobile = useMediaQuery("(max-width:600px)");
     const navigate = useNavigate()
+    const location = useLocation();
     const cartItems = useSelector((state) => state.app.data);
     const cartCount = cartItems.length;
+    
+    // Declare isMobile only once
+    const isMobile = useMediaQuery("(max-width:600px)");
 
-    if (!isMobile) return null;
+    // Check both conditions together
+    if (!isMobile || location.pathname.startsWith("/pharma-admin")) {
+        return null;
+    }
 
     return (
         <Paper
@@ -101,6 +109,3 @@ export const MobileBottomNav = () => {
         </Paper>
     );
 };
-
-
-
